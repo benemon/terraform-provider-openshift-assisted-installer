@@ -4,6 +4,20 @@
 
 This document provides guidance for using Claude Code to develop a Terraform provider for the OpenShift Assisted Service API. The provider will enable Infrastructure as Code management of OpenShift cluster deployments using the Assisted Installer service.
 
+### Repository Structure
+```
+terraform-provider-openshift-assisted-installer/
+├── swagger/
+│   └── swagger.yaml        # OpenShift Assisted Service API specification
+├── internal/
+│   └── provider/          # Provider implementation
+├── examples/              # Example Terraform configurations
+├── docs/                  # Documentation
+├── README.md
+├── LICENSE
+└── CLAUDE.md              # This file
+```
+
 ## API Analysis Summary
 
 ### API Characteristics
@@ -268,24 +282,75 @@ func TestAccAssistedCluster_complete(t *testing.T) {
 ## Code Generation Requests for Claude Code
 
 ### Request 1: Provider Setup
-"Create the basic provider structure for terraform-provider-assisted using the Terraform Plugin Framework. Set up the provider configuration with endpoint and token authentication."
+"Using the swagger.yaml file in the swagger/ directory, create the basic provider structure for terraform-provider-oai using the Terraform Plugin Framework. Set up the provider configuration with endpoint and token authentication. The default endpoint should be https://api.openshift.com/api/assisted-install"
 
-### Request 2: Cluster Resource
-"Implement the cluster resource for the Assisted Service API. Include full CRUD operations, state management for the installation process, and timeout handling. The cluster goes through states: insufficient → ready → installing → installed."
+### Request 2: Generate API Client from Swagger
+"Parse the swagger/swagger.yaml file and generate Go structs for all the API models defined in the definitions section. Create a structured client package that maps to the API endpoints."
 
-### Request 3: Async Operations
-"Add asynchronous operation handling for long-running tasks like cluster installation. Implement polling with exponential backoff and configurable timeouts."
+### Request 3: Cluster Resource
+"Using the swagger.yaml specification, implement the cluster resource for the Assisted Service API. Look at the /v2/clusters endpoints and the cluster definition to create the full CRUD operations. Include state management for the installation process where the cluster goes through states: insufficient → ready → installing → installed."
 
-### Request 4: InfraEnv Resource
-"Create the infra_env resource that manages discovery ISO generation. Include support for static network configuration and cluster binding."
+### Request 4: Generate Resource Schemas
+"Read the swagger/swagger.yaml file and generate Terraform resource schemas for oai_cluster, oai_infra_env, and oai_manifest based on the API definitions. Map the Swagger types to appropriate Terraform schema types."
 
-### Request 5: Data Sources
-"Implement data sources for openshift_versions and supported_operators with filtering capabilities."
+### Request 5: Async Operations
+"Based on the cluster states defined in swagger.yaml, add asynchronous operation handling for long-running tasks like cluster installation. Implement polling with exponential backoff and configurable timeouts."
 
-### Request 6: Testing
-"Generate comprehensive acceptance tests for the cluster resource including creation, updates, and import scenarios."
+### Request 6: Data Sources from Swagger
+"Using the swagger.yaml file, implement data sources for oai_openshift_versions and oai_supported_operators. Map these to the /v2/openshift-versions and /v2/supported-operators endpoints respectively."
 
-## Special Considerations
+### Request 7: Testing
+"Generate comprehensive acceptance tests for the cluster resource based on the API responses defined in swagger.yaml, including creation, updates, and import scenarios."
+
+## Working with the Local Swagger Specification
+
+### Using Claude Code with swagger.yaml
+
+Since you have the swagger.yaml file locally at `swagger/swagger.yaml`, Claude Code can:
+
+1. **Parse and analyze the specification** to understand all endpoints, request/response models, and data types
+2. **Generate Go structs** directly from the Swagger definitions
+3. **Create API client code** that matches the exact API structure
+4. **Build resource schemas** that align with the API requirements
+5. **Generate validation logic** based on API constraints
+
+### Example Claude Code Commands
+
+```bash
+# Generate all API models from Swagger
+claude-code "Parse swagger/swagger.yaml and generate Go structs for all definitions in internal/models/"
+
+# Create client from API paths
+claude-code "Using swagger/swagger.yaml, generate an API client in internal/client/ with methods for all /v2/clusters endpoints"
+
+# Build resource schema from definition
+claude-code "Read the cluster definition from swagger/swagger.yaml and create a Terraform resource schema in internal/provider/cluster_resource.go"
+
+# Generate validation functions
+claude-code "Extract all validation rules from swagger/swagger.yaml for the cluster-create-params and generate validation functions"
+```
+
+### Workflow with Local Swagger
+
+1. **Initial Analysis**
+   - Have Claude Code analyze the swagger.yaml to list all resources and their operations
+   - Identify which endpoints map to Terraform resources vs data sources
+
+2. **Model Generation**
+   - Generate all API models from the definitions section
+   - Create separate files for each major resource type
+
+3. **Client Creation**
+   - Build HTTP client methods for each endpoint
+   - Include proper error handling and response parsing
+
+4. **Resource Implementation**
+   - Map Swagger definitions to Terraform schemas
+   - Implement CRUD operations using the generated client
+
+5. **Testing**
+   - Generate test cases based on example responses in the Swagger spec
+   - Create mock responses from the Swagger examples
 
 ### 1. State Machine Complexity
 The cluster installation involves multiple states and can take 30-90 minutes. Implement robust state tracking and user feedback.
