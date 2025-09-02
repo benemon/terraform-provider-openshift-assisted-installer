@@ -37,3 +37,17 @@ website/vendor
 pdf/
 
 *.out
+
+# Terraform provider binary
+terraform-provider-oai
+terraform-provider-oai_*
+
+# Go build artifacts
+*.so
+*.a
+*.dylib
+
+# Coverage reports
+*_coverage.out
+coverage.out
+coverage.html

@@ -659,8 +659,14 @@ func (r *ClusterResource) waitForInstallationReadyAndTrigger(ctx context.Context
 		"cluster_id": clusterID,
 	})
 
+	// Use half the timeout for waiting for ready state, and half for installation
+	readyTimeout := timeout / 2
+	if readyTimeout > 10*time.Minute {
+		readyTimeout = 10 * time.Minute
+	}
+
 	// Wait for cluster to be in a state where it can be installed
-	err := r.waitForClusterState(ctx, clusterID, []string{"ready"}, 10*time.Minute)
+	err := r.waitForClusterState(ctx, clusterID, []string{"ready"}, readyTimeout)
 	if err != nil {
 		return fmt.Errorf("cluster did not become ready for installation: %w", err)
 	}
@@ -697,8 +703,42 @@ func (r *ClusterResource) waitForClusterState(ctx context.Context, clusterID str
 	pollCtx, cancel := context.WithTimeout(ctx, pollTimeout)
 	defer cancel()
 
-	ticker := time.NewTicker(30 * time.Second)
+	// Use a shorter poll interval for short timeouts (like in tests)
+	pollInterval := 30 * time.Second
+	if pollTimeout < 10*time.Second {
+		pollInterval = 10 * time.Millisecond
+	} else if pollTimeout < 1*time.Minute {
+		pollInterval = 100 * time.Millisecond
+	}
+
+	ticker := time.NewTicker(pollInterval)
 	defer ticker.Stop()
+
+	// Check immediately before waiting for the first tick
+	cluster, err := r.client.GetCluster(pollCtx, clusterID)
+	if err == nil {
+		tflog.Debug(pollCtx, "Initial cluster state check", map[string]interface{}{
+			"cluster_id":     clusterID,
+			"current_state":  cluster.Status,
+			"target_states":  targetStates,
+			"status_info":    cluster.StatusInfo,
+		})
+
+		// Check if we've already reached a target state
+		for _, targetState := range targetStates {
+			if cluster.Status == targetState {
+				return nil
+			}
+		}
+
+		// Check for error states
+		errorStates := []string{"error", "cancelled"}
+		for _, errorState := range errorStates {
+			if cluster.Status == errorState {
+				return fmt.Errorf("cluster reached error state: %s - %s", cluster.Status, cluster.StatusInfo)
+			}
+		}
+	}
 
 	for {
 		select {

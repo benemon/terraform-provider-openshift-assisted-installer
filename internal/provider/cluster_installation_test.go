@@ -31,7 +31,7 @@ func TestClusterResource_waitForClusterState(t *testing.T) {
 				`{"id": "test-cluster", "status": "ready", "status_info": "Cluster is ready for installation"}`,
 			},
 			expectError: false,
-			pollTimeout: 2 * time.Minute,
+			pollTimeout: 5 * time.Second,
 		},
 		{
 			name:         "reaches error state",
@@ -42,7 +42,7 @@ func TestClusterResource_waitForClusterState(t *testing.T) {
 			},
 			expectError:   true,
 			expectedError: "cluster reached error state: error - Validation failed",
-			pollTimeout:   2 * time.Minute,
+			pollTimeout:   5 * time.Second,
 		},
 		{
 			name:         "timeout before reaching target state",
@@ -65,7 +65,7 @@ func TestClusterResource_waitForClusterState(t *testing.T) {
 				`{"id": "test-cluster", "status": "installed", "status_info": "Installation complete"}`,
 			},
 			expectError: false,
-			pollTimeout: 2 * time.Minute,
+			pollTimeout: 5 * time.Second,
 		},
 	}
 
@@ -89,7 +89,10 @@ func TestClusterResource_waitForClusterState(t *testing.T) {
 				}
 				w.WriteHeader(http.StatusNotFound)
 			}))
-			defer server.Close()
+			defer func() {
+				server.CloseClientConnections()
+				server.Close()
+			}()
 
 			client := client.NewClient(client.ClientConfig{
 				BaseURL: server.URL,
@@ -213,7 +216,10 @@ func TestClusterResource_waitForInstallationReadyAndTrigger(t *testing.T) {
 
 				w.WriteHeader(http.StatusNotFound)
 			}))
-			defer server.Close()
+			defer func() {
+				server.CloseClientConnections()
+				server.Close()
+			}()
 
 			client := client.NewClient(client.ClientConfig{
 				BaseURL: server.URL,
