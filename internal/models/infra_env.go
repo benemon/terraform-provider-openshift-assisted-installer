@@ -33,28 +33,48 @@ type Proxy struct {
 }
 
 type InfraEnvCreateParams struct {
-	Name                   string    `json:"name"`
-	PullSecret             string    `json:"pull_secret"`
-	OpenshiftVersion       string    `json:"openshift_version,omitempty"`
-	CPUArchitecture        string    `json:"cpu_architecture,omitempty"`
-	ClusterID              string    `json:"cluster_id,omitempty"`
-	SSHAuthorizedKey       string    `json:"ssh_authorized_key,omitempty"`
-	StaticNetworkConfig    string    `json:"static_network_config,omitempty"`
-	AdditionalNTPSources   string    `json:"additional_ntp_sources,omitempty"`
-	AdditionalTrustBundle  string    `json:"additional_trust_bundle,omitempty"`
-	Proxy                  *Proxy    `json:"proxy,omitempty"`
-	IgnitionConfigOverride string    `json:"ignition_config_override,omitempty"`
-	ImageType              string    `json:"image_type,omitempty"`
+	Name                   string                    `json:"name"`
+	PullSecret             string                    `json:"pull_secret"`
+	OpenshiftVersion       string                    `json:"openshift_version,omitempty"`
+	CPUArchitecture        string                    `json:"cpu_architecture,omitempty"`
+	ClusterID              string                    `json:"cluster_id,omitempty"`
+	SSHAuthorizedKey       string                    `json:"ssh_authorized_key,omitempty"`
+	StaticNetworkConfig    []HostStaticNetworkConfig `json:"static_network_config,omitempty"`
+	AdditionalNTPSources   string                    `json:"additional_ntp_sources,omitempty"`
+	AdditionalTrustBundle  string                    `json:"additional_trust_bundle,omitempty"`
+	Proxy                  *Proxy                    `json:"proxy,omitempty"`
+	IgnitionConfigOverride string                    `json:"ignition_config_override,omitempty"`
+	ImageType              string                    `json:"image_type,omitempty"`
+	KernelArguments        []KernelArgument          `json:"kernel_arguments,omitempty"`
 }
 
 type InfraEnvUpdateParams struct {
-	Name                   *string   `json:"name,omitempty"`
-	PullSecret             *string   `json:"pull_secret,omitempty"`
-	SSHAuthorizedKey       *string   `json:"ssh_authorized_key,omitempty"`
-	StaticNetworkConfig    *string   `json:"static_network_config,omitempty"`
-	AdditionalNTPSources   *string   `json:"additional_ntp_sources,omitempty"`
-	AdditionalTrustBundle  *string   `json:"additional_trust_bundle,omitempty"`
-	Proxy                  *Proxy    `json:"proxy,omitempty"`
-	IgnitionConfigOverride *string   `json:"ignition_config_override,omitempty"`
-	ImageType              *string   `json:"image_type,omitempty"`
+	Name                   *string                    `json:"name,omitempty"`
+	PullSecret             *string                    `json:"pull_secret,omitempty"`
+	SSHAuthorizedKey       *string                    `json:"ssh_authorized_key,omitempty"`
+	StaticNetworkConfig    []HostStaticNetworkConfig  `json:"static_network_config,omitempty"`
+	AdditionalNTPSources   *string                    `json:"additional_ntp_sources,omitempty"`
+	AdditionalTrustBundle  *string                    `json:"additional_trust_bundle,omitempty"`
+	Proxy                  *Proxy                     `json:"proxy,omitempty"`
+	IgnitionConfigOverride *string                    `json:"ignition_config_override,omitempty"`
+	ImageType              *string                    `json:"image_type,omitempty"`
+	KernelArguments        []KernelArgument           `json:"kernel_arguments,omitempty"`
+}
+
+// HostStaticNetworkConfig represents static network configuration for a host
+type HostStaticNetworkConfig struct {
+	NetworkYAML     string                `json:"network_yaml"`
+	MACInterfaceMap []MACInterfaceMapEntry `json:"mac_interface_map,omitempty"`
+}
+
+// MACInterfaceMapEntry maps MAC addresses to logical interface names
+type MACInterfaceMapEntry struct {
+	MACAddress     string `json:"mac_address"`
+	LogicalNICName string `json:"logical_nic_name"`
+}
+
+// KernelArgument represents a kernel argument modification
+type KernelArgument struct {
+	Operation string `json:"operation"` // append, replace, delete
+	Value     string `json:"value"`
 }

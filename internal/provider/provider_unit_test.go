@@ -41,18 +41,18 @@ func TestOAIProvider_Schema(t *testing.T) {
 		t.Error("Schema missing 'endpoint' attribute")
 	}
 
-	if _, ok := attrs["token"]; !ok {
-		t.Error("Schema missing 'token' attribute")
+	if _, ok := attrs["offline_token"]; !ok {
+		t.Error("Schema missing 'offline_token' attribute")
 	}
 
 	if _, ok := attrs["timeout"]; !ok {
 		t.Error("Schema missing 'timeout' attribute")
 	}
 
-	// Check that token is marked as sensitive
-	tokenAttr := attrs["token"]
+	// Check that offline_token is marked as sensitive
+	tokenAttr := attrs["offline_token"]
 	if !tokenAttr.IsSensitive() {
-		t.Error("Token attribute should be marked as sensitive")
+		t.Error("offline_token attribute should be marked as sensitive")
 	}
 }
 
@@ -101,13 +101,13 @@ func TestOAIProvider_DataSources(t *testing.T) {
 	dataSources := p.DataSources(context.Background())
 
 	// Check that we have the expected number of data sources
-	expectedDataSources := 2 // OpenShiftVersionsDataSource and SupportedOperatorsDataSource
+	expectedDataSources := 4 // OpenShiftVersionsDataSource, SupportedOperatorsDataSource, OperatorBundlesDataSource, SupportLevelsDataSource
 	if len(dataSources) != expectedDataSources {
 		t.Errorf("Expected %d data sources, got %d", expectedDataSources, len(dataSources))
 	}
 
-	// Verify that both data sources are in the list
-	var foundVersions, foundOperators bool
+	// Verify that data sources are in the list
+	var foundVersions, foundOperators, foundBundles, foundLevels bool
 	for _, ds := range dataSources {
 		instance := ds()
 		switch instance.(type) {
@@ -115,6 +115,10 @@ func TestOAIProvider_DataSources(t *testing.T) {
 			foundVersions = true
 		case *SupportedOperatorsDataSource:
 			foundOperators = true
+		case *OperatorBundlesDataSource:
+			foundBundles = true
+		case *SupportLevelsDataSource:
+			foundLevels = true
 		}
 	}
 
@@ -124,6 +128,14 @@ func TestOAIProvider_DataSources(t *testing.T) {
 	
 	if !foundOperators {
 		t.Error("SupportedOperatorsDataSource not found in data sources list")
+	}
+	
+	if !foundBundles {
+		t.Error("OperatorBundlesDataSource not found in data sources list")
+	}
+	
+	if !foundLevels {
+		t.Error("SupportLevelsDataSource not found in data sources list")
 	}
 }
 

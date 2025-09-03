@@ -1,31 +1,83 @@
-*.dll
+# Binaries for programs and plugins
 *.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.a
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+*_coverage.out
+coverage.out
+coverage.html
+
+# Go workspace file
+go.work
+
+# IDE and editor files
 .DS_Store
-example.tf
+.idea/
+*.iml
+*.swp
+.*.swp
+*~
+.vscode/
+
+# Terraform files
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+.terraform.lock.hcl
 terraform.tfplan
-terraform.tfstate
+terraform.tfplan.*
+crash.log
+crash.*.log
+
+# Example and test files
+example.tf
+*.backup
+*.bak
+*.tmp
+
+# Build artifacts
 bin/
 dist/
-modules-dev/
 /pkg/
+modules-dev/
+
+# Terraform provider binaries
+terraform-provider-oai
+terraform-provider-oai_*
+
+# Log files
+*.log
+
+# Test scripts and output
+test_*.sh
+analyze_*.sh
+*.out
+
+# Documentation build artifacts
 website/.vagrant
 website/.bundle
 website/build
 website/node_modules
-.vagrant/
-*.backup
-./*.tfstate
-.terraform/
-*.log
-*.bak
-*~
-.*.swp
-.idea
-*.iml
-*.test
-*.iml
-
 website/vendor
+.vagrant/
+
+# Project-specific
+pdf/
+
+# Environment files
+.env
+.env.local
+.env.*.local
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
@@ -33,21 +85,3 @@ website/vendor
 
 # Keep windows files with windows line endings
 *.winfile eol=crlf
-
-pdf/
-
-*.out
-
-# Terraform provider binary
-terraform-provider-oai
-terraform-provider-oai_*
-
-# Go build artifacts
-*.so
-*.a
-*.dylib
-
-# Coverage reports
-*_coverage.out
-coverage.out
-coverage.html

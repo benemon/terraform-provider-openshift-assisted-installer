@@ -109,7 +109,7 @@ func TestOpenShiftVersionsDataSource_Read(t *testing.T) {
 			// Create client
 			client := client.NewClient(client.ClientConfig{
 				BaseURL: server.URL,
-				Token:   "test-token",
+				OfflineToken: "test-token",
 			})
 
 			// Create and configure data source directly

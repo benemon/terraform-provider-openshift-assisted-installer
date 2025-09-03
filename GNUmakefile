@@ -21,4 +21,14 @@ test:
 testacc:
 	TF_ACC=1 go test -v -cover -timeout 120m ./...
 
-.PHONY: fmt lint test testacc build install generate
+clean:
+	rm -f *.out
+	rm -f *.log
+	rm -f *.backup
+	rm -f *.tmp
+	rm -f terraform-provider-oai*
+	rm -f test_*.sh
+	rm -f analyze_*.sh
+	find . -name ".DS_Store" -delete
+
+.PHONY: fmt lint test testacc build install generate clean

@@ -96,7 +96,7 @@ func TestClusterResource_waitForClusterState(t *testing.T) {
 
 			client := client.NewClient(client.ClientConfig{
 				BaseURL: server.URL,
-				Token:   "test-token",
+				OfflineToken: "test-token",
 			})
 
 			resource := &ClusterResource{client: client}
@@ -223,7 +223,7 @@ func TestClusterResource_waitForInstallationReadyAndTrigger(t *testing.T) {
 
 			client := client.NewClient(client.ClientConfig{
 				BaseURL: server.URL,
-				Token:   "test-token",
+				OfflineToken: "test-token",
 			})
 
 			resource := &ClusterResource{client: client}

@@ -31,7 +31,7 @@ func TestClient_UpdateManifest(t *testing.T) {
 
 	client := NewClient(ClientConfig{
 		BaseURL: server.URL,
-		Token:   "test-token",
+		OfflineToken: "test-token",
 	})
 
 	params := models.UpdateManifestParams{
@@ -67,7 +67,7 @@ func TestClient_GetHost(t *testing.T) {
 
 	client := NewClient(ClientConfig{
 		BaseURL: server.URL,
-		Token:   "test-token",
+		OfflineToken: "test-token",
 	})
 
 	host, err := client.GetHost(context.Background(), "infra-env-id", "host-id")
@@ -101,7 +101,7 @@ func TestClient_UnbindHost(t *testing.T) {
 
 	client := NewClient(ClientConfig{
 		BaseURL: server.URL,
-		Token:   "test-token",
+		OfflineToken: "test-token",
 	})
 
 	err := client.UnbindHost(context.Background(), "infra-env-id", "host-id")
@@ -136,7 +136,7 @@ func TestClient_UpdateInfraEnv(t *testing.T) {
 
 	client := NewClient(ClientConfig{
 		BaseURL: server.URL,
-		Token:   "test-token",
+		OfflineToken: "test-token",
 	})
 
 	name := "updated-infra-env"
@@ -182,7 +182,7 @@ func TestClient_ListInfraEnvs(t *testing.T) {
 
 	client := NewClient(ClientConfig{
 		BaseURL: server.URL,
-		Token:   "test-token",
+		OfflineToken: "test-token",
 	})
 
 	infraEnvs, err := client.ListInfraEnvs(context.Background())

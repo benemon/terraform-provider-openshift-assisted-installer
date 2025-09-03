@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/benemon/terraform-provider-openshift-assisted-installer/internal/models"
@@ -17,19 +19,33 @@ import (
 const (
 	DefaultTimeout = 30 * time.Second
 	APIVersion     = "v2"
+	// Red Hat SSO endpoint for token refresh
+	TokenEndpoint = "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token"
+	ClientID      = "cloud-services"
 )
 
+// TokenResponse represents the OAuth2 token response
+type TokenResponse struct {
+	AccessToken  string `json:"access_token"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 type Client struct {
-	httpClient *http.Client
-	baseURL    string
-	token      string
+	httpClient   *http.Client
+	baseURL      string
+	offlineToken string
+	accessToken  string
+	tokenExpiry  time.Time
+	tokenMutex   sync.RWMutex
 }
 
 type ClientConfig struct {
-	BaseURL    string
-	Token      string
-	HTTPClient *http.Client
-	Timeout    time.Duration
+	BaseURL      string
+	OfflineToken string // Changed from Token to OfflineToken
+	HTTPClient   *http.Client
+	Timeout      time.Duration
 }
 
 func NewClient(config ClientConfig) *Client {
@@ -48,10 +64,76 @@ func NewClient(config ClientConfig) *Client {
 	}
 
 	return &Client{
-		httpClient: config.HTTPClient,
-		baseURL:    baseURL,
-		token:      config.Token,
+		httpClient:   config.HTTPClient,
+		baseURL:      baseURL,
+		offlineToken: config.OfflineToken,
 	}
+}
+
+// refreshAccessToken exchanges the offline token for a new access token
+func (c *Client) refreshAccessToken(ctx context.Context) error {
+	if c.offlineToken == "" {
+		return fmt.Errorf("no offline token provided")
+	}
+
+	data := url.Values{}
+	data.Set("grant_type", "refresh_token")
+	data.Set("client_id", ClientID)
+	data.Set("refresh_token", c.offlineToken)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, TokenEndpoint, strings.NewReader(data.Encode()))
+	if err != nil {
+		return fmt.Errorf("failed to create token refresh request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to refresh token: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("token refresh failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var tokenResp TokenResponse
+	if err := json.NewDecoder(resp.Body).Decode(&tokenResp); err != nil {
+		return fmt.Errorf("failed to decode token response: %w", err)
+	}
+
+	c.tokenMutex.Lock()
+	c.accessToken = tokenResp.AccessToken
+	// Set expiry with a 5-minute buffer to avoid edge cases
+	c.tokenExpiry = time.Now().Add(time.Duration(tokenResp.ExpiresIn)*time.Second - 5*time.Minute)
+	c.tokenMutex.Unlock()
+
+	return nil
+}
+
+// getAccessToken returns a valid access token, refreshing if necessary
+func (c *Client) getAccessToken(ctx context.Context) (string, error) {
+	c.tokenMutex.RLock()
+	if c.accessToken != "" && time.Now().Before(c.tokenExpiry) {
+		token := c.accessToken
+		c.tokenMutex.RUnlock()
+		return token, nil
+	}
+	c.tokenMutex.RUnlock()
+
+	// Token is expired or doesn't exist, refresh it
+	if err := c.refreshAccessToken(ctx); err != nil {
+		return "", err
+	}
+
+	c.tokenMutex.RLock()
+	token := c.accessToken
+	c.tokenMutex.RUnlock()
+
+	return token, nil
 }
 
 func (c *Client) buildURL(endpoint string) string {
@@ -76,8 +158,14 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body in
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	if c.token != "" {
-		req.Header.Set("Authorization", "Bearer "+c.token)
+	// Get access token (will refresh if needed)
+	accessToken, err := c.getAccessToken(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+	
+	if accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
 	
 	if body != nil {
@@ -262,8 +350,14 @@ func (c *Client) DeleteManifest(ctx context.Context, clusterID string, folder, f
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
-	if c.token != "" {
-		req.Header.Set("Authorization", "Bearer "+c.token)
+	// Get access token (will refresh if needed)
+	accessToken, err := c.getAccessToken(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get access token: %w", err)
+	}
+	
+	if accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
 	req.Header.Set("Accept", "application/json")
 
@@ -314,8 +408,14 @@ func (c *Client) GetOpenShiftVersions(ctx context.Context, version string, onlyL
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	if c.token != "" {
-		req.Header.Set("Authorization", "Bearer "+c.token)
+	// Get access token (will refresh if needed)
+	accessToken, err := c.getAccessToken(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+	
+	if accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
 	req.Header.Set("Accept", "application/json")
 
@@ -390,4 +490,211 @@ func (c *Client) BindHost(ctx context.Context, infraEnvID, hostID string, params
 func (c *Client) UnbindHost(ctx context.Context, infraEnvID, hostID string) error {
 	_, err := c.doRequest(ctx, "POST", fmt.Sprintf("infra-envs/%s/hosts/%s/actions/unbind", infraEnvID, hostID), nil)
 	return err
+}
+
+func (c *Client) UpdateHost(ctx context.Context, infraEnvID, hostID string, params models.HostUpdateParams) (*models.Host, error) {
+	resp, err := c.doRequest(ctx, "PATCH", fmt.Sprintf("infra-envs/%s/hosts/%s", infraEnvID, hostID), params)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var host models.Host
+	if err := json.NewDecoder(resp.Body).Decode(&host); err != nil {
+		return nil, fmt.Errorf("failed to decode host response: %w", err)
+	}
+	return &host, nil
+}
+
+// Operator bundles
+func (c *Client) GetOperatorBundles(ctx context.Context) (*models.Bundles, error) {
+	resp, err := c.doRequest(ctx, "GET", "operators/bundles", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var bundles models.Bundles
+	if err := json.NewDecoder(resp.Body).Decode(&bundles); err != nil {
+		return nil, fmt.Errorf("failed to decode bundles response: %w", err)
+	}
+
+	return &bundles, nil
+}
+
+func (c *Client) GetOperatorBundle(ctx context.Context, bundleID string) (*models.Bundle, error) {
+	endpoint := fmt.Sprintf("operators/bundles/%s", bundleID)
+	resp, err := c.doRequest(ctx, "GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var bundle models.Bundle
+	if err := json.NewDecoder(resp.Body).Decode(&bundle); err != nil {
+		return nil, fmt.Errorf("failed to decode bundle response: %w", err)
+	}
+
+	return &bundle, nil
+}
+
+// Support levels
+func (c *Client) GetSupportedFeatures(ctx context.Context, openshiftVersion, cpuArchitecture, platformType string) (*models.SupportedFeatures, error) {
+	u, _ := url.Parse(c.buildURL("support-levels/features"))
+	params := url.Values{}
+	params.Add("openshift_version", openshiftVersion)
+	if cpuArchitecture != "" {
+		params.Add("cpu_architecture", cpuArchitecture)
+	}
+	if platformType != "" {
+		params.Add("platform_type", platformType)
+	}
+	u.RawQuery = params.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Get access token (will refresh if needed)
+	accessToken, err := c.getAccessToken(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+	
+	if accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+	}
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	var response models.SupportedFeaturesResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, fmt.Errorf("failed to decode supported features response: %w", err)
+	}
+
+	return &response.Features, nil
+}
+
+func (c *Client) GetSupportedArchitectures(ctx context.Context, openshiftVersion string) (*models.SupportedArchitectures, error) {
+	u, _ := url.Parse(c.buildURL("support-levels/architectures"))
+	params := url.Values{}
+	params.Add("openshift_version", openshiftVersion)
+	u.RawQuery = params.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Get access token (will refresh if needed)
+	accessToken, err := c.getAccessToken(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+	
+	if accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+	}
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	var response models.SupportedArchitecturesResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, fmt.Errorf("failed to decode supported architectures response: %w", err)
+	}
+
+	return &response.Architectures, nil
+}
+
+// GetDetailedSupportedFeatures fetches detailed feature support information
+func (c *Client) GetDetailedSupportedFeatures(ctx context.Context, openshiftVersion, cpuArchitecture, platformType string) (*models.DetailedSupportedFeatures, error) {
+	u, _ := url.Parse(c.buildURL("support-levels/features/detailed"))
+	params := url.Values{}
+	params.Add("openshift_version", openshiftVersion)
+	if cpuArchitecture != "" {
+		params.Add("cpu_architecture", cpuArchitecture)
+	}
+	if platformType != "" {
+		params.Add("platform_type", platformType)
+	}
+	u.RawQuery = params.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Get access token (will refresh if needed)
+	accessToken, err := c.getAccessToken(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+	
+	if accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+	}
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	// The detailed endpoint returns a different structure based on swagger:
+	// { "features": [...], "operators": [...] }
+	// But we need to handle the "features" part as DetailedSupportedFeatures
+	type DetailedResponse struct {
+		Features []struct {
+			FeatureSupportLevelID string                 `json:"feature-support-level-id"`
+			SupportLevel         string                 `json:"support_level"`
+			Incompatibilities    []string               `json:"incompatibilities,omitempty"`
+			Dependencies         []string               `json:"dependencies,omitempty"`
+			Properties           map[string]interface{} `json:"properties,omitempty"`
+		} `json:"features"`
+	}
+
+	var detailedResp DetailedResponse
+	if err := json.NewDecoder(resp.Body).Decode(&detailedResp); err != nil {
+		return nil, fmt.Errorf("failed to decode detailed supported features response: %w", err)
+	}
+
+	// Convert to our model format
+	features := make(models.DetailedSupportedFeatures)
+	for _, feature := range detailedResp.Features {
+		features[feature.FeatureSupportLevelID] = models.DetailedFeature{
+			SupportLevel:     feature.SupportLevel,
+			Incompatibilities: feature.Incompatibilities,
+			Dependencies:     feature.Dependencies,
+			Properties:       feature.Properties,
+		}
+	}
+
+	return &features, nil
 }

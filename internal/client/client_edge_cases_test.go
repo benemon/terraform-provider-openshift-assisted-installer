@@ -41,7 +41,7 @@ func TestClient_UpdateCluster(t *testing.T) {
 
 	client := NewClient(ClientConfig{
 		BaseURL: server.URL,
-		Token:   "test-token",
+		OfflineToken: "test-token",
 	})
 
 	name := "updated-cluster"
@@ -75,7 +75,7 @@ func TestClient_InstallCluster(t *testing.T) {
 
 	client := NewClient(ClientConfig{
 		BaseURL: server.URL,
-		Token:   "test-token",
+		OfflineToken: "test-token",
 	})
 
 	err := client.InstallCluster(context.Background(), "test-cluster-id")
@@ -107,7 +107,7 @@ func TestClient_InfraEnvOperations(t *testing.T) {
 
 		client := NewClient(ClientConfig{
 			BaseURL: server.URL,
-			Token:   "test-token",
+			OfflineToken: "test-token",
 		})
 
 		params := models.InfraEnvCreateParams{
@@ -143,7 +143,7 @@ func TestClient_InfraEnvOperations(t *testing.T) {
 
 		client := NewClient(ClientConfig{
 			BaseURL: server.URL,
-			Token:   "test-token",
+			OfflineToken: "test-token",
 		})
 
 		infraEnv, err := client.GetInfraEnv(context.Background(), "infra-env-id")
@@ -167,7 +167,7 @@ func TestClient_InfraEnvOperations(t *testing.T) {
 
 		client := NewClient(ClientConfig{
 			BaseURL: server.URL,
-			Token:   "test-token",
+			OfflineToken: "test-token",
 		})
 
 		err := client.DeleteInfraEnv(context.Background(), "infra-env-id")
@@ -199,7 +199,7 @@ func TestClient_ManifestOperations(t *testing.T) {
 
 		client := NewClient(ClientConfig{
 			BaseURL: server.URL,
-			Token:   "test-token",
+			OfflineToken: "test-token",
 		})
 
 		params := models.CreateManifestParams{
@@ -238,7 +238,7 @@ func TestClient_ManifestOperations(t *testing.T) {
 
 		client := NewClient(ClientConfig{
 			BaseURL: server.URL,
-			Token:   "test-token",
+			OfflineToken: "test-token",
 		})
 
 		manifests, err := client.ListManifests(context.Background(), "cluster-id")
@@ -274,7 +274,7 @@ func TestClient_ManifestOperations(t *testing.T) {
 
 		client := NewClient(ClientConfig{
 			BaseURL: server.URL,
-			Token:   "test-token",
+			OfflineToken: "test-token",
 		})
 
 		err := client.DeleteManifest(context.Background(), "cluster-id", "manifests", "test.yaml")
@@ -317,7 +317,7 @@ func TestClient_VersionsAndOperators(t *testing.T) {
 
 		client := NewClient(ClientConfig{
 			BaseURL: server.URL,
-			Token:   "test-token",
+			OfflineToken: "test-token",
 		})
 
 		versions, err := client.GetOpenShiftVersions(context.Background(), "4.15", true)
@@ -345,7 +345,7 @@ func TestClient_VersionsAndOperators(t *testing.T) {
 
 		client := NewClient(ClientConfig{
 			BaseURL: server.URL,
-			Token:   "test-token",
+			OfflineToken: "test-token",
 		})
 
 		operators, err := client.GetSupportedOperators(context.Background())
@@ -386,7 +386,7 @@ func TestClient_HostOperations(t *testing.T) {
 
 		client := NewClient(ClientConfig{
 			BaseURL: server.URL,
-			Token:   "test-token",
+			OfflineToken: "test-token",
 		})
 
 		hosts, err := client.ListHosts(context.Background(), "infra-env-id")
@@ -420,7 +420,7 @@ func TestClient_HostOperations(t *testing.T) {
 
 		client := NewClient(ClientConfig{
 			BaseURL: server.URL,
-			Token:   "test-token",
+			OfflineToken: "test-token",
 		})
 
 		params := models.BindHostParams{
@@ -444,7 +444,7 @@ func TestClient_ContextCancellation(t *testing.T) {
 
 	client := NewClient(ClientConfig{
 		BaseURL: server.URL,
-		Token:   "test-token",
+		OfflineToken: "test-token",
 	})
 
 	// Create a context that will be cancelled immediately
@@ -467,7 +467,7 @@ func TestClient_Timeout(t *testing.T) {
 
 	client := NewClient(ClientConfig{
 		BaseURL: server.URL,
-		Token:   "test-token",
+		OfflineToken: "test-token",
 		Timeout: 50 * time.Millisecond,
 	})
 

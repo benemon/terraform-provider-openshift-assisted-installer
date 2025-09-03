@@ -21,7 +21,7 @@ func TestNewClient(t *testing.T) {
 		{
 			name: "default configuration",
 			config: ClientConfig{
-				Token: "test-token",
+				OfflineToken: "test-token",
 			},
 			wantURL:  "https://api.openshift.com/api/assisted-install",
 			wantToken: "test-token",
@@ -30,7 +30,7 @@ func TestNewClient(t *testing.T) {
 			name: "custom endpoint",
 			config: ClientConfig{
 				BaseURL: "https://custom.api.example.com",
-				Token:   "custom-token",
+				OfflineToken:   "custom-token",
 			},
 			wantURL:  "https://custom.api.example.com",
 			wantToken: "custom-token",
@@ -38,7 +38,7 @@ func TestNewClient(t *testing.T) {
 		{
 			name: "custom timeout",
 			config: ClientConfig{
-				Token:   "test-token",
+				OfflineToken: "test-token",
 				Timeout: 60 * time.Second,
 			},
 			wantURL:  "https://api.openshift.com/api/assisted-install",
@@ -54,8 +54,8 @@ func TestNewClient(t *testing.T) {
 				t.Errorf("NewClient() baseURL = %v, want %v", client.baseURL, tt.wantURL)
 			}
 			
-			if client.token != tt.wantToken {
-				t.Errorf("NewClient() token = %v, want %v", client.token, tt.wantToken)
+			if client.offlineToken != tt.wantToken {
+				t.Errorf("NewClient() token = %v, want %v", client.offlineToken, tt.wantToken)
 			}
 			
 			if client.httpClient == nil {
@@ -114,7 +114,7 @@ func TestClient_CreateCluster(t *testing.T) {
 
 	client := NewClient(ClientConfig{
 		BaseURL: server.URL,
-		Token:   "test-token",
+		OfflineToken: "test-token",
 	})
 
 	params := models.ClusterCreateParams{
@@ -166,7 +166,7 @@ func TestClient_GetCluster(t *testing.T) {
 
 	client := NewClient(ClientConfig{
 		BaseURL: server.URL,
-		Token:   "test-token",
+		OfflineToken: "test-token",
 	})
 
 	cluster, err := client.GetCluster(context.Background(), "test-cluster-id")
@@ -201,7 +201,7 @@ func TestClient_DeleteCluster(t *testing.T) {
 
 	client := NewClient(ClientConfig{
 		BaseURL: server.URL,
-		Token:   "test-token",
+		OfflineToken: "test-token",
 	})
 
 	err := client.DeleteCluster(context.Background(), "test-cluster-id")
@@ -254,7 +254,7 @@ func TestClient_ErrorHandling(t *testing.T) {
 
 			client := NewClient(ClientConfig{
 				BaseURL: server.URL,
-				Token:   "test-token",
+				OfflineToken: "test-token",
 			})
 
 			_, err := client.GetCluster(context.Background(), "test-cluster-id")
@@ -298,7 +298,7 @@ func TestClient_ListClusters(t *testing.T) {
 
 	client := NewClient(ClientConfig{
 		BaseURL: server.URL,
-		Token:   "test-token",
+		OfflineToken: "test-token",
 	})
 
 	clusters, err := client.ListClusters(context.Background())

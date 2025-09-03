@@ -5,6 +5,7 @@ package provider
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -31,9 +32,9 @@ type OAIProvider struct {
 
 // OAIProviderModel describes the provider data model.
 type OAIProviderModel struct {
-	Endpoint types.String `tfsdk:"endpoint"`
-	Token    types.String `tfsdk:"token"`
-	Timeout  types.String `tfsdk:"timeout"`
+	Endpoint     types.String `tfsdk:"endpoint"`
+	OfflineToken types.String `tfsdk:"offline_token"`
+	Timeout      types.String `tfsdk:"timeout"`
 }
 
 func (p *OAIProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -48,8 +49,8 @@ func (p *OAIProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 				MarkdownDescription: "OpenShift Assisted Service API endpoint",
 				Optional:            true,
 			},
-			"token": schema.StringAttribute{
-				MarkdownDescription: "Authentication token for the Assisted Service API",
+			"offline_token": schema.StringAttribute{
+				MarkdownDescription: "Offline token for the Assisted Service API (from console.redhat.com). Will be exchanged for access tokens automatically.",
 				Optional:            true,
 				Sensitive:           true,
 			},
@@ -76,10 +77,13 @@ func (p *OAIProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		endpoint = data.Endpoint.ValueString()
 	}
 
-	// Get token from configuration
-	token := ""
-	if !data.Token.IsNull() {
-		token = data.Token.ValueString()
+	// Get offline token from configuration or environment variable
+	offlineToken := ""
+	if !data.OfflineToken.IsNull() {
+		offlineToken = data.OfflineToken.ValueString()
+	} else {
+		// Fall back to OFFLINE_TOKEN environment variable
+		offlineToken = os.Getenv("OFFLINE_TOKEN")
 	}
 
 	// Parse timeout
@@ -90,11 +94,11 @@ func (p *OAIProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		}
 	}
 
-	// Create OAI API client
+	// Create OAI API client with OAuth2 support
 	oaiClient := client.NewClient(client.ClientConfig{
-		BaseURL: endpoint,
-		Token:   token,
-		Timeout: timeout,
+		BaseURL:      endpoint,
+		OfflineToken: offlineToken,
+		Timeout:      timeout,
 	})
 
 	resp.DataSourceData = oaiClient
@@ -104,9 +108,9 @@ func (p *OAIProvider) Configure(ctx context.Context, req provider.ConfigureReque
 func (p *OAIProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewClusterResource,
-		// TODO: Add remaining OAI resources
-		// NewInfraEnvResource,
-		// NewManifestResource,
+		NewInfraEnvResource,
+		NewHostResource,
+		NewManifestResource,
 	}
 }
 
@@ -115,6 +119,8 @@ func (p *OAIProvider) DataSources(ctx context.Context) []func() datasource.DataS
 	return []func() datasource.DataSource{
 		NewOpenShiftVersionsDataSource,
 		NewSupportedOperatorsDataSource,
+		NewOperatorBundlesDataSource,
+		NewSupportLevelsDataSource,
 	}
 }
 
