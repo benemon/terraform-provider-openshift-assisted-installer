@@ -88,6 +88,173 @@ locals {
 **Attributes:**
 - `features` - Map of feature names to support levels
 
+## Validation Data Sources
+
+### `oai_cluster_validations`
+
+**Purpose:** Retrieve cluster-level validation information for pre-installation checks and troubleshooting.
+
+```hcl
+# Check all cluster validations
+data "oai_cluster_validations" "all" {
+  cluster_id = oai_cluster.example.id
+}
+
+# Check only blocking validations that prevent installation
+data "oai_cluster_validations" "blocking_issues" {
+  cluster_id       = oai_cluster.example.id
+  validation_types = ["blocking"]
+  status_filter    = ["failure", "pending"]
+}
+
+# Check specific network validations
+data "oai_cluster_validations" "network_check" {
+  cluster_id = oai_cluster.example.id
+  categories = ["network"]
+}
+
+# Check specific validation requirements
+data "oai_cluster_validations" "api_vips" {
+  cluster_id = oai_cluster.example.id
+  validation_names = [
+    "api-vips-defined",
+    "api-vips-valid",
+    "ingress-vips-defined",
+    "ingress-vips-valid"
+  ]
+}
+
+# Use validation results for conditional logic
+locals {
+  cluster_ready = length([
+    for v in data.oai_cluster_validations.blocking_issues.validations :
+    v if v.status == "failure"
+  ]) == 0
+}
+
+resource "oai_cluster_installation" "conditional" {
+  count      = local.cluster_ready ? 1 : 0
+  cluster_id = oai_cluster.example.id
+}
+```
+
+**Arguments:**
+- `cluster_id` (Required) - ID of the cluster to check validations for
+- `validation_types` (Optional) - Filter by validation type: ["blocking", "non-blocking"]
+- `status_filter` (Optional) - Filter by status: ["success", "failure", "pending", "disabled"]
+- `validation_names` (Optional) - Filter by specific validation IDs
+- `categories` (Optional) - Filter by category: ["network", "hardware", "operators", "cluster", "platform", "storage"]
+
+**Attributes:**
+- `validations` - List of validation results with the following structure:
+  - `id` - Validation identifier
+  - `status` - Validation status (success, failure, pending, disabled)
+  - `message` - Human-readable validation message
+  - `validation_id` - Specific validation identifier
+  - `validation_name` - Human-readable validation name
+  - `validation_group` - Validation group name
+  - `validation_type` - Whether validation is "blocking" or "non-blocking"
+  - `category` - Validation category (network, hardware, operators, etc.)
+
+**Common Use Cases:**
+- Pre-installation readiness checks
+- Troubleshooting cluster configuration issues
+- Conditional resource creation based on validation status
+- Network and operator requirement verification
+
+### `oai_host_validations`
+
+**Purpose:** Retrieve host-level validation information for individual hosts or all hosts in a cluster.
+
+```hcl
+# Check validations for all hosts in a cluster
+data "oai_host_validations" "cluster_hosts" {
+  cluster_id = oai_cluster.example.id
+}
+
+# Check only blocking host validation failures
+data "oai_host_validations" "host_blocking_issues" {
+  cluster_id       = oai_cluster.example.id
+  validation_types = ["blocking"]
+  status_filter    = ["failure", "pending"]
+}
+
+# Check validations for a specific host
+data "oai_host_validations" "specific_host" {
+  infra_env_id = oai_infra_env.example.id
+  host_id      = "specific-host-uuid"
+  categories   = ["hardware", "network"]
+}
+
+# Check storage operator requirements across all hosts
+data "oai_host_validations" "storage_requirements" {
+  cluster_id = oai_cluster.example.id
+  validation_names = [
+    "lso-requirements-satisfied",
+    "odf-requirements-satisfied",
+    "has-min-valid-disks"
+  ]
+}
+
+# Check hardware readiness
+data "oai_host_validations" "hardware_check" {
+  cluster_id = oai_cluster.example.id
+  categories = ["hardware"]
+  validation_names = [
+    "has-min-cpu-cores",
+    "has-min-memory",
+    "has-cpu-cores-for-role",
+    "has-memory-for-role"
+  ]
+}
+
+# Use host validation results
+locals {
+  hosts_ready = length([
+    for v in data.oai_host_validations.host_blocking_issues.validations :
+    v if v.status == "failure"
+  ]) == 0
+  
+  # Group validation failures by host
+  host_failures = {
+    for v in data.oai_host_validations.host_blocking_issues.validations :
+    v.host_id => v...
+  }
+}
+```
+
+**Arguments:**
+- `cluster_id` (Optional) - ID of cluster to check all hosts (mutually exclusive with host_id/infra_env_id)
+- `host_id` (Optional) - ID of specific host to check (requires infra_env_id)
+- `infra_env_id` (Optional) - ID of infrastructure environment (required with host_id)
+- `validation_types` (Optional) - Filter by validation type: ["blocking", "non-blocking"]
+- `status_filter` (Optional) - Filter by status: ["success", "failure", "pending", "disabled"]  
+- `validation_names` (Optional) - Filter by specific validation IDs
+- `categories` (Optional) - Filter by category: ["network", "hardware", "operators", "cluster", "platform", "storage"]
+
+**Attributes:**
+- `validations` - List of host validation results with the following structure:
+  - `id` - Validation identifier
+  - `host_id` - ID of the host this validation applies to
+  - `status` - Validation status (success, failure, pending, disabled)
+  - `message` - Human-readable validation message
+  - `validation_id` - Specific validation identifier
+  - `validation_name` - Human-readable validation name
+  - `validation_group` - Validation group name
+  - `validation_type` - Whether validation is "blocking" or "non-blocking"
+  - `category` - Validation category (network, hardware, operators, etc.)
+
+**Configuration Requirements:**
+- Must specify either `cluster_id` OR both `infra_env_id` and `host_id`
+- Cannot mix cluster-wide and single-host parameters
+
+**Common Use Cases:**
+- Host hardware requirement verification
+- Network connectivity troubleshooting
+- Operator prerequisite checking
+- Role assignment validation
+- Disk and storage requirement verification
+
 ## Post-Installation Data Sources
 
 ### `oai_cluster_credentials`

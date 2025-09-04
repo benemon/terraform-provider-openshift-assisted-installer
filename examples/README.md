@@ -80,6 +80,27 @@ terraform apply data.plan
 - 3 control nodes: 4+ vCPUs, 16+ GB RAM, 120+ GB storage each
 - 2+ worker nodes: 8+ vCPUs, 32+ GB RAM, 200+ GB storage each
 
+### ✅ Validation & Troubleshooting (`validation-workflow/`, `validation-check/`, `validation-troubleshooting/`)
+**Purpose:** Pre-installation validation, conditional deployments, and comprehensive troubleshooting
+
+**Key Features:**
+- **Pre-flight checks** before cluster installation
+- **Conditional resource creation** based on validation status  
+- **Detailed troubleshooting** with categorized failure analysis
+- **Operator requirements** validation (LSO, ODF, CNV, LVM)
+- **Network, hardware, and platform** validation analysis
+
+**Three validation examples:**
+1. **`validation-workflow/`** - Complete validation-driven cluster deployment
+2. **`validation-check/`** - Simple validation checking patterns
+3. **`validation-troubleshooting/`** - Comprehensive validation analysis and troubleshooting
+
+**Use cases:**
+- Verify cluster readiness before installation
+- Troubleshoot configuration and hardware issues
+- Implement validation-based conditional deployments
+- Monitor validation status during cluster preparation
+
 ## Common Usage Pattern
 
 1. **Initialize Terraform:**
@@ -156,6 +177,28 @@ api.cluster-name.example.com        → 192.168.1.100
 - Verify VIP addresses are available and not in use
 - Ensure DNS configuration for multi-node clusters
 - Monitor installation logs
+
+### Validation Troubleshooting
+Use the validation examples to diagnose issues:
+
+```bash
+# Basic validation check
+cd validation-check/
+terraform apply -var="cluster_id=your-cluster-uuid"
+terraform output validation_summary
+
+# Comprehensive troubleshooting
+cd validation-troubleshooting/
+terraform apply -var="cluster_id=your-cluster-uuid"
+terraform output network_troubleshooting
+terraform output hardware_troubleshooting
+```
+
+**Common validation failures:**
+- **Network issues:** VIP conflicts, DNS resolution, machine CIDR problems
+- **Hardware problems:** Insufficient CPU/memory, missing inventory, slow disks
+- **Operator requirements:** Storage devices, CPU features, platform compatibility
+- **Platform issues:** VMware settings, BIOS configuration, boot order
 
 ## Getting Help
 

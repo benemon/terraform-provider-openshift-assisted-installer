@@ -840,6 +840,150 @@ func (c *Client) DownloadClusterCredentialFile(ctx context.Context, clusterID, f
 	return content, nil
 }
 
+// GetClusterValidations retrieves validation information for a cluster
+func (c *Client) GetClusterValidations(ctx context.Context, clusterID string) (*models.ClusterValidationResponse, error) {
+	url := fmt.Sprintf("%s/%s/clusters/%s", c.baseURL, APIVersion, clusterID)
+	
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Get access token (will refresh if needed)
+	accessToken, err := c.getAccessToken(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+	
+	if accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+	}
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	// Parse the cluster response to extract validations_info
+	var clusterResp struct {
+		ValidationsInfo map[string][]models.ValidationInfo `json:"validations_info"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&clusterResp); err != nil {
+		return nil, fmt.Errorf("failed to decode cluster validation response: %w", err)
+	}
+
+	return &models.ClusterValidationResponse{
+		ValidationsInfo: clusterResp.ValidationsInfo,
+	}, nil
+}
+
+// GetHostValidations retrieves validation information for all hosts in a cluster
+func (c *Client) GetHostValidations(ctx context.Context, clusterID string) (*models.HostsValidationResponse, error) {
+	url := fmt.Sprintf("%s/%s/clusters/%s/hosts", c.baseURL, APIVersion, clusterID)
+	
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Get access token (will refresh if needed)
+	accessToken, err := c.getAccessToken(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+	
+	if accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+	}
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	// Parse the hosts response to extract validations_info from each host
+	var hostsResp []struct {
+		ID              string                              `json:"id"`
+		ValidationsInfo map[string][]models.ValidationInfo `json:"validations_info"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&hostsResp); err != nil {
+		return nil, fmt.Errorf("failed to decode host validations response: %w", err)
+	}
+
+	// Convert to our response format
+	hosts := make([]models.HostValidationResponse, len(hostsResp))
+	for i, host := range hostsResp {
+		hosts[i] = models.HostValidationResponse{
+			ID:              host.ID,
+			ValidationsInfo: host.ValidationsInfo,
+		}
+	}
+
+	return &models.HostsValidationResponse{
+		Hosts: hosts,
+	}, nil
+}
+
+// GetSingleHostValidations retrieves validation information for a specific host
+func (c *Client) GetSingleHostValidations(ctx context.Context, infraEnvID, hostID string) (*models.HostValidationResponse, error) {
+	url := fmt.Sprintf("%s/%s/infra-envs/%s/hosts/%s", c.baseURL, APIVersion, infraEnvID, hostID)
+	
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Get access token (will refresh if needed)
+	accessToken, err := c.getAccessToken(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+	
+	if accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+	}
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	// Parse the host response to extract validations_info
+	var hostResp struct {
+		ID              string                              `json:"id"`
+		ValidationsInfo map[string][]models.ValidationInfo `json:"validations_info"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&hostResp); err != nil {
+		return nil, fmt.Errorf("failed to decode host validation response: %w", err)
+	}
+
+	return &models.HostValidationResponse{
+		ID:              hostResp.ID,
+		ValidationsInfo: hostResp.ValidationsInfo,
+	}, nil
+}
+
 // DownloadClusterLogs downloads cluster logs with optional filtering
 func (c *Client) DownloadClusterLogs(ctx context.Context, clusterID string, params map[string]string) ([]byte, error) {
 	baseURL := fmt.Sprintf("%s/%s/clusters/%s/logs", c.baseURL, APIVersion, clusterID)
@@ -892,7 +1036,7 @@ func (c *Client) DownloadClusterLogs(ctx context.Context, clusterID string, para
 	return content, nil
 }
 
-// DownloadClusterFiles downloads specific cluster files (manifests, ignition configs, etc.)
+// DownloadClusterFiles downloads various cluster files (ignition configs, manifests, logs, etc.)
 func (c *Client) DownloadClusterFiles(ctx context.Context, clusterID, fileName string, params map[string]string) ([]byte, error) {
 	baseURL := fmt.Sprintf("%s/%s/clusters/%s/downloads/files", c.baseURL, APIVersion, clusterID)
 	u, err := url.Parse(baseURL)
@@ -900,7 +1044,7 @@ func (c *Client) DownloadClusterFiles(ctx context.Context, clusterID, fileName s
 		return nil, fmt.Errorf("failed to parse URL: %w", err)
 	}
 
-	// Add file_name and other parameters
+	// Add file_name and optional parameters
 	query := u.Query()
 	query.Set("file_name", fileName)
 	for key, value := range params {

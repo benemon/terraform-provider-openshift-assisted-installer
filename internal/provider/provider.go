@@ -126,6 +126,8 @@ func (p *OAIProvider) DataSources(ctx context.Context) []func() datasource.DataS
 		NewClusterEventsDataSource,
 		NewClusterLogsDataSource,
 		NewClusterFilesDataSource,
+		NewClusterValidationsDataSource,
+		NewHostValidationsDataSource,
 	}
 }
 
