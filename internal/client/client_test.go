@@ -316,3 +316,40 @@ func TestClient_ListClusters(t *testing.T) {
 		}
 	}
 }
+
+func TestClient_DownloadManifestContent(t *testing.T) {
+	expectedContent := "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: test-manifest"
+	
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v2/clusters/cluster-123/manifests/files" {
+			// Verify query parameters
+			if r.URL.Query().Get("file_name") != "test.yaml" {
+				t.Errorf("Expected file_name=test.yaml, got %s", r.URL.Query().Get("file_name"))
+			}
+			if r.URL.Query().Get("folder") != "manifests" {
+				t.Errorf("Expected folder=manifests, got %s", r.URL.Query().Get("folder"))
+			}
+			
+			w.Header().Set("Content-Type", "application/octet-stream")
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(expectedContent))
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer server.Close()
+
+	client := NewClient(ClientConfig{
+		BaseURL: server.URL,
+		OfflineToken: "test-token",
+	})
+
+	content, err := client.DownloadManifestContent(context.Background(), "cluster-123", "test.yaml", "manifests")
+	if err != nil {
+		t.Fatalf("DownloadManifestContent() error = %v", err)
+	}
+
+	if content != expectedContent {
+		t.Errorf("DownloadManifestContent() = %v, want %v", content, expectedContent)
+	}
+}

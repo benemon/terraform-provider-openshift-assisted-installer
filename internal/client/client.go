@@ -394,6 +394,52 @@ func (c *Client) ListManifests(ctx context.Context, clusterID string) ([]models.
 	return manifests, nil
 }
 
+// DownloadManifestContent downloads the content of a specific manifest file
+func (c *Client) DownloadManifestContent(ctx context.Context, clusterID, fileName, folder string) (string, error) {
+	if folder == "" {
+		folder = "manifests"
+	}
+	
+	u, _ := url.Parse(c.buildURL(fmt.Sprintf("clusters/%s/manifests/files", clusterID)))
+	params := url.Values{}
+	params.Add("file_name", fileName)
+	params.Add("folder", folder)
+	u.RawQuery = params.Encode()
+	
+	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
+	if err != nil {
+		return "", fmt.Errorf("error creating request: %w", err)
+	}
+	
+	// Add authentication header
+	accessToken, err := c.getAccessToken(ctx)
+	if err != nil {
+		return "", fmt.Errorf("error getting access token: %w", err)
+	}
+	if accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+	}
+	req.Header.Set("Accept", "application/octet-stream")
+	
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("error making request: %w", err)
+	}
+	defer resp.Body.Close()
+	
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("error response %d: %s", resp.StatusCode, string(body))
+	}
+	
+	content, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("error reading response body: %w", err)
+	}
+	
+	return string(content), nil
+}
+
 // OpenShift versions
 func (c *Client) GetOpenShiftVersions(ctx context.Context, version string, onlyLatest bool) (*models.OpenshiftVersions, error) {
 	u, _ := url.Parse(c.buildURL("openshift-versions"))

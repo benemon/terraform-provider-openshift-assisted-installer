@@ -74,7 +74,7 @@ resource "oai_cluster" "compact_cluster" {
   ]
   
   # Pull secret (required)
-  pull_secret = var.pull_secret
+  pull_secret = file("/Users/bholmes/Downloads/pull-secret-test.txt")
   
   # SSH access key
   ssh_public_key = var.ssh_public_key
@@ -206,48 +206,48 @@ output "operators_installed" {
   value = [for op in oai_cluster.compact_cluster.olm_operators : op.name]
 }
 
-output "installation_status" {
-  description = "Cluster installation status and timing"
-  value = {
-    status               = oai_cluster_installation.compact.status
-    status_info          = oai_cluster_installation.compact.status_info
-    install_started_at   = oai_cluster_installation.compact.install_started_at
-    install_completed_at = oai_cluster_installation.compact.install_completed_at
-  }
-}
+# output "installation_status" {
+#   description = "Cluster installation status and timing"
+#   value = {
+#     status               = oai_cluster_installation.compact.status
+#     status_info          = oai_cluster_installation.compact.status_info
+#     install_started_at   = oai_cluster_installation.compact.install_started_at
+#     install_completed_at = oai_cluster_installation.compact.install_completed_at
+#   }
+# }
 
-output "cluster_credentials" {
-  description = "Cluster admin access credentials"
-  value = {
-    username    = data.oai_cluster_credentials.admin.username
-    password    = data.oai_cluster_credentials.admin.password
-    console_url = data.oai_cluster_credentials.admin.console_url
-  }
-  sensitive = true
-}
+# output "cluster_credentials" {
+#   description = "Cluster admin access credentials"
+#   value = {
+#     username    = data.oai_cluster_credentials.admin.username
+#     password    = data.oai_cluster_credentials.admin.password
+#     console_url = data.oai_cluster_credentials.admin.console_url
+#   }
+#   sensitive = true
+# }
 
-output "cluster_files" {
-  description = "Local paths to downloaded cluster files"
-  value = {
-    kubeconfig_path     = local_file.kubeconfig.filename
-    install_config_path = local_file.install_config.filename
-  }
-}
+# output "cluster_files" {
+#   description = "Local paths to downloaded cluster files"
+#   value = {
+#     kubeconfig_path     = local_file.kubeconfig.filename
+#     install_config_path = local_file.install_config.filename
+#   }
+# }
 
-output "installation_health" {
-  description = "Installation health summary from events"
-  value = {
-    total_events   = length(data.oai_cluster_events.installation.events)
-    critical_count = length([for event in data.oai_cluster_events.installation.events : event if event.severity == "critical"])
-    error_count    = length([for event in data.oai_cluster_events.installation.events : event if event.severity == "error"])
-    warning_count  = length([for event in data.oai_cluster_events.installation.events : event if event.severity == "warning"])
+# output "installation_health" {
+#   description = "Installation health summary from events"
+#   value = {
+#     total_events   = length(data.oai_cluster_events.installation.events)
+#     critical_count = length([for event in data.oai_cluster_events.installation.events : event if event.severity == "critical"])
+#     error_count    = length([for event in data.oai_cluster_events.installation.events : event if event.severity == "error"])
+#     warning_count  = length([for event in data.oai_cluster_events.installation.events : event if event.severity == "warning"])
     
-    recent_errors = [for event in data.oai_cluster_events.installation.events : {
-      time    = event.event_time
-      message = event.message
-    } if contains(["error", "critical"], event.severity)]
-  }
-}
+#     recent_errors = [for event in data.oai_cluster_events.installation.events : {
+#       time    = event.event_time
+#       message = event.message
+#     } if contains(["error", "critical"], event.severity)]
+#   }
+# }
 
 # ==============================================================================
 # Usage Notes
@@ -282,61 +282,61 @@ output "installation_health" {
 # Cluster Installation (Automatic after hosts are discovered)
 # ==============================================================================
 
-resource "oai_cluster_installation" "compact" {
-  cluster_id = oai_cluster.compact_cluster.id
+# resource "oai_cluster_installation" "compact" {
+#   cluster_id = oai_cluster.compact_cluster.id
   
-  # Wait for all 3 hosts to be discovered
-  wait_for_hosts      = true
-  expected_host_count = 3
+#   # Wait for all 3 hosts to be discovered
+#   wait_for_hosts      = true
+#   expected_host_count = 3
   
-  timeouts {
-    create = "120m"  # Allow up to 2 hours for 3-node installation
-  }
-}
+#   timeouts {
+#     create = "120m"  # Allow up to 2 hours for 3-node installation
+#   }
+# }
 
-# ==============================================================================
-# Post-Installation Access and Monitoring
-# ==============================================================================
+# # ==============================================================================
+# # Post-Installation Access and Monitoring
+# # ==============================================================================
 
-# Get cluster credentials after installation
-data "oai_cluster_credentials" "admin" {
-  cluster_id = oai_cluster.compact_cluster.id
-  depends_on = [oai_cluster_installation.compact]
-}
+# # Get cluster credentials after installation
+# data "oai_cluster_credentials" "admin" {
+#   cluster_id = oai_cluster.compact_cluster.id
+#   depends_on = [oai_cluster_installation.compact]
+# }
 
-# Download essential cluster files
-data "oai_cluster_files" "kubeconfig" {
-  cluster_id = oai_cluster.compact_cluster.id
-  file_name  = "kubeconfig"
-  depends_on = [oai_cluster_installation.compact]
-}
+# # Download essential cluster files
+# data "oai_cluster_files" "kubeconfig" {
+#   cluster_id = oai_cluster.compact_cluster.id
+#   file_name  = "kubeconfig"
+#   depends_on = [oai_cluster_installation.compact]
+# }
 
-data "oai_cluster_files" "install_config" {
-  cluster_id = oai_cluster.compact_cluster.id
-  file_name  = "install-config.yaml"
-  depends_on = [oai_cluster_installation.compact]
-}
+# data "oai_cluster_files" "install_config" {
+#   cluster_id = oai_cluster.compact_cluster.id
+#   file_name  = "install-config.yaml"
+#   depends_on = [oai_cluster_installation.compact]
+# }
 
-# Monitor installation events for troubleshooting
-data "oai_cluster_events" "installation" {
-  cluster_id = oai_cluster.compact_cluster.id
-  severities = ["info", "warning", "error", "critical"]
-  limit      = 200
-  order      = "desc"
-}
+# # Monitor installation events for troubleshooting
+# data "oai_cluster_events" "installation" {
+#   cluster_id = oai_cluster.compact_cluster.id
+#   severities = ["info", "warning", "error", "critical"]
+#   limit      = 200
+#   order      = "desc"
+# }
 
-# Save kubeconfig locally
-resource "local_file" "kubeconfig" {
-  content  = data.oai_cluster_files.kubeconfig.content
-  filename = "${path.module}/kubeconfig-${local.cluster_name}"
+# # Save kubeconfig locally
+# resource "local_file" "kubeconfig" {
+#   content  = data.oai_cluster_files.kubeconfig.content
+#   filename = "${path.module}/kubeconfig-${local.cluster_name}"
   
-  depends_on = [oai_cluster_installation.compact]
-}
+#   depends_on = [oai_cluster_installation.compact]
+# }
 
-# Save install config for reference
-resource "local_file" "install_config" {
-  content  = data.oai_cluster_files.install_config.content
-  filename = "${path.module}/install-config.yaml"
+# # Save install config for reference
+# resource "local_file" "install_config" {
+#   content  = data.oai_cluster_files.install_config.content
+#   filename = "${path.module}/install-config.yaml"
   
-  depends_on = [oai_cluster_installation.compact]
-}
+#   depends_on = [oai_cluster_installation.compact]
+# }

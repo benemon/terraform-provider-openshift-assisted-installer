@@ -111,6 +111,28 @@ type IgnitionEndpointModel struct {
 	CACertPEM   types.String `tfsdk:"ca_cert_pem"`
 }
 
+type ImageInfoModel struct {
+	SSHPublicKey         types.String `tfsdk:"ssh_public_key"`
+	SizeBytes            types.Int64  `tfsdk:"size_bytes"`
+	DownloadURL          types.String `tfsdk:"download_url"`
+	GeneratorVersion     types.String `tfsdk:"generator_version"`
+	CreatedAt            types.String `tfsdk:"created_at"`
+	ExpiresAt            types.String `tfsdk:"expires_at"`
+	StaticNetworkConfig  types.String `tfsdk:"static_network_config"`
+}
+
+type MonitoredOperatorModel struct {
+	ClusterID           types.String `tfsdk:"cluster_id"`
+	Name                types.String `tfsdk:"name"`
+	Version             types.String `tfsdk:"version"`
+	Namespace           types.String `tfsdk:"namespace"`
+	SubscriptionName    types.String `tfsdk:"subscription_name"`
+	Status              types.String `tfsdk:"status"`
+	StatusInfo          types.String `tfsdk:"status_info"`
+	StatusUpdatedAt     types.String `tfsdk:"status_updated_at"`
+	TimeoutSeconds      types.Int64  `tfsdk:"timeout_seconds"`
+}
+
 func NewClusterResource() resource.Resource {
 	return &ClusterResource{}
 }
@@ -153,12 +175,15 @@ type ClusterResourceModel struct {
 	LoadBalancer                 types.Object   `tfsdk:"load_balancer"`
 	DiskEncryption               types.Object   `tfsdk:"disk_encryption"`
 	IgnitionEndpoint             types.Object   `tfsdk:"ignition_endpoint"`
+	ImageInfo                    types.Object   `tfsdk:"image_info"`
+	MonitoredOperators           types.List     `tfsdk:"monitored_operators"`
 	Tags                         types.String   `tfsdk:"tags"`
 	Status                       types.String   `tfsdk:"status"`
 	StatusInfo                   types.String   `tfsdk:"status_info"`
 	InstallCompleted             types.Bool     `tfsdk:"install_completed"`
 	Kind                         types.String   `tfsdk:"kind"`
 	Href                         types.String   `tfsdk:"href"`
+	DeletedAt                    types.String   `tfsdk:"deleted_at"`
 }
 
 func (r *ClusterResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -441,6 +466,84 @@ func (r *ClusterResource) Schema(ctx context.Context, req resource.SchemaRequest
 					},
 				},
 			},
+			"image_info": schema.SingleNestedAttribute{
+				MarkdownDescription: "Image information for cluster installation ISO",
+				Computed:            true,
+				Attributes: map[string]schema.Attribute{
+					"ssh_public_key": schema.StringAttribute{
+						MarkdownDescription: "SSH public key for debugging the installation",
+						Computed:            true,
+					},
+					"size_bytes": schema.Int64Attribute{
+						MarkdownDescription: "Size of the image in bytes",
+						Computed:            true,
+					},
+					"download_url": schema.StringAttribute{
+						MarkdownDescription: "URL to download the installation image",
+						Computed:            true,
+					},
+					"generator_version": schema.StringAttribute{
+						MarkdownDescription: "Image generator version",
+						Computed:            true,
+					},
+					"created_at": schema.StringAttribute{
+						MarkdownDescription: "Image creation timestamp",
+						Computed:            true,
+					},
+					"expires_at": schema.StringAttribute{
+						MarkdownDescription: "Image expiration timestamp",
+						Computed:            true,
+					},
+					"static_network_config": schema.StringAttribute{
+						MarkdownDescription: "Static network configuration",
+						Computed:            true,
+					},
+				},
+			},
+			"monitored_operators": schema.ListNestedAttribute{
+				MarkdownDescription: "List of operators being monitored for this cluster",
+				Computed:            true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"cluster_id": schema.StringAttribute{
+							MarkdownDescription: "The cluster that this operator is associated with",
+							Computed:            true,
+						},
+						"name": schema.StringAttribute{
+							MarkdownDescription: "Unique name of the operator",
+							Computed:            true,
+						},
+						"version": schema.StringAttribute{
+							MarkdownDescription: "Operator version",
+							Computed:            true,
+						},
+						"namespace": schema.StringAttribute{
+							MarkdownDescription: "Namespace where the operator is installed",
+							Computed:            true,
+						},
+						"subscription_name": schema.StringAttribute{
+							MarkdownDescription: "Name of the subscription",
+							Computed:            true,
+						},
+						"status": schema.StringAttribute{
+							MarkdownDescription: "Current status of the operator",
+							Computed:            true,
+						},
+						"status_info": schema.StringAttribute{
+							MarkdownDescription: "Additional status information",
+							Computed:            true,
+						},
+						"status_updated_at": schema.StringAttribute{
+							MarkdownDescription: "When the status was last updated",
+							Computed:            true,
+						},
+						"timeout_seconds": schema.Int64Attribute{
+							MarkdownDescription: "Timeout for operator installation in seconds",
+							Computed:            true,
+						},
+					},
+				},
+			},
 			"tags": schema.StringAttribute{
 				MarkdownDescription: "Comma-separated list of tags associated with the cluster",
 				Optional:            true,
@@ -464,6 +567,10 @@ func (r *ClusterResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"href": schema.StringAttribute{
 				MarkdownDescription: "Cluster href",
+				Computed:            true,
+			},
+			"deleted_at": schema.StringAttribute{
+				MarkdownDescription: "Timestamp when the cluster was deleted",
 				Computed:            true,
 			},
 		},
@@ -933,6 +1040,140 @@ func (r *ClusterResource) updateModelFromCluster(data *ClusterResourceModel, clu
 		data.Tags = types.StringValue(cluster.Tags)
 	} else {
 		data.Tags = types.StringNull()
+	}
+
+	// Set ImageInfo if present
+	if cluster.ImageInfo != nil {
+		imageInfo := ImageInfoModel{}
+		if cluster.ImageInfo.SSHPublicKey != "" {
+			imageInfo.SSHPublicKey = types.StringValue(cluster.ImageInfo.SSHPublicKey)
+		} else {
+			imageInfo.SSHPublicKey = types.StringNull()
+		}
+		imageInfo.SizeBytes = types.Int64Value(cluster.ImageInfo.SizeBytes)
+		if cluster.ImageInfo.DownloadURL != "" {
+			imageInfo.DownloadURL = types.StringValue(cluster.ImageInfo.DownloadURL)
+		} else {
+			imageInfo.DownloadURL = types.StringNull()
+		}
+		if cluster.ImageInfo.GeneratorVersion != "" {
+			imageInfo.GeneratorVersion = types.StringValue(cluster.ImageInfo.GeneratorVersion)
+		} else {
+			imageInfo.GeneratorVersion = types.StringNull()
+		}
+		if cluster.ImageInfo.CreatedAt != "" {
+			imageInfo.CreatedAt = types.StringValue(cluster.ImageInfo.CreatedAt)
+		} else {
+			imageInfo.CreatedAt = types.StringNull()
+		}
+		if cluster.ImageInfo.ExpiresAt != "" {
+			imageInfo.ExpiresAt = types.StringValue(cluster.ImageInfo.ExpiresAt)
+		} else {
+			imageInfo.ExpiresAt = types.StringNull()
+		}
+		if cluster.ImageInfo.StaticNetworkConfig != "" {
+			imageInfo.StaticNetworkConfig = types.StringValue(cluster.ImageInfo.StaticNetworkConfig)
+		} else {
+			imageInfo.StaticNetworkConfig = types.StringNull()
+		}
+		
+		objValue, _ := types.ObjectValueFrom(context.Background(), map[string]attr.Type{
+			"ssh_public_key":        types.StringType,
+			"size_bytes":            types.Int64Type,
+			"download_url":          types.StringType,
+			"generator_version":     types.StringType,
+			"created_at":            types.StringType,
+			"expires_at":            types.StringType,
+			"static_network_config": types.StringType,
+		}, imageInfo)
+		data.ImageInfo = objValue
+	} else {
+		data.ImageInfo = types.ObjectNull(map[string]attr.Type{
+			"ssh_public_key":        types.StringType,
+			"size_bytes":            types.Int64Type,
+			"download_url":          types.StringType,
+			"generator_version":     types.StringType,
+			"created_at":            types.StringType,
+			"expires_at":            types.StringType,
+			"static_network_config": types.StringType,
+		})
+	}
+
+	// Set MonitoredOperators if present
+	if len(cluster.MonitoredOperators) > 0 {
+		operators := make([]MonitoredOperatorModel, len(cluster.MonitoredOperators))
+		for i, op := range cluster.MonitoredOperators {
+			operators[i] = MonitoredOperatorModel{
+				ClusterID:        types.StringValue(op.ClusterID),
+				Name:             types.StringValue(op.Name),
+			}
+			if op.Version != "" {
+				operators[i].Version = types.StringValue(op.Version)
+			} else {
+				operators[i].Version = types.StringNull()
+			}
+			if op.Namespace != "" {
+				operators[i].Namespace = types.StringValue(op.Namespace)
+			} else {
+				operators[i].Namespace = types.StringNull()
+			}
+			if op.SubscriptionName != "" {
+				operators[i].SubscriptionName = types.StringValue(op.SubscriptionName)
+			} else {
+				operators[i].SubscriptionName = types.StringNull()
+			}
+			if op.Status != "" {
+				operators[i].Status = types.StringValue(op.Status)
+			} else {
+				operators[i].Status = types.StringNull()
+			}
+			if op.StatusInfo != "" {
+				operators[i].StatusInfo = types.StringValue(op.StatusInfo)
+			} else {
+				operators[i].StatusInfo = types.StringNull()
+			}
+			if op.StatusUpdatedAt != "" {
+				operators[i].StatusUpdatedAt = types.StringValue(op.StatusUpdatedAt)
+			} else {
+				operators[i].StatusUpdatedAt = types.StringNull()
+			}
+			operators[i].TimeoutSeconds = types.Int64Value(op.TimeoutSeconds)
+		}
+		listValue, _ := types.ListValueFrom(context.Background(), types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"cluster_id":         types.StringType,
+				"name":               types.StringType,
+				"version":            types.StringType,
+				"namespace":          types.StringType,
+				"subscription_name":  types.StringType,
+				"status":             types.StringType,
+				"status_info":        types.StringType,
+				"status_updated_at":  types.StringType,
+				"timeout_seconds":    types.Int64Type,
+			},
+		}, operators)
+		data.MonitoredOperators = listValue
+	} else {
+		data.MonitoredOperators = types.ListNull(types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"cluster_id":         types.StringType,
+				"name":               types.StringType,
+				"version":            types.StringType,
+				"namespace":          types.StringType,
+				"subscription_name":  types.StringType,
+				"status":             types.StringType,
+				"status_info":        types.StringType,
+				"status_updated_at":  types.StringType,
+				"timeout_seconds":    types.Int64Type,
+			},
+		})
+	}
+
+	// Set deleted_at if present
+	if cluster.DeletedAt != "" {
+		data.DeletedAt = types.StringValue(cluster.DeletedAt)
+	} else {
+		data.DeletedAt = types.StringNull()
 	}
 }
 

@@ -47,6 +47,9 @@ type Cluster struct {
 	HighAvailabilityMode   string                   `json:"high_availability_mode,omitempty"`
 	NetworkType            string                   `json:"network_type,omitempty"`
 	HostCount              int                      `json:"total_host_count,omitempty"`
+	ImageInfo              *ImageInfo               `json:"image_info,omitempty"`
+	MonitoredOperators     []MonitoredOperator      `json:"monitored_operators,omitempty"`
+	DeletedAt              string                   `json:"deleted_at,omitempty"`
 }
 
 type Platform struct {
@@ -200,4 +203,28 @@ type ClusterUpdateParams struct {
 	PullSecret                    *string                  `json:"pull_secret,omitempty"`
 	ControlPlaneCount             *int                     `json:"control_plane_count,omitempty"`
 	SchedulableMasters            *bool                    `json:"schedulable_masters,omitempty"`
+}
+
+// ImageInfo contains information about cluster installation ISO
+type ImageInfo struct {
+	SSHPublicKey         string `json:"ssh_public_key,omitempty"`
+	SizeBytes            int64  `json:"size_bytes,omitempty"`
+	DownloadURL          string `json:"download_url,omitempty"`
+	GeneratorVersion     string `json:"generator_version,omitempty"`
+	CreatedAt            string `json:"created_at,omitempty"`
+	ExpiresAt            string `json:"expires_at,omitempty"`
+	StaticNetworkConfig  string `json:"static_network_config,omitempty"`
+}
+
+// MonitoredOperator represents an operator being monitored for installation
+type MonitoredOperator struct {
+	ClusterID           string `json:"cluster_id"`
+	Name                string `json:"name"`
+	Version             string `json:"version,omitempty"`
+	Namespace           string `json:"namespace,omitempty"`
+	SubscriptionName    string `json:"subscription_name,omitempty"`
+	Status              string `json:"status,omitempty"`
+	StatusInfo          string `json:"status_info,omitempty"`
+	StatusUpdatedAt     string `json:"status_updated_at,omitempty"`
+	TimeoutSeconds      int64  `json:"timeout_seconds,omitempty"`
 }

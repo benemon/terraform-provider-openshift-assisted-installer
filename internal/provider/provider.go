@@ -128,6 +128,11 @@ func (p *OAIProvider) DataSources(ctx context.Context) []func() datasource.DataS
 		NewClusterFilesDataSource,
 		NewClusterValidationsDataSource,
 		NewHostValidationsDataSource,
+		// New data sources for comprehensive resource coverage - All Swagger compliant
+		NewClusterDataSource,
+		NewInfraEnvDataSource,
+		NewHostDataSource,
+		NewManifestDataSource,
 	}
 }
 
