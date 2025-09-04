@@ -52,8 +52,7 @@ dist/
 modules-dev/
 
 # Terraform provider binaries
-terraform-provider-oai
-terraform-provider-oai_*
+terraform-provider-*
 
 # Log files
 *.log

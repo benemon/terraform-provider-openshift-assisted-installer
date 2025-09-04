@@ -1,7 +1,7 @@
 default: fmt lint install generate
 
 build:
-	go build -v ./...
+	go build -v -o terraform-provider-oai .
 
 install: build
 	go install -v ./...
