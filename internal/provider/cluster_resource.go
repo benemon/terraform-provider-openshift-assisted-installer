@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -29,6 +28,89 @@ type OLMOperatorModel struct {
 	Properties types.String `tfsdk:"properties"`
 }
 
+type APIVipModel struct {
+	IP types.String `tfsdk:"ip"`
+}
+
+type IngressVipModel struct {
+	IP types.String `tfsdk:"ip"`
+}
+
+type ClusterNetworkModel struct {
+	CIDR       types.String `tfsdk:"cidr"`
+	HostPrefix types.Int64  `tfsdk:"host_prefix"`
+}
+
+type ServiceNetworkModel struct {
+	CIDR types.String `tfsdk:"cidr"`
+}
+
+type MachineNetworkModel struct {
+	CIDR types.String `tfsdk:"cidr"`
+}
+
+type PlatformModel struct {
+	Type      types.String             `tfsdk:"type"`
+	External  *ExternalPlatformModel   `tfsdk:"external"`
+	Baremetal *BaremetalPlatformModel  `tfsdk:"baremetal"`
+	Nutanix   *NutanixPlatformModel    `tfsdk:"nutanix"`
+	VSphere   *VSpherePlatformModel    `tfsdk:"vsphere"`
+	OCI       *OCIPlatformModel        `tfsdk:"oci"`
+}
+
+type ExternalPlatformModel struct {
+	PlatformName            types.String `tfsdk:"platform_name"`
+	CloudControllerManager  types.String `tfsdk:"cloud_controller_manager"`
+}
+
+type BaremetalPlatformModel struct {
+	APIVips     types.List `tfsdk:"api_vips"`
+	IngressVips types.List `tfsdk:"ingress_vips"`
+}
+
+type NutanixPlatformModel struct {
+	APIVips     types.List `tfsdk:"api_vips"`
+	IngressVips types.List `tfsdk:"ingress_vips"`
+}
+
+type VSpherePlatformModel struct {
+	APIVips     types.List `tfsdk:"api_vips"`
+	IngressVips types.List `tfsdk:"ingress_vips"`
+	VCenters    types.List `tfsdk:"vcenters"`
+}
+
+type VCenterModel struct {
+	Server           types.String `tfsdk:"server"`
+	Username         types.String `tfsdk:"username"`
+	Password         types.String `tfsdk:"password"`
+	Datacenter       types.String `tfsdk:"datacenter"`
+	DefaultDatastore types.String `tfsdk:"default_datastore"`
+	Folder           types.String `tfsdk:"folder"`
+	ResourcePool     types.String `tfsdk:"resource_pool"`
+	Cluster          types.String `tfsdk:"cluster"`
+	Network          types.String `tfsdk:"network"`
+}
+
+type OCIPlatformModel struct {
+	APIVips     types.List `tfsdk:"api_vips"`
+	IngressVips types.List `tfsdk:"ingress_vips"`
+}
+
+type LoadBalancerModel struct {
+	Type types.String `tfsdk:"type"`
+}
+
+type DiskEncryptionModel struct {
+	EnableOn   types.String `tfsdk:"enable_on"`
+	Mode       types.String `tfsdk:"mode"`
+	TangServers types.String `tfsdk:"tang_servers"`
+}
+
+type IgnitionEndpointModel struct {
+	URL         types.String `tfsdk:"url"`
+	CACertPEM   types.String `tfsdk:"ca_cert_pem"`
+}
+
 func NewClusterResource() resource.Resource {
 	return &ClusterResource{}
 }
@@ -42,12 +124,16 @@ type ClusterResourceModel struct {
 	ID                           types.String   `tfsdk:"id"`
 	Name                         types.String   `tfsdk:"name"`
 	OpenshiftVersion             types.String   `tfsdk:"openshift_version"`
+	OCPReleaseImage              types.String   `tfsdk:"ocp_release_image"`
 	PullSecret                   types.String   `tfsdk:"pull_secret"`
 	CPUArchitecture              types.String   `tfsdk:"cpu_architecture"`
 	BaseDNSDomain                types.String   `tfsdk:"base_dns_domain"`
 	ClusterNetworkCIDR           types.String   `tfsdk:"cluster_network_cidr"`
 	ClusterNetworkHostPrefix     types.Int64    `tfsdk:"cluster_network_host_prefix"`
 	ServiceNetworkCIDR           types.String   `tfsdk:"service_network_cidr"`
+	ClusterNetworks              types.List     `tfsdk:"cluster_networks"`
+	ServiceNetworks              types.List     `tfsdk:"service_networks"`
+	MachineNetworks              types.List     `tfsdk:"machine_networks"`
 	APIVips                      types.List     `tfsdk:"api_vips"`
 	IngressVips                  types.List     `tfsdk:"ingress_vips"`
 	SSHPublicKey                 types.String   `tfsdk:"ssh_public_key"`
@@ -61,8 +147,13 @@ type ClusterResourceModel struct {
 	ControlPlaneCount            types.Int64    `tfsdk:"control_plane_count"`
 	HighAvailabilityMode         types.String   `tfsdk:"high_availability_mode"`
 	NetworkType                  types.String   `tfsdk:"network_type"`
+	SchedulableMasters           types.Bool     `tfsdk:"schedulable_masters"`
 	OLMOperators                 types.List     `tfsdk:"olm_operators"`
-	TriggerInstallation          types.Bool     `tfsdk:"trigger_installation"`
+	Platform                     types.Object   `tfsdk:"platform"`
+	LoadBalancer                 types.Object   `tfsdk:"load_balancer"`
+	DiskEncryption               types.Object   `tfsdk:"disk_encryption"`
+	IgnitionEndpoint             types.Object   `tfsdk:"ignition_endpoint"`
+	Tags                         types.String   `tfsdk:"tags"`
 	Status                       types.String   `tfsdk:"status"`
 	StatusInfo                   types.String   `tfsdk:"status_info"`
 	InstallCompleted             types.Bool     `tfsdk:"install_completed"`
@@ -101,6 +192,14 @@ func (r *ClusterResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
+			"ocp_release_image": schema.StringAttribute{
+				MarkdownDescription: "OpenShift release image URI - alternative to openshift_version",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
 			"pull_secret": schema.StringAttribute{
 				MarkdownDescription: "Pull secret from Red Hat",
 				Required:            true,
@@ -128,19 +227,74 @@ func (r *ClusterResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Computed:            true,
 				Default:             stringdefault.StaticString("172.30.0.0/16"),
 			},
-			"api_vips": schema.ListAttribute{
+			"cluster_networks": schema.ListNestedAttribute{
+				MarkdownDescription: "Cluster networks configuration - alternative to cluster_network_cidr",
+				Optional:            true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"cidr": schema.StringAttribute{
+							MarkdownDescription: "Network CIDR",
+							Required:            true,
+						},
+						"host_prefix": schema.Int64Attribute{
+							MarkdownDescription: "Host subnet prefix length",
+							Optional:            true,
+						},
+					},
+				},
+			},
+			"service_networks": schema.ListNestedAttribute{
+				MarkdownDescription: "Service networks configuration - alternative to service_network_cidr",
+				Optional:            true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"cidr": schema.StringAttribute{
+							MarkdownDescription: "Service network CIDR",
+							Required:            true,
+						},
+					},
+				},
+			},
+			"machine_networks": schema.ListNestedAttribute{
+				MarkdownDescription: "Machine networks configuration",
+				Optional:            true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"cidr": schema.StringAttribute{
+							MarkdownDescription: "Machine network CIDR",
+							Required:            true,
+						},
+					},
+				},
+			},
+			"api_vips": schema.ListNestedAttribute{
 				MarkdownDescription: "Virtual IPs for API servers",
 				Optional:            true,
-				ElementType:         types.StringType,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"ip": schema.StringAttribute{
+							MarkdownDescription: "VIP IP address",
+							Required:            true,
+						},
+					},
+				},
 			},
-			"ingress_vips": schema.ListAttribute{
+			"ingress_vips": schema.ListNestedAttribute{
 				MarkdownDescription: "Virtual IPs for ingress",
 				Optional:            true,
-				ElementType:         types.StringType,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"ip": schema.StringAttribute{
+							MarkdownDescription: "VIP IP address",
+							Required:            true,
+						},
+					},
+				},
 			},
 			"ssh_public_key": schema.StringAttribute{
 				MarkdownDescription: "SSH public key for cluster access",
 				Optional:            true,
+				Computed:            true,
 			},
 			"vip_dhcp_allocation": schema.BoolAttribute{
 				MarkdownDescription: "Enable DHCP VIP allocation",
@@ -150,23 +304,27 @@ func (r *ClusterResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"http_proxy": schema.StringAttribute{
 				MarkdownDescription: "HTTP proxy URL",
 				Optional:            true,
+				Computed:            true,
 			},
 			"https_proxy": schema.StringAttribute{
 				MarkdownDescription: "HTTPS proxy URL",
 				Optional:            true,
+				Computed:            true,
 			},
 			"no_proxy": schema.StringAttribute{
 				MarkdownDescription: "Comma-separated list of hosts to bypass proxy",
 				Optional:            true,
+				Computed:            true,
 			},
 			"user_managed_networking": schema.BoolAttribute{
-				MarkdownDescription: "Enable user-managed networking",
+				MarkdownDescription: "Enable user-managed networking. Note: Cluster-managed networking is only available for clusters with 3+ control plane nodes. Single-node OpenShift clusters will automatically use user-managed networking regardless of this setting.",
 				Optional:            true,
 				Computed:            true,
 			},
 			"additional_ntp_source": schema.StringAttribute{
 				MarkdownDescription: "Additional NTP source",
 				Optional:            true,
+				Computed:            true,
 			},
 			"hyperthreading": schema.StringAttribute{
 				MarkdownDescription: "Hyperthreading configuration (Enabled/Disabled)",
@@ -183,9 +341,15 @@ func (r *ClusterResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Optional:            true,
 				Computed:            true,
 			},
+			"schedulable_masters": schema.BoolAttribute{
+				MarkdownDescription: "Schedule workloads on masters. Default: false for multi-node, true for SNO",
+				Optional:            true,
+				Computed:            true,
+			},
 			"cpu_architecture": schema.StringAttribute{
-				MarkdownDescription: "CPU architecture (x86_64/arm64/ppc64le/s390x/multi) - required field",
-				Required:            true,
+				MarkdownDescription: "CPU architecture (x86_64/arm64/ppc64le/s390x/multi). If not specified, will be determined by the OpenShift version and cluster configuration.",
+				Optional:            true,
+				Computed:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -211,11 +375,76 @@ func (r *ClusterResource) Schema(ctx context.Context, req resource.SchemaRequest
 					},
 				},
 			},
-			"trigger_installation": schema.BoolAttribute{
-				MarkdownDescription: "Whether to trigger cluster installation when cluster is ready. Defaults to true.",
+			"platform": schema.SingleNestedAttribute{
+				MarkdownDescription: "Platform-specific configuration",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"type": schema.StringAttribute{
+						MarkdownDescription: "Platform type (baremetal, vsphere, nutanix, oci, external)",
+						Optional:            true,
+					},
+					"external": schema.SingleNestedAttribute{
+						MarkdownDescription: "External platform configuration",
+						Optional:            true,
+						Attributes: map[string]schema.Attribute{
+							"platform_name": schema.StringAttribute{
+								MarkdownDescription: "External platform name",
+								Optional:            true,
+							},
+							"cloud_controller_manager": schema.StringAttribute{
+								MarkdownDescription: "Cloud controller manager",
+								Optional:            true,
+							},
+						},
+					},
+				},
+			},
+			"load_balancer": schema.SingleNestedAttribute{
+				MarkdownDescription: "Load balancer configuration",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"type": schema.StringAttribute{
+						MarkdownDescription: "Load balancer type",
+						Optional:            true,
+					},
+				},
+			},
+			"disk_encryption": schema.SingleNestedAttribute{
+				MarkdownDescription: "Disk encryption configuration",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"enable_on": schema.StringAttribute{
+						MarkdownDescription: "Enable disk encryption on (masters, workers, all)",
+						Optional:            true,
+					},
+					"mode": schema.StringAttribute{
+						MarkdownDescription: "Encryption mode (tpmv2, tang)",
+						Optional:            true,
+					},
+					"tang_servers": schema.StringAttribute{
+						MarkdownDescription: "Tang servers configuration (JSON)",
+						Optional:            true,
+					},
+				},
+			},
+			"ignition_endpoint": schema.SingleNestedAttribute{
+				MarkdownDescription: "Custom ignition endpoint configuration",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"url": schema.StringAttribute{
+						MarkdownDescription: "Ignition endpoint URL",
+						Optional:            true,
+					},
+					"ca_cert_pem": schema.StringAttribute{
+						MarkdownDescription: "CA certificate in PEM format",
+						Optional:            true,
+					},
+				},
+			},
+			"tags": schema.StringAttribute{
+				MarkdownDescription: "Comma-separated list of tags associated with the cluster",
 				Optional:            true,
 				Computed:            true,
-				Default:             booldefault.StaticBool(true),
 			},
 			"status": schema.StringAttribute{
 				MarkdownDescription: "Current cluster status",
@@ -301,36 +530,7 @@ func (r *ClusterResource) Create(ctx context.Context, req resource.CreateRequest
 		"status": cluster.Status,
 	})
 
-	// Check if we should trigger installation
-	triggerInstallation := true
-	if !data.TriggerInstallation.IsNull() {
-		triggerInstallation = data.TriggerInstallation.ValueBool()
-	}
-
-	if triggerInstallation {
-		// Wait for cluster to be ready for installation, then trigger it
-		err = r.waitForInstallationReadyAndTrigger(ctx, cluster.ID, createTimeout)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error during cluster installation",
-				fmt.Sprintf("Cluster created but installation failed: %s", err),
-			)
-			// Still save the state so user can see the cluster was created
-			resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-			return
-		}
-
-		// Update cluster state after installation
-		updatedCluster, err := r.client.GetCluster(ctx, cluster.ID)
-		if err != nil {
-			resp.Diagnostics.AddWarning(
-				"Could not refresh cluster state after installation",
-				fmt.Sprintf("Installation may have succeeded but could not refresh state: %s", err),
-			)
-		} else {
-			r.updateModelFromCluster(&data, updatedCluster)
-		}
-	}
+	// Cluster created, installation is now handled by separate oai_cluster_installation resource
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -473,6 +673,10 @@ func (r *ClusterResource) modelToCreateParams(data ClusterResourceModel) models.
 	if !data.NetworkType.IsNull() {
 		params.NetworkType = data.NetworkType.ValueString()
 	}
+	if !data.SchedulableMasters.IsNull() {
+		schedulable := data.SchedulableMasters.ValueBool()
+		params.SchedulableMasters = &schedulable
+	}
 	if !data.CPUArchitecture.IsNull() {
 		params.CPUArchitecture = data.CPUArchitecture.ValueString()
 	}
@@ -495,23 +699,39 @@ func (r *ClusterResource) modelToCreateParams(data ClusterResourceModel) models.
 
 	// Convert API VIPs
 	if !data.APIVips.IsNull() {
-		elements := make([]types.String, 0, len(data.APIVips.Elements()))
-		data.APIVips.ElementsAs(context.Background(), &elements, false)
-		params.APIVips = make([]string, len(elements))
-		for i, elem := range elements {
-			params.APIVips[i] = elem.ValueString()
+		var vips []APIVipModel
+		data.APIVips.ElementsAs(context.Background(), &vips, false)
+		params.APIVips = make([]models.APIVip, len(vips))
+		for i, vip := range vips {
+			params.APIVips[i] = models.APIVip{
+				IP: vip.IP.ValueString(),
+			}
 		}
 	}
 
 	// Convert Ingress VIPs
 	if !data.IngressVips.IsNull() {
-		elements := make([]types.String, 0, len(data.IngressVips.Elements()))
-		data.IngressVips.ElementsAs(context.Background(), &elements, false)
-		params.IngressVips = make([]string, len(elements))
-		for i, elem := range elements {
-			params.IngressVips[i] = elem.ValueString()
+		var vips []IngressVipModel
+		data.IngressVips.ElementsAs(context.Background(), &vips, false)
+		params.IngressVips = make([]models.IngressVip, len(vips))
+		for i, vip := range vips {
+			params.IngressVips[i] = models.IngressVip{
+				IP: vip.IP.ValueString(),
+			}
 		}
 	}
+
+	// Convert new structured fields
+	if !data.OCPReleaseImage.IsNull() {
+		params.OCPReleaseImage = data.OCPReleaseImage.ValueString()
+	}
+	
+	if !data.Tags.IsNull() {
+		params.Tags = data.Tags.ValueString()
+	}
+
+	// TODO: Add conversion for cluster_networks, service_networks, machine_networks
+	// TODO: Add conversion for platform, load_balancer, disk_encryption, ignition_endpoint
 
 	return params
 }
@@ -551,6 +771,10 @@ func (r *ClusterResource) modelToUpdateParams(data ClusterResourceModel) models.
 		secret := data.PullSecret.ValueString()
 		params.PullSecret = &secret
 	}
+	if !data.SchedulableMasters.IsNull() {
+		schedulable := data.SchedulableMasters.ValueBool()
+		params.SchedulableMasters = &schedulable
+	}
 
 	return params
 }
@@ -573,26 +797,33 @@ func (r *ClusterResource) updateModelFromCluster(data *ClusterResourceModel, clu
 	if cluster.ClusterNetworkCIDR != "" {
 		data.ClusterNetworkCIDR = types.StringValue(cluster.ClusterNetworkCIDR)
 	}
-	if cluster.ClusterNetworkHostPrefix > 0 {
-		data.ClusterNetworkHostPrefix = types.Int64Value(int64(cluster.ClusterNetworkHostPrefix))
-	}
+	// ClusterNetworkHostPrefix is handled later with proper defaults
 	if cluster.ServiceNetworkCIDR != "" {
 		data.ServiceNetworkCIDR = types.StringValue(cluster.ServiceNetworkCIDR)
 	}
 	if cluster.SSHPublicKey != "" {
 		data.SSHPublicKey = types.StringValue(cluster.SSHPublicKey)
 	}
+	// Always set computed fields to avoid "unknown value" errors
 	if cluster.HTTPProxy != "" {
 		data.HTTPProxy = types.StringValue(cluster.HTTPProxy)
+	} else {
+		data.HTTPProxy = types.StringNull()
 	}
 	if cluster.HTTPSProxy != "" {
 		data.HTTPSProxy = types.StringValue(cluster.HTTPSProxy)
+	} else {
+		data.HTTPSProxy = types.StringNull()
 	}
 	if cluster.NoProxy != "" {
 		data.NoProxy = types.StringValue(cluster.NoProxy)
+	} else {
+		data.NoProxy = types.StringNull()
 	}
 	if cluster.AdditionalNTPSource != "" {
 		data.AdditionalNTPSource = types.StringValue(cluster.AdditionalNTPSource)
+	} else {
+		data.AdditionalNTPSource = types.StringNull()
 	}
 	if cluster.Hyperthreading != "" {
 		data.Hyperthreading = types.StringValue(cluster.Hyperthreading)
@@ -605,10 +836,41 @@ func (r *ClusterResource) updateModelFromCluster(data *ClusterResourceModel, clu
 		data.ControlPlaneCount = types.Int64Value(int64(cluster.ControlPlaneCount))
 	}
 
-	// Set CPU architecture
+	// Set CPU architecture from API response
 	if cluster.CPUArchitecture != "" {
 		data.CPUArchitecture = types.StringValue(cluster.CPUArchitecture)
 	}
+
+	// Set computed fields that must always have values
+	if cluster.ClusterNetworkHostPrefix == 0 {
+		// Set default if not provided by API
+		data.ClusterNetworkHostPrefix = types.Int64Value(23)
+	} else {
+		data.ClusterNetworkHostPrefix = types.Int64Value(int64(cluster.ClusterNetworkHostPrefix))
+	}
+
+	// Set high availability mode based on control plane count
+	if cluster.HighAvailabilityMode != "" {
+		data.HighAvailabilityMode = types.StringValue(cluster.HighAvailabilityMode)
+	} else {
+		// Derive from control plane count if not provided
+		if cluster.ControlPlaneCount == 1 {
+			data.HighAvailabilityMode = types.StringValue("None")
+		} else {
+			data.HighAvailabilityMode = types.StringValue("Full")
+		}
+	}
+
+	// Set network type with default
+	if cluster.NetworkType != "" {
+		data.NetworkType = types.StringValue(cluster.NetworkType)
+	} else {
+		// Set default network type
+		data.NetworkType = types.StringValue("OVNKubernetes")
+	}
+
+	// Set schedulable masters
+	data.SchedulableMasters = types.BoolValue(cluster.SchedulableMasters)
 
 	// Convert OLM operators
 	if len(cluster.OLMOperators) > 0 {
@@ -630,22 +892,47 @@ func (r *ClusterResource) updateModelFromCluster(data *ClusterResourceModel, clu
 
 	// Convert API VIPs
 	if len(cluster.APIVips) > 0 {
-		elements := make([]types.String, len(cluster.APIVips))
+		vips := make([]APIVipModel, len(cluster.APIVips))
 		for i, vip := range cluster.APIVips {
-			elements[i] = types.StringValue(vip)
+			vips[i] = APIVipModel{
+				IP: types.StringValue(vip.IP),
+			}
 		}
-		listValue, _ := types.ListValueFrom(context.Background(), types.StringType, elements)
+		listValue, _ := types.ListValueFrom(context.Background(), types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"ip": types.StringType,
+			},
+		}, vips)
 		data.APIVips = listValue
 	}
 
 	// Convert Ingress VIPs
 	if len(cluster.IngressVips) > 0 {
-		elements := make([]types.String, len(cluster.IngressVips))
+		vips := make([]IngressVipModel, len(cluster.IngressVips))
 		for i, vip := range cluster.IngressVips {
-			elements[i] = types.StringValue(vip)
+			vips[i] = IngressVipModel{
+				IP: types.StringValue(vip.IP),
+			}
 		}
-		listValue, _ := types.ListValueFrom(context.Background(), types.StringType, elements)
+		listValue, _ := types.ListValueFrom(context.Background(), types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"ip": types.StringType,
+			},
+		}, vips)
 		data.IngressVips = listValue
+	}
+
+	// Set remaining computed fields to avoid "unknown value" errors
+	if cluster.OCPReleaseImage != "" {
+		data.OCPReleaseImage = types.StringValue(cluster.OCPReleaseImage)
+	} else {
+		data.OCPReleaseImage = types.StringNull()
+	}
+	
+	if cluster.Tags != "" {
+		data.Tags = types.StringValue(cluster.Tags)
+	} else {
+		data.Tags = types.StringNull()
 	}
 }
 

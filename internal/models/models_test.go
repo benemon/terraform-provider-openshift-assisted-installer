@@ -13,8 +13,8 @@ func TestCluster_JSONMarshal(t *testing.T) {
 		Name:             "test-cluster",
 		OpenshiftVersion: "4.15.20",
 		BaseDNSDomain:    "example.com",
-		APIVips:          []string{"192.168.1.100"},
-		IngressVips:      []string{"192.168.1.101"},
+		APIVips:          []APIVip{{IP: "192.168.1.100"}},
+		IngressVips:      []IngressVip{{IP: "192.168.1.101"}},
 		Status:           "ready",
 		StatusInfo:       "Ready to install",
 		CreatedAt:        time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -40,6 +40,94 @@ func TestCluster_JSONMarshal(t *testing.T) {
 
 	if len(unmarshaled.APIVips) != len(cluster.APIVips) {
 		t.Errorf("APIVips length mismatch: got %d, want %d", len(unmarshaled.APIVips), len(cluster.APIVips))
+	}
+	
+	if len(cluster.APIVips) > 0 && unmarshaled.APIVips[0].IP != cluster.APIVips[0].IP {
+		t.Errorf("APIVips[0].IP mismatch: got %s, want %s", unmarshaled.APIVips[0].IP, cluster.APIVips[0].IP)
+	}
+	
+	if len(unmarshaled.IngressVips) != len(cluster.IngressVips) {
+		t.Errorf("IngressVips length mismatch: got %d, want %d", len(unmarshaled.IngressVips), len(cluster.IngressVips))
+	}
+	
+	if len(cluster.IngressVips) > 0 && unmarshaled.IngressVips[0].IP != cluster.IngressVips[0].IP {
+		t.Errorf("IngressVips[0].IP mismatch: got %s, want %s", unmarshaled.IngressVips[0].IP, cluster.IngressVips[0].IP)
+	}
+}
+
+func TestCluster_NewFields(t *testing.T) {
+	cluster := &Cluster{
+		Kind:               "Cluster",
+		ID:                 "test-new-fields",
+		Name:               "test-cluster-new",
+		OpenshiftVersion:   "4.15.20",
+		OCPReleaseImage:    "quay.io/openshift-release-dev/ocp-release:4.15.20-x86_64",
+		SchedulableMasters: true,
+		Tags:               "test,swagger-compliant,new-fields",
+		APIVips: []APIVip{
+			{IP: "192.168.1.100"},
+			{IP: "192.168.1.200"},
+		},
+		IngressVips: []IngressVip{
+			{IP: "192.168.1.101"},
+		},
+		ClusterNetworks: []ClusterNetwork{
+			{CIDR: "10.128.0.0/14", HostPrefix: 23},
+		},
+		ServiceNetworks: []ServiceNetwork{
+			{CIDR: "172.30.0.0/16"},
+		},
+		MachineNetworks: []MachineNetwork{
+			{CIDR: "192.168.1.0/24"},
+		},
+		Status:     "ready",
+		StatusInfo: "Ready with new fields",
+	}
+
+	// Test JSON marshaling/unmarshaling
+	data, err := json.Marshal(cluster)
+	if err != nil {
+		t.Fatalf("Failed to marshal cluster with new fields: %v", err)
+	}
+
+	var unmarshaled Cluster
+	if err := json.Unmarshal(data, &unmarshaled); err != nil {
+		t.Fatalf("Failed to unmarshal cluster with new fields: %v", err)
+	}
+
+	// Validate new fields
+	if unmarshaled.SchedulableMasters != cluster.SchedulableMasters {
+		t.Errorf("SchedulableMasters mismatch: got %v, want %v", unmarshaled.SchedulableMasters, cluster.SchedulableMasters)
+	}
+
+	if unmarshaled.Tags != cluster.Tags {
+		t.Errorf("Tags mismatch: got %s, want %s", unmarshaled.Tags, cluster.Tags)
+	}
+
+	if unmarshaled.OCPReleaseImage != cluster.OCPReleaseImage {
+		t.Errorf("OCPReleaseImage mismatch: got %s, want %s", unmarshaled.OCPReleaseImage, cluster.OCPReleaseImage)
+	}
+
+	// Test multiple VIPs
+	if len(unmarshaled.APIVips) != 2 {
+		t.Errorf("Expected 2 API VIPs, got %d", len(unmarshaled.APIVips))
+	}
+
+	if unmarshaled.APIVips[0].IP != "192.168.1.100" {
+		t.Errorf("First API VIP mismatch: got %s, want %s", unmarshaled.APIVips[0].IP, "192.168.1.100")
+	}
+
+	if unmarshaled.APIVips[1].IP != "192.168.1.200" {
+		t.Errorf("Second API VIP mismatch: got %s, want %s", unmarshaled.APIVips[1].IP, "192.168.1.200")
+	}
+
+	// Test network arrays
+	if len(unmarshaled.ClusterNetworks) != 1 {
+		t.Errorf("Expected 1 cluster network, got %d", len(unmarshaled.ClusterNetworks))
+	}
+
+	if unmarshaled.ClusterNetworks[0].CIDR != "10.128.0.0/14" {
+		t.Errorf("Cluster network CIDR mismatch: got %s, want %s", unmarshaled.ClusterNetworks[0].CIDR, "10.128.0.0/14")
 	}
 }
 
@@ -67,8 +155,8 @@ func TestClusterCreateParams_Validation(t *testing.T) {
 				PullSecret:       "fake-secret",
 				CPUArchitecture:  "x86_64",
 				BaseDNSDomain:    "example.com",
-				APIVips:          []string{"192.168.1.100"},
-				IngressVips:      []string{"192.168.1.101"},
+				APIVips:          []APIVip{{IP: "192.168.1.100"}},
+				IngressVips:      []IngressVip{{IP: "192.168.1.101"}},
 				SSHPublicKey:     "ssh-rsa AAAA...",
 				ControlPlaneCount: 3,
 				OLMOperators: []OLMOperator{

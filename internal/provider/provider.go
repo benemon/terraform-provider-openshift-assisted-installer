@@ -108,6 +108,7 @@ func (p *OAIProvider) Configure(ctx context.Context, req provider.ConfigureReque
 func (p *OAIProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewClusterResource,
+		NewClusterInstallationResource,
 		NewInfraEnvResource,
 		NewHostResource,
 		NewManifestResource,
@@ -121,6 +122,10 @@ func (p *OAIProvider) DataSources(ctx context.Context) []func() datasource.DataS
 		NewSupportedOperatorsDataSource,
 		NewOperatorBundlesDataSource,
 		NewSupportLevelsDataSource,
+		NewClusterCredentialsDataSource,
+		NewClusterEventsDataSource,
+		NewClusterLogsDataSource,
+		NewClusterFilesDataSource,
 	}
 }
 

@@ -74,24 +74,43 @@ func TestOAIProvider_Resources(t *testing.T) {
 	resources := p.Resources(context.Background())
 
 	// Check that we have the expected number of resources
-	expectedResources := 1 // Currently only ClusterResource
+	expectedResources := 4 // ClusterResource, InfraEnvResource, HostResource, ManifestResource
 	if len(resources) != expectedResources {
 		t.Errorf("Expected %d resources, got %d", expectedResources, len(resources))
 	}
 
-	// Verify that NewClusterResource is in the list
-	found := false
-	for _, r := range resources {
-		// Create an instance to check the type
-		instance := r()
-		if _, ok := instance.(*ClusterResource); ok {
-			found = true
-			break
+	// Verify that resources are registered
+	resourceNames := []string{"cluster", "infra_env", "host", "manifest"}
+	for _, resourceName := range resourceNames {
+		found := false
+		for _, r := range resources {
+			// Create an instance to check the type  
+			instance := r()
+			switch resourceName {
+			case "cluster":
+				if _, ok := instance.(*ClusterResource); ok {
+					found = true
+				}
+			case "infra_env":
+				if _, ok := instance.(*InfraEnvResource); ok {
+					found = true
+				}
+			case "host":
+				if _, ok := instance.(*HostResource); ok {
+					found = true
+				}
+			case "manifest":
+				if _, ok := instance.(*ManifestResource); ok {
+					found = true
+				}
+			}
+			if found {
+				break
+			}
 		}
-	}
-
-	if !found {
-		t.Error("ClusterResource not found in resources list")
+		if !found {
+			t.Errorf("%s resource not found in resources list", resourceName)
+		}
 	}
 }
 

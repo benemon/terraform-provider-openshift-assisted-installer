@@ -182,8 +182,8 @@ func TestClusterResource_OLMOperators_updateModelFromCluster(t *testing.T) {
 	}
 }
 
-func TestClusterResource_TriggerInstallation_Default(t *testing.T) {
-	// Test that trigger_installation defaults to true when not specified
+func TestClusterResource_ModelToCreateParams_Basic(t *testing.T) {
+	// Test basic model to create params conversion
 	resource := &ClusterResource{}
 
 	model := ClusterResourceModel{
@@ -191,21 +191,16 @@ func TestClusterResource_TriggerInstallation_Default(t *testing.T) {
 		OpenshiftVersion: StringValue("4.15.20"),
 		PullSecret:       StringValue("pull-secret"),
 		CPUArchitecture:  StringValue("x86_64"),
-		TriggerInstallation: types.BoolNull(), // Not specified
 	}
 
 	params := resource.modelToCreateParams(model)
 
-	// The logic in Create function should default trigger_installation to true
-	// when it's null, but that's tested in the Create function test.
-	// Here we just verify the model structure is correct.
-	if !model.TriggerInstallation.IsNull() {
-		t.Errorf("Expected trigger_installation to be null when not set, but got %v", model.TriggerInstallation.ValueBool())
-	}
-
-	// Verify other fields are set correctly
+	// Verify basic fields are set correctly
 	if params.Name != "test-cluster" {
-		t.Errorf("Expected name to be 'test-cluster', got %q", params.Name)
+		t.Errorf("Expected name 'test-cluster', got %q", params.Name)
+	}
+	if params.OpenshiftVersion != "4.15.20" {
+		t.Errorf("Expected version '4.15.20', got %q", params.OpenshiftVersion)
 	}
 	if params.CPUArchitecture != "x86_64" {
 		t.Errorf("Expected cpu_architecture to be 'x86_64', got %q", params.CPUArchitecture)

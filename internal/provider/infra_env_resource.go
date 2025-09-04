@@ -34,23 +34,25 @@ type InfraEnvResource struct {
 
 // InfraEnvResourceModel describes the resource data model.
 type InfraEnvResourceModel struct {
-	ID                   types.String                  `tfsdk:"id"`
-	Name                 types.String                  `tfsdk:"name"`
-	ClusterID            types.String                  `tfsdk:"cluster_id"`
-	CPUArchitecture      types.String                  `tfsdk:"cpu_architecture"`
-	PullSecret           types.String                  `tfsdk:"pull_secret"`
-	SSHAuthorizedKey     types.String                  `tfsdk:"ssh_authorized_key"`
-	ImageType            types.String                  `tfsdk:"image_type"`
-	OpenShiftVersion     types.String                  `tfsdk:"openshift_version"`
-	Proxy                *InfraEnvProxyModel           `tfsdk:"proxy"`
-	StaticNetworkConfig  []InfraEnvStaticNetworkModel  `tfsdk:"static_network_config"`
-	KernelArguments      []InfraEnvKernelArgumentModel `tfsdk:"kernel_arguments"`
-	IgnitionConfigOverride types.String                `tfsdk:"ignition_config_override"`
+	ID                     types.String                  `tfsdk:"id"`
+	Name                   types.String                  `tfsdk:"name"`
+	ClusterID              types.String                  `tfsdk:"cluster_id"`
+	CPUArchitecture        types.String                  `tfsdk:"cpu_architecture"`
+	PullSecret             types.String                  `tfsdk:"pull_secret"`
+	SSHAuthorizedKey       types.String                  `tfsdk:"ssh_authorized_key"`
+	ImageType              types.String                  `tfsdk:"image_type"`
+	OpenShiftVersion       types.String                  `tfsdk:"openshift_version"`
+	AdditionalNTPSources   types.String                  `tfsdk:"additional_ntp_sources"`
+	AdditionalTrustBundle  types.String                  `tfsdk:"additional_trust_bundle"`
+	Proxy                  *InfraEnvProxyModel           `tfsdk:"proxy"`
+	StaticNetworkConfig    []InfraEnvStaticNetworkModel  `tfsdk:"static_network_config"`
+	KernelArguments        []InfraEnvKernelArgumentModel `tfsdk:"kernel_arguments"`
+	IgnitionConfigOverride types.String                  `tfsdk:"ignition_config_override"`
 	
 	// Computed fields
-	DownloadURL          types.String                  `tfsdk:"download_url"`
-	ExpiresAt            types.String                  `tfsdk:"expires_at"`
-	Type                 types.String                  `tfsdk:"type"`
+	DownloadURL            types.String                  `tfsdk:"download_url"`
+	ExpiresAt              types.String                  `tfsdk:"expires_at"`
+	Type                   types.String                  `tfsdk:"type"`
 }
 
 type InfraEnvProxyModel struct {
@@ -122,6 +124,7 @@ func (r *InfraEnvResource) Schema(ctx context.Context, req resource.SchemaReques
 			"ssh_authorized_key": schema.StringAttribute{
 				MarkdownDescription: "SSH public key for accessing discovered hosts.",
 				Optional:            true,
+				Computed:            true,
 				Sensitive:           true,
 			},
 			"image_type": schema.StringAttribute{
@@ -136,6 +139,17 @@ func (r *InfraEnvResource) Schema(ctx context.Context, req resource.SchemaReques
 			"openshift_version": schema.StringAttribute{
 				MarkdownDescription: "OpenShift version for the infrastructure environment. If not specified, uses the cluster's version.",
 				Optional:            true,
+				Computed:            true,
+			},
+			"additional_ntp_sources": schema.StringAttribute{
+				MarkdownDescription: "Comma-separated list of NTP sources (name or IP) to be added to all hosts discovered by this infrastructure environment.",
+				Optional:            true,
+				Computed:            true,
+			},
+			"additional_trust_bundle": schema.StringAttribute{
+				MarkdownDescription: "PEM-encoded X.509 certificate bundle. Hosts discovered by this infra-env will trust the certificates in this bundle.",
+				Optional:            true,
+				Computed:            true,
 			},
 			"proxy": schema.SingleNestedAttribute{
 				MarkdownDescription: "Proxy configuration for hosts discovered through this infrastructure environment.",
@@ -400,6 +414,14 @@ func (r *InfraEnvResource) terraformToCreateAPIModel(ctx context.Context, data *
 		params.IgnitionConfigOverride = data.IgnitionConfigOverride.ValueString()
 	}
 
+	if !data.AdditionalNTPSources.IsNull() {
+		params.AdditionalNTPSources = data.AdditionalNTPSources.ValueString()
+	}
+
+	if !data.AdditionalTrustBundle.IsNull() {
+		params.AdditionalTrustBundle = data.AdditionalTrustBundle.ValueString()
+	}
+
 	// Convert proxy settings
 	if data.Proxy != nil {
 		params.Proxy = &models.Proxy{}
@@ -477,6 +499,16 @@ func (r *InfraEnvResource) terraformToUpdateAPIModel(ctx context.Context, data *
 		params.IgnitionConfigOverride = &ignition
 	}
 
+	if !data.AdditionalNTPSources.IsNull() {
+		ntpSources := data.AdditionalNTPSources.ValueString()
+		params.AdditionalNTPSources = &ntpSources
+	}
+
+	if !data.AdditionalTrustBundle.IsNull() {
+		trustBundle := data.AdditionalTrustBundle.ValueString()
+		params.AdditionalTrustBundle = &trustBundle
+	}
+
 	// Convert proxy settings
 	if data.Proxy != nil {
 		params.Proxy = &models.Proxy{}
@@ -531,23 +563,46 @@ func (r *InfraEnvResource) apiToTerraformModel(ctx context.Context, infraEnv *mo
 	data.Type = types.StringValue(infraEnv.Type)
 	data.CPUArchitecture = types.StringValue(infraEnv.CPUArchitecture)
 	
+	// Always set computed fields to avoid "unknown value" errors
 	if infraEnv.ClusterID != "" {
 		data.ClusterID = types.StringValue(infraEnv.ClusterID)
+	} else {
+		data.ClusterID = types.StringNull()
 	}
 	
 	if infraEnv.OpenshiftVersion != "" {
 		data.OpenShiftVersion = types.StringValue(infraEnv.OpenshiftVersion)
+	} else {
+		data.OpenShiftVersion = types.StringNull()
 	}
 	
 	if infraEnv.SSHAuthorizedKey != "" {
 		data.SSHAuthorizedKey = types.StringValue(infraEnv.SSHAuthorizedKey)
+	} else {
+		data.SSHAuthorizedKey = types.StringNull()
 	}
 	
 	if infraEnv.DownloadURL != "" {
 		data.DownloadURL = types.StringValue(infraEnv.DownloadURL)
+	} else {
+		data.DownloadURL = types.StringNull()
 	}
 	
 	if !infraEnv.ExpiresAt.IsZero() {
 		data.ExpiresAt = types.StringValue(infraEnv.ExpiresAt.Format("2006-01-02T15:04:05Z"))
+	} else {
+		data.ExpiresAt = types.StringNull()
+	}
+	
+	if infraEnv.AdditionalNTPSources != "" {
+		data.AdditionalNTPSources = types.StringValue(infraEnv.AdditionalNTPSources)
+	} else {
+		data.AdditionalNTPSources = types.StringNull()
+	}
+	
+	if infraEnv.AdditionalTrustBundle != "" {
+		data.AdditionalTrustBundle = types.StringValue(infraEnv.AdditionalTrustBundle)
+	} else {
+		data.AdditionalTrustBundle = types.StringNull()
 	}
 }

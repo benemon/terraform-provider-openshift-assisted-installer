@@ -34,18 +34,25 @@ type HostResource struct {
 
 // HostResourceModel describes the resource data model.
 type HostResourceModel struct {
-	ID                types.String         `tfsdk:"id"`
-	InfraEnvID        types.String         `tfsdk:"infra_env_id"`
-	ClusterID         types.String         `tfsdk:"cluster_id"`
-	RequestedHostname types.String         `tfsdk:"requested_hostname"`
-	Role              types.String         `tfsdk:"role"`
+	ID                            types.String                     `tfsdk:"id"`
+	InfraEnvID                    types.String                     `tfsdk:"infra_env_id"`
+	ClusterID                     types.String                     `tfsdk:"cluster_id"`
+	RequestedHostname             types.String                     `tfsdk:"requested_hostname"`
+	HostName                      types.String                     `tfsdk:"host_name"`
+	Role                          types.String                     `tfsdk:"role"`
+	DisksSelectedConfig           types.List                       `tfsdk:"disks_selected_config"`
+	DisksSkipFormatting           types.List                       `tfsdk:"disks_skip_formatting"`
+	MachineConfigPoolName         types.String                     `tfsdk:"machine_config_pool_name"`
+	IgnitionEndpointToken         types.String                     `tfsdk:"ignition_endpoint_token"`
+	IgnitionEndpointHTTPHeaders   types.List                       `tfsdk:"ignition_endpoint_http_headers"`
+	NodeLabels                    types.List                       `tfsdk:"node_labels"`
 	
 	// Computed fields
-	Status            types.String         `tfsdk:"status"`
-	StatusInfo        types.String         `tfsdk:"status_info"`
-	Progress          *HostProgressModel   `tfsdk:"progress"`
-	CreatedAt         types.String         `tfsdk:"created_at"`
-	UpdatedAt         types.String         `tfsdk:"updated_at"`
+	Status                        types.String                     `tfsdk:"status"`
+	StatusInfo                    types.String                     `tfsdk:"status_info"`
+	Progress                      *HostProgressModel               `tfsdk:"progress"`
+	CreatedAt                     types.String                     `tfsdk:"created_at"`
+	UpdatedAt                     types.String                     `tfsdk:"updated_at"`
 }
 
 type HostProgressModel struct {
@@ -53,6 +60,25 @@ type HostProgressModel struct {
 	ProgressInfo   types.String `tfsdk:"progress_info"`
 	StageStartedAt types.String `tfsdk:"stage_started_at"`
 	StageUpdatedAt types.String `tfsdk:"stage_updated_at"`
+}
+
+type DiskConfigModel struct {
+	ID   types.String `tfsdk:"id"`
+	Role types.String `tfsdk:"role"`
+}
+
+type DiskSkipFormattingModel struct {
+	DiskID types.String `tfsdk:"disk_id"`
+}
+
+type IgnitionEndpointHTTPHeaderModel struct {
+	Key   types.String `tfsdk:"key"`
+	Value types.String `tfsdk:"value"`
+}
+
+type NodeLabelModel struct {
+	Key   types.String `tfsdk:"key"`
+	Value types.String `tfsdk:"value"`
 }
 
 func (r *HostResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -85,6 +111,7 @@ func (r *HostResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			"requested_hostname": schema.StringAttribute{
 				MarkdownDescription: "Requested hostname for this host. If not specified, a default will be assigned.",
 				Optional:            true,
+				Computed:            true,
 			},
 			"role": schema.StringAttribute{
 				MarkdownDescription: "Role assignment for this host in the cluster.",
@@ -93,6 +120,80 @@ func (r *HostResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Default:             stringdefault.StaticString("auto-assign"),
 				Validators: []validator.String{
 					stringvalidator.OneOf("master", "worker", "bootstrap", "auto-assign"),
+				},
+			},
+			"host_name": schema.StringAttribute{
+				MarkdownDescription: "Host name (different from requested hostname).",
+				Optional:            true,
+				Computed:            true,
+			},
+			"disks_selected_config": schema.ListNestedAttribute{
+				MarkdownDescription: "Disk selection configuration for this host.",
+				Optional:            true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							MarkdownDescription: "Disk ID.",
+							Required:            true,
+						},
+						"role": schema.StringAttribute{
+							MarkdownDescription: "Disk role (e.g., install).",
+							Optional:            true,
+						},
+					},
+				},
+			},
+			"disks_skip_formatting": schema.ListNestedAttribute{
+				MarkdownDescription: "Disks to skip formatting during installation.",
+				Optional:            true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"disk_id": schema.StringAttribute{
+							MarkdownDescription: "ID of disk to skip formatting.",
+							Required:            true,
+						},
+					},
+				},
+			},
+			"machine_config_pool_name": schema.StringAttribute{
+				MarkdownDescription: "Machine config pool name for this host.",
+				Optional:            true,
+			},
+			"ignition_endpoint_token": schema.StringAttribute{
+				MarkdownDescription: "Bearer token for ignition endpoint authentication.",
+				Optional:            true,
+				Sensitive:           true,
+			},
+			"ignition_endpoint_http_headers": schema.ListNestedAttribute{
+				MarkdownDescription: "Additional HTTP headers for ignition endpoint requests.",
+				Optional:            true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"key": schema.StringAttribute{
+							MarkdownDescription: "HTTP header key.",
+							Required:            true,
+						},
+						"value": schema.StringAttribute{
+							MarkdownDescription: "HTTP header value.",
+							Required:            true,
+						},
+					},
+				},
+			},
+			"node_labels": schema.ListNestedAttribute{
+				MarkdownDescription: "Labels to be added to the corresponding Kubernetes node.",
+				Optional:            true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"key": schema.StringAttribute{
+							MarkdownDescription: "Label key.",
+							Required:            true,
+						},
+						"value": schema.StringAttribute{
+							MarkdownDescription: "Label value.",
+							Required:            true,
+						},
+					},
 				},
 			},
 			

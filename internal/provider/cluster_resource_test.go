@@ -74,17 +74,19 @@ func TestAccClusterResource_Complete(t *testing.T) {
 					resource.TestCheckResourceAttr("oai_cluster.test", "openshift_version", "4.15.20"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "cpu_architecture", "x86_64"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "base_dns_domain", "example.com"),
-					resource.TestCheckResourceAttr("oai_cluster.test", "api_vips.0", "192.168.1.100"),
-					resource.TestCheckResourceAttr("oai_cluster.test", "ingress_vips.0", "192.168.1.101"),
+					resource.TestCheckResourceAttr("oai_cluster.test", "api_vips.0.ip", "192.168.1.100"),
+					resource.TestCheckResourceAttr("oai_cluster.test", "ingress_vips.0.ip", "192.168.1.101"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "cluster_network_cidr", "10.128.0.0/14"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "cluster_network_host_prefix", "23"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "service_network_cidr", "172.30.0.0/16"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "vip_dhcp_allocation", "false"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "user_managed_networking", "false"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "control_plane_count", "3"),
+					resource.TestCheckResourceAttr("oai_cluster.test", "schedulable_masters", "false"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "high_availability_mode", "Full"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "hyperthreading", "Enabled"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "network_type", "OVNKubernetes"),
+					resource.TestCheckResourceAttr("oai_cluster.test", "tags", "test,cluster,complete"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "trigger_installation", "false"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "olm_operators.0.name", "local-storage-operator"),
 					resource.TestCheckResourceAttr("oai_cluster.test", "olm_operators.0.properties", "{\"version\":\"4.15\"}"),
@@ -92,6 +94,30 @@ func TestAccClusterResource_Complete(t *testing.T) {
 					resource.TestCheckResourceAttr("oai_cluster.test", "olm_operators.1.properties", "{\"version\":\"4.15\",\"namespace\":\"openshift-storage\"}"),
 					resource.TestCheckResourceAttrSet("oai_cluster.test", "ssh_public_key"),
 					resource.TestCheckResourceAttrSet("oai_cluster.test", "additional_ntp_source"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccClusterResource_SNO(t *testing.T) {
+	// Skip test if not running acceptance tests
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccClusterResourceSNOConfig(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckClusterExists("oai_cluster.test"),
+					resource.TestCheckResourceAttr("oai_cluster.test", "name", "sno-cluster"),
+					resource.TestCheckResourceAttr("oai_cluster.test", "control_plane_count", "1"),
+					resource.TestCheckResourceAttr("oai_cluster.test", "schedulable_masters", "true"), // SNO defaults to true
+					resource.TestCheckResourceAttr("oai_cluster.test", "cpu_architecture", "x86_64"),
 				),
 			},
 		},
@@ -178,8 +204,16 @@ resource "oai_cluster" "test" {
   cpu_architecture  = "x86_64"
   
   base_dns_domain          = "example.com"
-  api_vips                 = ["192.168.1.100"]
-  ingress_vips             = ["192.168.1.101"]
+  api_vips = [
+    {
+      ip = "192.168.1.100"
+    }
+  ]
+  ingress_vips = [
+    {
+      ip = "192.168.1.101"  
+    }
+  ]
   cluster_network_cidr     = "10.128.0.0/14"
   cluster_network_host_prefix = 23
   service_network_cidr     = "172.30.0.0/16"
@@ -190,9 +224,11 @@ resource "oai_cluster" "test" {
   additional_ntp_source   = "ntp.example.com"
   
   control_plane_count    = 3
+  schedulable_masters    = false  # Don't schedule workloads on masters for multi-node
   high_availability_mode = "Full"  # Deprecated, but still supported for backward compatibility
   hyperthreading        = "Enabled"
   network_type          = "OVNKubernetes"
+  tags                  = "test,cluster,complete"
   trigger_installation  = false  # Don't trigger installation in tests
   
   olm_operators {
@@ -203,6 +239,41 @@ resource "oai_cluster" "test" {
   olm_operators {
     name       = "odf-operator"
     properties = "{\"version\":\"4.15\",\"namespace\":\"openshift-storage\"}"
+  }
+  
+  timeouts {
+    create = "90m"
+    update = "30m"
+  }
+}
+`
+}
+
+func testAccClusterResourceSNOConfig() string {
+	return `
+provider "oai" {
+  endpoint = "https://api.openshift.com/api/assisted-install"
+  token    = "test-token"
+}
+
+resource "oai_cluster" "test" {
+  name              = "sno-cluster"
+  openshift_version = "4.15.20"
+  pull_secret       = "fake-pull-secret-for-testing"
+  cpu_architecture  = "x86_64"
+  
+  base_dns_domain      = "example.com"
+  control_plane_count  = 1           # Single node
+  schedulable_masters  = true        # Allow workloads on master for SNO
+  trigger_installation = false       # Don't trigger installation in tests
+  
+  # SNO-specific configuration
+  cluster_network_cidr = "10.128.0.0/14"
+  service_network_cidr = "172.30.0.0/16"
+  
+  # Optional: Add minimal operators for functionality  
+  olm_operators {
+    name = "lso"  # Local Storage Operator for storage
   }
   
   timeouts {
