@@ -298,6 +298,105 @@ resource "local_file" "kubeconfig" {
 - `metadata.json` - Cluster metadata
 - `manifests` - Applied manifests
 
+### Validation Data Sources
+
+#### `oai_cluster_validations`
+
+Checks cluster-level validation status for pre-installation readiness.
+
+```hcl
+data "oai_cluster_validations" "ready" {
+  cluster_id        = oai_cluster.example.id
+  validation_type   = "blocking"
+  status            = "failure"
+}
+
+# Ensure cluster is ready before installation
+locals {
+  cluster_ready = length(data.oai_cluster_validations.ready.validations) == 0
+}
+```
+
+#### `oai_host_validations`
+
+Validates host readiness for cluster installation.
+
+```hcl
+data "oai_host_validations" "hosts" {
+  cluster_id = oai_cluster.example.id
+  categories = ["hardware", "network"]
+}
+
+# Check if all hosts pass validation
+locals {
+  hosts_ready = alltrue([
+    for host in data.oai_host_validations.hosts.validations :
+    alltrue([for v in host.validations : v.status == "success"])
+  ])
+}
+```
+
+### Resource Information Data Sources
+
+#### `oai_cluster`
+
+Retrieves information about an existing cluster.
+
+```hcl
+data "oai_cluster" "existing" {
+  cluster_id = var.cluster_id
+}
+
+output "cluster_status" {
+  value = data.oai_cluster.existing.status
+}
+```
+
+#### `oai_infra_env`
+
+Gets infrastructure environment details including discovery ISO URL.
+
+```hcl
+data "oai_infra_env" "discovery" {
+  infra_env_id = oai_infra_env.example.id
+}
+
+output "iso_download" {
+  value = data.oai_infra_env.discovery.download_url
+}
+```
+
+#### `oai_host`
+
+Retrieves discovered host information.
+
+```hcl
+data "oai_host" "master1" {
+  infra_env_id = oai_infra_env.example.id
+  host_id      = var.master1_host_id
+}
+
+output "host_inventory" {
+  value = data.oai_host.master1.inventory
+}
+```
+
+#### `oai_manifest`
+
+Downloads manifest content from a cluster.
+
+```hcl
+data "oai_manifest" "custom" {
+  cluster_id = oai_cluster.example.id
+  file_name  = "99-custom-config.yaml"
+  folder     = "manifests"
+}
+
+output "manifest_content" {
+  value = data.oai_manifest.custom.content
+}
+```
+
 ## Workflow Patterns
 
 ### Complete Cluster Lifecycle
