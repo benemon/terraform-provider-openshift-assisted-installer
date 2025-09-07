@@ -97,7 +97,7 @@ func (d *ClusterLogsDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	// Build query parameters
 	params := make(map[string]string)
-	
+
 	if !data.LogsType.IsNull() && !data.LogsType.IsUnknown() {
 		params["logs_type"] = data.LogsType.ValueString()
 	}

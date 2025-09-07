@@ -11,16 +11,16 @@ type Credentials struct {
 
 // Event represents a cluster or host event
 type Event struct {
-	Name        string    `json:"name,omitempty"`
-	ClusterID   string    `json:"cluster_id,omitempty"`
-	HostID      string    `json:"host_id,omitempty"`
-	InfraEnvID  string    `json:"infra_env_id,omitempty"`
-	Severity    string    `json:"severity"`
-	Category    string    `json:"category,omitempty"`
-	Message     string    `json:"message"`
-	EventTime   time.Time `json:"event_time"`
-	RequestID   string    `json:"request_id,omitempty"`
-	Props       string    `json:"props,omitempty"`
+	Name       string    `json:"name,omitempty"`
+	ClusterID  string    `json:"cluster_id,omitempty"`
+	HostID     string    `json:"host_id,omitempty"`
+	InfraEnvID string    `json:"infra_env_id,omitempty"`
+	Severity   string    `json:"severity"`
+	Category   string    `json:"category,omitempty"`
+	Message    string    `json:"message"`
+	EventTime  time.Time `json:"event_time"`
+	RequestID  string    `json:"request_id,omitempty"`
+	Props      string    `json:"props,omitempty"`
 }
 
 // EventsResponse represents the response from the events API

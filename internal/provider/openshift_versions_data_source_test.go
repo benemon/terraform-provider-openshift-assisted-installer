@@ -15,11 +15,11 @@ import (
 
 func TestOpenShiftVersionsDataSource_Read(t *testing.T) {
 	tests := []struct {
-		name           string
-		mockResponse   string
-		config         OpenShiftVersionsDataSourceModel
-		expectedCount  int
-		expectError    bool
+		name          string
+		mockResponse  string
+		config        OpenShiftVersionsDataSourceModel
+		expectedCount int
+		expectError   bool
 	}{
 		{
 			name: "successful fetch all versions",
@@ -79,7 +79,7 @@ func TestOpenShiftVersionsDataSource_Read(t *testing.T) {
 			expectError:   false,
 		},
 		{
-			name: "empty response",
+			name:         "empty response",
 			mockResponse: `{}`,
 			config: OpenShiftVersionsDataSourceModel{
 				Version:    types.StringNull(),
@@ -98,17 +98,17 @@ func TestOpenShiftVersionsDataSource_Read(t *testing.T) {
 				if r.Method == "GET" && r.URL.Path == "/v2/openshift-versions" {
 					w.Header().Set("Content-Type", "application/json")
 					w.WriteHeader(http.StatusOK)
-					w.Write([]byte(tt.mockResponse))
+					_, _ = w.Write([]byte(tt.mockResponse))
 					return
 				}
 				w.WriteHeader(http.StatusNotFound)
-				w.Write([]byte(fmt.Sprintf("Not found: %s %s", r.Method, r.URL.String())))
+				_, _ = fmt.Fprintf(w, "Not found: %s %s", r.Method, r.URL.String())
 			}))
 			defer server.Close()
 
 			// Create client
 			client := client.NewClient(client.ClientConfig{
-				BaseURL: server.URL,
+				BaseURL:      server.URL,
 				OfflineToken: "test-token",
 			})
 
@@ -118,11 +118,11 @@ func TestOpenShiftVersionsDataSource_Read(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			
+
 			// Extract filter parameters
 			var versionFilter string
 			var onlyLatest bool
-			
+
 			if !tt.config.Version.IsNull() {
 				versionFilter = tt.config.Version.ValueString()
 			}
@@ -168,16 +168,16 @@ func TestOpenShiftVersionsDataSource_Read(t *testing.T) {
 
 func TestOpenShiftVersionsDataSource_Schema(t *testing.T) {
 	dataSource := NewOpenShiftVersionsDataSource()
-	
+
 	req := datasource.SchemaRequest{}
 	resp := &datasource.SchemaResponse{}
-	
+
 	dataSource.Schema(context.Background(), req, resp)
-	
+
 	if resp.Schema.Attributes == nil {
 		t.Error("Schema should have attributes")
 	}
-	
+
 	// Check required attributes
 	requiredAttrs := []string{"id", "versions"}
 	for _, attr := range requiredAttrs {
@@ -185,7 +185,7 @@ func TestOpenShiftVersionsDataSource_Schema(t *testing.T) {
 			t.Errorf("Schema missing required attribute: %s", attr)
 		}
 	}
-	
+
 	// Check optional attributes
 	optionalAttrs := []string{"version", "only_latest"}
 	for _, attr := range optionalAttrs {
@@ -197,14 +197,14 @@ func TestOpenShiftVersionsDataSource_Schema(t *testing.T) {
 
 func TestOpenShiftVersionsDataSource_Metadata(t *testing.T) {
 	dataSource := NewOpenShiftVersionsDataSource()
-	
+
 	req := datasource.MetadataRequest{
 		ProviderTypeName: "oai",
 	}
 	resp := &datasource.MetadataResponse{}
-	
+
 	dataSource.Metadata(context.Background(), req, resp)
-	
+
 	expected := "oai_openshift_versions"
 	if resp.TypeName != expected {
 		t.Errorf("Expected TypeName %q, got %q", expected, resp.TypeName)

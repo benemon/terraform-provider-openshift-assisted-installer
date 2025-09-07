@@ -13,9 +13,9 @@ import (
 
 func TestNewClient(t *testing.T) {
 	tests := []struct {
-		name     string
-		config   ClientConfig
-		wantURL  string
+		name      string
+		config    ClientConfig
+		wantURL   string
 		wantToken string
 	}{
 		{
@@ -23,25 +23,25 @@ func TestNewClient(t *testing.T) {
 			config: ClientConfig{
 				OfflineToken: "test-token",
 			},
-			wantURL:  "https://api.openshift.com/api/assisted-install",
+			wantURL:   "https://api.openshift.com/api/assisted-install",
 			wantToken: "test-token",
 		},
 		{
 			name: "custom endpoint",
 			config: ClientConfig{
-				BaseURL: "https://custom.api.example.com",
-				OfflineToken:   "custom-token",
+				BaseURL:      "https://custom.api.example.com",
+				OfflineToken: "custom-token",
 			},
-			wantURL:  "https://custom.api.example.com",
+			wantURL:   "https://custom.api.example.com",
 			wantToken: "custom-token",
 		},
 		{
 			name: "custom timeout",
 			config: ClientConfig{
 				OfflineToken: "test-token",
-				Timeout: 60 * time.Second,
+				Timeout:      60 * time.Second,
 			},
-			wantURL:  "https://api.openshift.com/api/assisted-install",
+			wantURL:   "https://api.openshift.com/api/assisted-install",
 			wantToken: "test-token",
 		},
 	}
@@ -49,15 +49,15 @@ func TestNewClient(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			client := NewClient(tt.config)
-			
+
 			if client.baseURL != tt.wantURL {
 				t.Errorf("NewClient() baseURL = %v, want %v", client.baseURL, tt.wantURL)
 			}
-			
+
 			if client.offlineToken != tt.wantToken {
 				t.Errorf("NewClient() token = %v, want %v", client.offlineToken, tt.wantToken)
 			}
-			
+
 			if client.httpClient == nil {
 				t.Error("NewClient() httpClient is nil")
 			}
@@ -81,39 +81,39 @@ func TestClient_CreateCluster(t *testing.T) {
 		if r.Method != "POST" {
 			t.Errorf("Expected POST request, got %s", r.Method)
 		}
-		
+
 		if r.URL.Path != "/v2/clusters" {
 			t.Errorf("Expected path /v2/clusters, got %s", r.URL.Path)
 		}
-		
+
 		if r.Header.Get("Authorization") != "Bearer test-token" {
 			t.Errorf("Expected Authorization header 'Bearer test-token', got %s", r.Header.Get("Authorization"))
 		}
-		
+
 		if r.Header.Get("Content-Type") != "application/json" {
 			t.Errorf("Expected Content-Type header 'application/json', got %s", r.Header.Get("Content-Type"))
 		}
-		
+
 		// Decode request body
 		var params models.ClusterCreateParams
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			t.Errorf("Failed to decode request body: %v", err)
 		}
-		
+
 		// Verify request params
 		if params.Name != "test-cluster" {
 			t.Errorf("Expected cluster name 'test-cluster', got %s", params.Name)
 		}
-		
+
 		// Send response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(expectedCluster)
+		_ = json.NewEncoder(w).Encode(expectedCluster)
 	}))
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
 	})
 
@@ -131,7 +131,7 @@ func TestClient_CreateCluster(t *testing.T) {
 	if cluster.ID != expectedCluster.ID {
 		t.Errorf("CreateCluster() ID = %v, want %v", cluster.ID, expectedCluster.ID)
 	}
-	
+
 	if cluster.Name != expectedCluster.Name {
 		t.Errorf("CreateCluster() Name = %v, want %v", cluster.Name, expectedCluster.Name)
 	}
@@ -152,20 +152,20 @@ func TestClient_GetCluster(t *testing.T) {
 		if r.Method != "GET" {
 			t.Errorf("Expected GET request, got %s", r.Method)
 		}
-		
+
 		if r.URL.Path != "/v2/clusters/test-cluster-id" {
 			t.Errorf("Expected path /v2/clusters/test-cluster-id, got %s", r.URL.Path)
 		}
-		
+
 		// Send response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(expectedCluster)
+		_ = json.NewEncoder(w).Encode(expectedCluster)
 	}))
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
 	})
 
@@ -177,7 +177,7 @@ func TestClient_GetCluster(t *testing.T) {
 	if cluster.ID != expectedCluster.ID {
 		t.Errorf("GetCluster() ID = %v, want %v", cluster.ID, expectedCluster.ID)
 	}
-	
+
 	if cluster.Status != expectedCluster.Status {
 		t.Errorf("GetCluster() Status = %v, want %v", cluster.Status, expectedCluster.Status)
 	}
@@ -189,18 +189,18 @@ func TestClient_DeleteCluster(t *testing.T) {
 		if r.Method != "DELETE" {
 			t.Errorf("Expected DELETE request, got %s", r.Method)
 		}
-		
+
 		if r.URL.Path != "/v2/clusters/test-cluster-id" {
 			t.Errorf("Expected path /v2/clusters/test-cluster-id, got %s", r.URL.Path)
 		}
-		
+
 		// Send response
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
 	})
 
@@ -212,10 +212,10 @@ func TestClient_DeleteCluster(t *testing.T) {
 
 func TestClient_ErrorHandling(t *testing.T) {
 	tests := []struct {
-		name           string
-		statusCode     int
-		responseBody   string
-		wantErrorMsg   string
+		name         string
+		statusCode   int
+		responseBody string
+		wantErrorMsg string
 	}{
 		{
 			name:         "bad request",
@@ -248,12 +248,12 @@ func TestClient_ErrorHandling(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(tt.statusCode)
-				w.Write([]byte(tt.responseBody))
+				_, _ = w.Write([]byte(tt.responseBody))
 			}))
 			defer server.Close()
 
 			client := NewClient(ClientConfig{
-				BaseURL: server.URL,
+				BaseURL:      server.URL,
 				OfflineToken: "test-token",
 			})
 
@@ -285,19 +285,19 @@ func TestClient_ListClusters(t *testing.T) {
 		if r.Method != "GET" {
 			t.Errorf("Expected GET request, got %s", r.Method)
 		}
-		
+
 		if r.URL.Path != "/v2/clusters" {
 			t.Errorf("Expected path /v2/clusters, got %s", r.URL.Path)
 		}
-		
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(expectedClusters)
+		_ = json.NewEncoder(w).Encode(expectedClusters)
 	}))
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
 	})
 
@@ -319,7 +319,7 @@ func TestClient_ListClusters(t *testing.T) {
 
 func TestClient_DownloadManifestContent(t *testing.T) {
 	expectedContent := "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: test-manifest"
-	
+
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/v2/clusters/cluster-123/manifests/files" {
 			// Verify query parameters
@@ -329,10 +329,10 @@ func TestClient_DownloadManifestContent(t *testing.T) {
 			if r.URL.Query().Get("folder") != "manifests" {
 				t.Errorf("Expected folder=manifests, got %s", r.URL.Query().Get("folder"))
 			}
-			
+
 			w.Header().Set("Content-Type", "application/octet-stream")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(expectedContent))
+			_, _ = w.Write([]byte(expectedContent))
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
@@ -340,7 +340,7 @@ func TestClient_DownloadManifestContent(t *testing.T) {
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
 	})
 

@@ -15,7 +15,7 @@ type ClusterValidationResponse struct {
 	ValidationsInfo map[string][]ValidationInfo `json:"validations_info"`
 }
 
-// HostValidationResponse represents host validation response  
+// HostValidationResponse represents host validation response
 type HostValidationResponse struct {
 	ID              string                      `json:"id"`
 	ValidationsInfo map[string][]ValidationInfo `json:"validations_info"`
@@ -49,66 +49,66 @@ const (
 	// Connection and inventory validations
 	HostValidationConnected    = "connected"
 	HostValidationHasInventory = "has-inventory"
-	
+
 	// Resource requirement validations
-	HostValidationHasMinCPUCores    = "has-min-cpu-cores"
-	HostValidationHasMinMemory      = "has-min-memory"
-	HostValidationHasMinValidDisks  = "has-min-valid-disks"
+	HostValidationHasMinCPUCores     = "has-min-cpu-cores"
+	HostValidationHasMinMemory       = "has-min-memory"
+	HostValidationHasMinValidDisks   = "has-min-valid-disks"
 	HostValidationHasCPUCoresForRole = "has-cpu-cores-for-role"
 	HostValidationHasMemoryForRole   = "has-memory-for-role"
-	
+
 	// Network validations
-	HostValidationHasDefaultRoute           = "has-default-route"
-	HostValidationAPIDomainNameResolved     = "api-domain-name-resolved-correctly"
-	HostValidationAPIIntDomainNameResolved  = "api-int-domain-name-resolved-correctly"  
-	HostValidationAppsDomainNameResolved    = "apps-domain-name-resolved-correctly"
-	HostValidationNonOverlappingSubnets     = "non-overlapping-subnets"
-	HostValidationBelongsToMachineCIDR      = "belongs-to-machine-cidr"
-	
+	HostValidationHasDefaultRoute          = "has-default-route"
+	HostValidationAPIDomainNameResolved    = "api-domain-name-resolved-correctly"
+	HostValidationAPIIntDomainNameResolved = "api-int-domain-name-resolved-correctly"
+	HostValidationAppsDomainNameResolved   = "apps-domain-name-resolved-correctly"
+	HostValidationNonOverlappingSubnets    = "non-overlapping-subnets"
+	HostValidationBelongsToMachineCIDR     = "belongs-to-machine-cidr"
+
 	// Host identity validations
 	HostValidationHostnameUnique = "hostname-unique"
 	HostValidationHostnameValid  = "hostname-valid"
-	
+
 	// Operator requirement validations
 	HostValidationLSORequirements = "lso-requirements-satisfied"
 	HostValidationODFRequirements = "odf-requirements-satisfied"
 	HostValidationCNVRequirements = "cnv-requirements-satisfied"
 	HostValidationLVMRequirements = "lvm-requirements-satisfied"
-	
+
 	// Disk and storage validations
 	HostValidationSufficientInstallationDiskSpeed = "sufficient-installation-diskspeed"
-	HostValidationNoSkipInstallationDisk         = "no-skip-installation-disk"
-	HostValidationNoSkipMissingDisk              = "no-skip-missing-disk"
-	HostValidationDiskEncryptionRequirements     = "disk-encryption-requirements-satisfied"
-	
+	HostValidationNoSkipInstallationDisk          = "no-skip-installation-disk"
+	HostValidationNoSkipMissingDisk               = "no-skip-missing-disk"
+	HostValidationDiskEncryptionRequirements      = "disk-encryption-requirements-satisfied"
+
 	// Platform and compatibility validations
 	HostValidationCompatibleWithClusterPlatform = "compatible-with-cluster-platform"
-	HostValidationValidPlatformNetworkSettings   = "valid-platform-network-settings"
+	HostValidationValidPlatformNetworkSettings  = "valid-platform-network-settings"
 	HostValidationCompatibleAgent               = "compatible-agent"
-	
+
 	// Network performance validations
 	HostValidationSufficientNetworkLatency = "sufficient-network-latency-requirement-for-role"
 	HostValidationSufficientPacketLoss     = "sufficient-packet-loss-requirement-for-role"
-	
+
 	// Time and container validations
-	HostValidationNTPSynced                  = "ntp-synced"
-	HostValidationContainerImagesAvailable   = "container-images-available"
-	
+	HostValidationNTPSynced                = "ntp-synced"
+	HostValidationContainerImagesAvailable = "container-images-available"
+
 	// DNS validations
 	HostValidationDNSWildcardNotConfigured = "dns-wildcard-not-configured"
-	
+
 	// Group and cluster membership
 	HostValidationBelongsToMajorityGroup = "belongs-to-majority-group"
-	
+
 	// Platform-specific validations
 	HostValidationVSphereDiskUUIDEnabled = "vsphere-disk-uuid-enabled"
-	
+
 	// Installation media validation
 	HostValidationMediaConnected = "media-connected"
-	
+
 	// Network MTU validation
 	HostValidationMTUValid = "mtu-valid"
-	
+
 	// Ignition validation (Day 2)
 	HostValidationIgnitionDownloadable = "ignition-downloadable"
 )
@@ -119,29 +119,29 @@ const (
 	ClusterValidationMachineCIDRDefined = "machine-cidr-defined"
 	ClusterValidationClusterCIDRDefined = "cluster-cidr-defined"
 	ClusterValidationServiceCIDRDefined = "service-cidr-defined"
-	
+
 	// Network overlap and validity validations
-	ClusterValidationNoCIDRsOverlapping         = "no-cidrs-overlapping"
+	ClusterValidationNoCIDRsOverlapping          = "no-cidrs-overlapping"
 	ClusterValidationNetworksSameAddressFamilies = "networks-same-address-families"
-	ClusterValidationNetworkPrefixValid         = "network-prefix-valid"
-	ClusterValidationNetworkTypeValid           = "network-type-valid"
-	
+	ClusterValidationNetworkPrefixValid          = "network-prefix-valid"
+	ClusterValidationNetworkTypeValid            = "network-type-valid"
+
 	// VIP validations
-	ClusterValidationAPIVIPsDefined            = "api-vips-defined"
-	ClusterValidationAPIVIPsValid              = "api-vips-valid"
-	ClusterValidationIngressVIPsDefined        = "ingress-vips-defined"
-	ClusterValidationIngressVIPsValid          = "ingress-vips-valid"
+	ClusterValidationAPIVIPsDefined              = "api-vips-defined"
+	ClusterValidationAPIVIPsValid                = "api-vips-valid"
+	ClusterValidationIngressVIPsDefined          = "ingress-vips-defined"
+	ClusterValidationIngressVIPsValid            = "ingress-vips-valid"
 	ClusterValidationMachineCIDREqualsCalculated = "machine-cidr-equals-to-calculated-cidr"
-	
+
 	// Host readiness validations
 	ClusterValidationAllHostsReadyToInstall = "all-hosts-are-ready-to-install"
 	ClusterValidationSufficientMastersCount = "sufficient-masters-count"
-	
+
 	// Cluster configuration validations
-	ClusterValidationDNSDomainDefined = "dns-domain-defined"
-	ClusterValidationPullSecretSet    = "pull-secret-set"
+	ClusterValidationDNSDomainDefined    = "dns-domain-defined"
+	ClusterValidationPullSecretSet       = "pull-secret-set"
 	ClusterValidationNTPServerConfigured = "ntp-server-configured"
-	
+
 	// Operator requirement validations
 	ClusterValidationLSORequirements = "lso-requirements-satisfied"
 	ClusterValidationODFRequirements = "odf-requirements-satisfied"
@@ -153,47 +153,47 @@ const (
 type ValidationCategory string
 
 const (
-	ValidationCategoryNetwork   ValidationCategory = "network"
-	ValidationCategoryHost      ValidationCategory = "hardware"
-	ValidationCategoryOperator  ValidationCategory = "operators"
-	ValidationCategoryCluster   ValidationCategory = "cluster"
-	ValidationCategoryPlatform  ValidationCategory = "platform"
-	ValidationCategoryStorage   ValidationCategory = "storage"
+	ValidationCategoryNetwork  ValidationCategory = "network"
+	ValidationCategoryHost     ValidationCategory = "hardware"
+	ValidationCategoryOperator ValidationCategory = "operators"
+	ValidationCategoryCluster  ValidationCategory = "cluster"
+	ValidationCategoryPlatform ValidationCategory = "platform"
+	ValidationCategoryStorage  ValidationCategory = "storage"
 )
 
 // GetValidationCategory returns the category for a given validation ID
 func GetValidationCategory(validationID string) ValidationCategory {
 	switch validationID {
 	case HostValidationHasDefaultRoute, HostValidationAPIDomainNameResolved,
-		 HostValidationAPIIntDomainNameResolved, HostValidationAppsDomainNameResolved,
-		 HostValidationNonOverlappingSubnets, HostValidationBelongsToMachineCIDR,
-		 HostValidationSufficientNetworkLatency, HostValidationSufficientPacketLoss,
-		 HostValidationMTUValid, ClusterValidationMachineCIDRDefined,
-		 ClusterValidationClusterCIDRDefined, ClusterValidationServiceCIDRDefined,
-		 ClusterValidationNoCIDRsOverlapping, ClusterValidationNetworksSameAddressFamilies,
-		 ClusterValidationNetworkPrefixValid, ClusterValidationAPIVIPsDefined,
-		 ClusterValidationAPIVIPsValid, ClusterValidationIngressVIPsDefined,
-		 ClusterValidationIngressVIPsValid, ClusterValidationNetworkTypeValid:
+		HostValidationAPIIntDomainNameResolved, HostValidationAppsDomainNameResolved,
+		HostValidationNonOverlappingSubnets, HostValidationBelongsToMachineCIDR,
+		HostValidationSufficientNetworkLatency, HostValidationSufficientPacketLoss,
+		HostValidationMTUValid, ClusterValidationMachineCIDRDefined,
+		ClusterValidationClusterCIDRDefined, ClusterValidationServiceCIDRDefined,
+		ClusterValidationNoCIDRsOverlapping, ClusterValidationNetworksSameAddressFamilies,
+		ClusterValidationNetworkPrefixValid, ClusterValidationAPIVIPsDefined,
+		ClusterValidationAPIVIPsValid, ClusterValidationIngressVIPsDefined,
+		ClusterValidationIngressVIPsValid, ClusterValidationNetworkTypeValid:
 		return ValidationCategoryNetwork
-		
+
 	case HostValidationHasMinCPUCores, HostValidationHasMinMemory,
-		 HostValidationHasMinValidDisks, HostValidationHasCPUCoresForRole,
-		 HostValidationHasMemoryForRole, HostValidationConnected,
-		 HostValidationHasInventory:
+		HostValidationHasMinValidDisks, HostValidationHasCPUCoresForRole,
+		HostValidationHasMemoryForRole, HostValidationConnected,
+		HostValidationHasInventory:
 		return ValidationCategoryHost
-		
+
 	case HostValidationLSORequirements, HostValidationODFRequirements,
-		 HostValidationCNVRequirements, HostValidationLVMRequirements:
+		HostValidationCNVRequirements, HostValidationLVMRequirements:
 		return ValidationCategoryOperator
-		
+
 	case HostValidationSufficientInstallationDiskSpeed, HostValidationNoSkipInstallationDisk,
-		 HostValidationNoSkipMissingDisk, HostValidationDiskEncryptionRequirements:
+		HostValidationNoSkipMissingDisk, HostValidationDiskEncryptionRequirements:
 		return ValidationCategoryStorage
-		
+
 	case HostValidationCompatibleWithClusterPlatform, HostValidationValidPlatformNetworkSettings,
-		 HostValidationVSphereDiskUUIDEnabled, HostValidationCompatibleAgent:
+		HostValidationVSphereDiskUUIDEnabled, HostValidationCompatibleAgent:
 		return ValidationCategoryPlatform
-		
+
 	default:
 		return ValidationCategoryCluster
 	}
@@ -228,19 +228,19 @@ func IsBlockingValidation(validationID string) bool {
 		HostValidationNoSkipInstallationDisk:          true,
 		HostValidationNoSkipMissingDisk:               true,
 		HostValidationMediaConnected:                  true,
-		
+
 		// Cluster blocking validations
-		ClusterValidationNoCIDRsOverlapping:         true,
+		ClusterValidationNoCIDRsOverlapping:          true,
 		ClusterValidationNetworksSameAddressFamilies: true,
-		ClusterValidationNetworkPrefixValid:         true,
+		ClusterValidationNetworkPrefixValid:          true,
 		ClusterValidationMachineCIDREqualsCalculated: true,
-		ClusterValidationAPIVIPsValid:               true,
-		ClusterValidationIngressVIPsDefined:         true,
-		ClusterValidationAllHostsReadyToInstall:     true,
-		ClusterValidationSufficientMastersCount:     true,
-		ClusterValidationNTPServerConfigured:        true,
-		ClusterValidationNetworkTypeValid:           true,
+		ClusterValidationAPIVIPsValid:                true,
+		ClusterValidationIngressVIPsDefined:          true,
+		ClusterValidationAllHostsReadyToInstall:      true,
+		ClusterValidationSufficientMastersCount:      true,
+		ClusterValidationNTPServerConfigured:         true,
+		ClusterValidationNetworkTypeValid:            true,
 	}
-	
+
 	return blockingValidations[validationID]
 }

@@ -24,32 +24,32 @@ type ClusterEventsDataSource struct {
 
 // ClusterEventsDataSourceModel describes the data source data model.
 type ClusterEventsDataSourceModel struct {
-	ID           types.String              `tfsdk:"id"`
-	ClusterID    types.String              `tfsdk:"cluster_id"`
-	HostID       types.String              `tfsdk:"host_id"`
-	InfraEnvID   types.String              `tfsdk:"infra_env_id"`
-	Severities   types.List                `tfsdk:"severities"`
-	Categories   types.List                `tfsdk:"categories"`
-	Message      types.String              `tfsdk:"message"`
-	Order        types.String              `tfsdk:"order"`
-	Limit        types.Int64               `tfsdk:"limit"`
-	Offset       types.Int64               `tfsdk:"offset"`
-	ClusterLevel types.Bool                `tfsdk:"cluster_level"`
-	Events       []EventModel              `tfsdk:"events"`
+	ID           types.String `tfsdk:"id"`
+	ClusterID    types.String `tfsdk:"cluster_id"`
+	HostID       types.String `tfsdk:"host_id"`
+	InfraEnvID   types.String `tfsdk:"infra_env_id"`
+	Severities   types.List   `tfsdk:"severities"`
+	Categories   types.List   `tfsdk:"categories"`
+	Message      types.String `tfsdk:"message"`
+	Order        types.String `tfsdk:"order"`
+	Limit        types.Int64  `tfsdk:"limit"`
+	Offset       types.Int64  `tfsdk:"offset"`
+	ClusterLevel types.Bool   `tfsdk:"cluster_level"`
+	Events       []EventModel `tfsdk:"events"`
 }
 
 // EventModel represents a single event
 type EventModel struct {
-	Name        types.String `tfsdk:"name"`
-	ClusterID   types.String `tfsdk:"cluster_id"`
-	HostID      types.String `tfsdk:"host_id"`
-	InfraEnvID  types.String `tfsdk:"infra_env_id"`
-	Severity    types.String `tfsdk:"severity"`
-	Category    types.String `tfsdk:"category"`
-	Message     types.String `tfsdk:"message"`
-	EventTime   types.String `tfsdk:"event_time"`
-	RequestID   types.String `tfsdk:"request_id"`
-	Props       types.String `tfsdk:"props"`
+	Name       types.String `tfsdk:"name"`
+	ClusterID  types.String `tfsdk:"cluster_id"`
+	HostID     types.String `tfsdk:"host_id"`
+	InfraEnvID types.String `tfsdk:"infra_env_id"`
+	Severity   types.String `tfsdk:"severity"`
+	Category   types.String `tfsdk:"category"`
+	Message    types.String `tfsdk:"message"`
+	EventTime  types.String `tfsdk:"event_time"`
+	RequestID  types.String `tfsdk:"request_id"`
+	Props      types.String `tfsdk:"props"`
 }
 
 func (d *ClusterEventsDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -192,7 +192,7 @@ func (d *ClusterEventsDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	// Build query parameters
 	params := make(map[string]string)
-	
+
 	if !data.HostID.IsNull() && !data.HostID.IsUnknown() {
 		params["host_id"] = data.HostID.ValueString()
 	}
@@ -258,16 +258,16 @@ func (d *ClusterEventsDataSource) Read(ctx context.Context, req datasource.ReadR
 	events := make([]EventModel, len(eventsResp.Events))
 	for i, event := range eventsResp.Events {
 		events[i] = EventModel{
-			Name:        types.StringValue(event.Name),
-			ClusterID:   types.StringValue(event.ClusterID),
-			HostID:      types.StringValue(event.HostID),
-			InfraEnvID:  types.StringValue(event.InfraEnvID),
-			Severity:    types.StringValue(event.Severity),
-			Category:    types.StringValue(event.Category),
-			Message:     types.StringValue(event.Message),
-			EventTime:   types.StringValue(event.EventTime.Format("2006-01-02T15:04:05Z07:00")),
-			RequestID:   types.StringValue(event.RequestID),
-			Props:       types.StringValue(event.Props),
+			Name:       types.StringValue(event.Name),
+			ClusterID:  types.StringValue(event.ClusterID),
+			HostID:     types.StringValue(event.HostID),
+			InfraEnvID: types.StringValue(event.InfraEnvID),
+			Severity:   types.StringValue(event.Severity),
+			Category:   types.StringValue(event.Category),
+			Message:    types.StringValue(event.Message),
+			EventTime:  types.StringValue(event.EventTime.Format("2006-01-02T15:04:05Z07:00")),
+			RequestID:  types.StringValue(event.RequestID),
+			Props:      types.StringValue(event.Props),
 		}
 	}
 

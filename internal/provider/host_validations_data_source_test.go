@@ -17,14 +17,14 @@ import (
 
 func TestHostValidationsDataSource_Read(t *testing.T) {
 	tests := []struct {
-		name            string
-		mockResponse    string
-		config          HostValidationsDataSourceModel
-		expectedCount   int
-		expectError     bool
-		checkBlocking   bool
-		checkStatus     string
-		checkHostCount  int
+		name           string
+		mockResponse   string
+		config         HostValidationsDataSourceModel
+		expectedCount  int
+		expectError    bool
+		checkBlocking  bool
+		checkStatus    string
+		checkHostCount int
 	}{
 		{
 			name: "successful fetch all host validations for cluster",
@@ -256,23 +256,23 @@ func TestHostValidationsDataSource_Read(t *testing.T) {
 					// Cluster hosts endpoint: /v2/clusters/{id}/hosts
 					validPath = r.Method == "GET" && strings.Contains(r.URL.Path, "/v2/clusters/") && strings.Contains(r.URL.Path, "/hosts")
 				} else {
-					// Single host endpoint: /v2/infra-envs/{id}/hosts/{hostId}  
+					// Single host endpoint: /v2/infra-envs/{id}/hosts/{hostId}
 					validPath = r.Method == "GET" && strings.Contains(r.URL.Path, "/v2/infra-envs/") && strings.Contains(r.URL.Path, "/hosts/")
 				}
 
 				if validPath {
 					if tt.expectError {
 						w.WriteHeader(http.StatusNotFound)
-						w.Write([]byte(tt.mockResponse))
+						_, _ = w.Write([]byte(tt.mockResponse))
 						return
 					}
 					w.Header().Set("Content-Type", "application/json")
 					w.WriteHeader(http.StatusOK)
-					w.Write([]byte(tt.mockResponse))
+					_, _ = w.Write([]byte(tt.mockResponse))
 					return
 				}
 				w.WriteHeader(http.StatusNotFound)
-				w.Write([]byte(fmt.Sprintf("Not found: %s %s", r.Method, r.URL.String())))
+				_, _ = fmt.Fprintf(w, "Not found: %s %s", r.Method, r.URL.String())
 			}))
 			defer server.Close()
 
@@ -341,7 +341,7 @@ func TestHostValidationsDataSource_Read(t *testing.T) {
 							if isBlockingHostValidation(validationID) {
 								validationType = "blocking"
 							}
-							
+
 							found := false
 							for _, filterType := range tt.config.ValidationTypes {
 								if strings.EqualFold(validationType, filterType.ValueString()) {
@@ -423,31 +423,31 @@ func TestHostValidationsDataSource_Read(t *testing.T) {
 // Helper function to check if a host validation is blocking
 func isBlockingHostValidation(validationID string) bool {
 	blockingValidations := map[string]bool{
-		"has-cpu-cores-for-role":              true,
-		"has-memory-for-role":                 true,
-		"ignition-downloadable":               true,
-		"belongs-to-majority-group":           true,
-		"valid-platform-network-settings":    true,
-		"sufficient-installation-diskspeed":   true,
-		"sufficient-network-latency":          true,
-		"sufficient-packet-loss":              true,
-		"has-default-route":                   true,
-		"api-domain-name-resolved-correctly":  true,
+		"has-cpu-cores-for-role":                 true,
+		"has-memory-for-role":                    true,
+		"ignition-downloadable":                  true,
+		"belongs-to-majority-group":              true,
+		"valid-platform-network-settings":        true,
+		"sufficient-installation-diskspeed":      true,
+		"sufficient-network-latency":             true,
+		"sufficient-packet-loss":                 true,
+		"has-default-route":                      true,
+		"api-domain-name-resolved-correctly":     true,
 		"api-int-domain-name-resolved-correctly": true,
-		"apps-domain-name-resolved-correctly": true,
-		"dns-wildcard-not-configured":         true,
-		"non-overlapping-subnets":             true,
-		"hostname-unique":                     true,
-		"hostname-valid":                      true,
-		"belongs-to-machine-cidr":             true,
-		"lso-requirements-satisfied":          true,
-		"odf-requirements-satisfied":          true,
-		"cnv-requirements-satisfied":          true,
-		"lvm-requirements-satisfied":          true,
-		"compatible-agent":                    true,
-		"no-skip-installation-disk":           true,
-		"no-skip-missing-disk":                true,
-		"media-connected":                     true,
+		"apps-domain-name-resolved-correctly":    true,
+		"dns-wildcard-not-configured":            true,
+		"non-overlapping-subnets":                true,
+		"hostname-unique":                        true,
+		"hostname-valid":                         true,
+		"belongs-to-machine-cidr":                true,
+		"lso-requirements-satisfied":             true,
+		"odf-requirements-satisfied":             true,
+		"cnv-requirements-satisfied":             true,
+		"lvm-requirements-satisfied":             true,
+		"compatible-agent":                       true,
+		"no-skip-installation-disk":              true,
+		"no-skip-missing-disk":                   true,
+		"media-connected":                        true,
 	}
 	return blockingValidations[validationID]
 }
@@ -460,57 +460,57 @@ func getCategoryForHostValidation(validationID string) string {
 		"non-overlapping-subnets", "belongs-to-machine-cidr",
 		"sufficient-network-latency", "sufficient-packet-loss", "mtu-valid",
 	}
-	
+
 	hardwareValidations := []string{
 		"has-min-cpu-cores", "has-min-memory", "has-min-valid-disks",
 		"has-cpu-cores-for-role", "has-memory-for-role", "connected", "has-inventory",
 	}
-	
+
 	operatorValidations := []string{
 		"lso-requirements-satisfied", "odf-requirements-satisfied",
 		"cnv-requirements-satisfied", "lvm-requirements-satisfied",
 	}
-	
+
 	storageValidations := []string{
 		"sufficient-installation-diskspeed", "no-skip-installation-disk",
 		"no-skip-missing-disk", "disk-encryption-requirements-satisfied",
 	}
-	
+
 	platformValidations := []string{
 		"compatible-with-cluster-platform", "valid-platform-network-settings",
 		"vsphere-disk-uuid-enabled", "compatible-agent",
 	}
-	
+
 	for _, netVal := range networkValidations {
 		if netVal == validationID {
 			return "network"
 		}
 	}
-	
+
 	for _, hwVal := range hardwareValidations {
 		if hwVal == validationID {
 			return "hardware"
 		}
 	}
-	
+
 	for _, opVal := range operatorValidations {
 		if opVal == validationID {
 			return "operators"
 		}
 	}
-	
+
 	for _, storageVal := range storageValidations {
 		if storageVal == validationID {
 			return "storage"
 		}
 	}
-	
+
 	for _, platformVal := range platformValidations {
 		if platformVal == validationID {
 			return "platform"
 		}
 	}
-	
+
 	return "cluster" // Default category
 }
 

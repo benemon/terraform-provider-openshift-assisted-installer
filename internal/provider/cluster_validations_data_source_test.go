@@ -16,13 +16,13 @@ import (
 
 func TestClusterValidationsDataSource_Read(t *testing.T) {
 	tests := []struct {
-		name            string
-		mockResponse    string
-		config          ClusterValidationsDataSourceModel
-		expectedCount   int
-		expectError     bool
-		checkBlocking   bool
-		checkStatus     string
+		name          string
+		mockResponse  string
+		config        ClusterValidationsDataSourceModel
+		expectedCount int
+		expectError   bool
+		checkBlocking bool
+		checkStatus   string
 	}{
 		{
 			name: "successful fetch all cluster validations",
@@ -189,16 +189,16 @@ func TestClusterValidationsDataSource_Read(t *testing.T) {
 				if r.Method == "GET" && strings.Contains(r.URL.Path, "/v2/clusters/") && !strings.Contains(r.URL.Path, "/hosts") {
 					if tt.expectError {
 						w.WriteHeader(http.StatusNotFound)
-						w.Write([]byte(tt.mockResponse))
+						_, _ = w.Write([]byte(tt.mockResponse))
 						return
 					}
 					w.Header().Set("Content-Type", "application/json")
 					w.WriteHeader(http.StatusOK)
-					w.Write([]byte(tt.mockResponse))
+					_, _ = w.Write([]byte(tt.mockResponse))
 					return
 				}
 				w.WriteHeader(http.StatusNotFound)
-				w.Write([]byte(fmt.Sprintf("Not found: %s %s", r.Method, r.URL.String())))
+				_, _ = fmt.Fprintf(w, "Not found: %s %s", r.Method, r.URL.String())
 			}))
 			defer server.Close()
 
@@ -246,7 +246,7 @@ func TestClusterValidationsDataSource_Read(t *testing.T) {
 						if isBlockingClusterValidation(validationID) {
 							validationType = "blocking"
 						}
-						
+
 						found := false
 						for _, filterType := range tt.config.ValidationTypes {
 							if strings.EqualFold(validationType, filterType.ValueString()) {
@@ -327,16 +327,16 @@ func TestClusterValidationsDataSource_Read(t *testing.T) {
 // Helper function to check if a cluster validation is blocking
 func isBlockingClusterValidation(validationID string) bool {
 	blockingValidations := map[string]bool{
-		"api-vips-valid":                      true,
-		"all-hosts-are-ready-to-install":     true,
-		"sufficient-masters-count":           true,
-		"no-cidrs-overlapping":               true,
-		"networks-same-address-families":    true,
-		"network-prefix-valid":               true,
+		"api-vips-valid":                         true,
+		"all-hosts-are-ready-to-install":         true,
+		"sufficient-masters-count":               true,
+		"no-cidrs-overlapping":                   true,
+		"networks-same-address-families":         true,
+		"network-prefix-valid":                   true,
 		"machine-cidr-equals-to-calculated-cidr": true,
-		"ingress-vips-defined":               true,
-		"ntp-server-configured":              true,
-		"network-type-valid":                 true,
+		"ingress-vips-defined":                   true,
+		"ntp-server-configured":                  true,
+		"network-type-valid":                     true,
 	}
 	return blockingValidations[validationID]
 }
@@ -349,13 +349,13 @@ func getCategoryForValidation(validationID string) string {
 		"api-vips-defined", "api-vips-valid", "ingress-vips-defined",
 		"ingress-vips-valid", "network-type-valid",
 	}
-	
+
 	for _, netVal := range networkValidations {
 		if netVal == validationID {
 			return "network"
 		}
 	}
-	
+
 	return "cluster" // Default category
 }
 

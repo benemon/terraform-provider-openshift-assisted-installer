@@ -19,17 +19,17 @@ func TestClusterResource_modelToCreateParams_NewFields(t *testing.T) {
 		{
 			name: "with new required fields",
 			model: ClusterResourceModel{
-				Name:             StringValue("test-cluster"),
-				OpenshiftVersion: StringValue("4.15.20"),
-				PullSecret:       StringValue("pull-secret"),
-				CPUArchitecture:  StringValue("x86_64"),
+				Name:              StringValue("test-cluster"),
+				OpenshiftVersion:  StringValue("4.15.20"),
+				PullSecret:        StringValue("pull-secret"),
+				CPUArchitecture:   StringValue("x86_64"),
 				ControlPlaneCount: Int64Value(3),
 			},
 			expected: models.ClusterCreateParams{
-				Name:             "test-cluster",
-				OpenshiftVersion: "4.15.20",
-				PullSecret:       "pull-secret",
-				CPUArchitecture:  "x86_64",
+				Name:              "test-cluster",
+				OpenshiftVersion:  "4.15.20",
+				PullSecret:        "pull-secret",
+				CPUArchitecture:   "x86_64",
 				ControlPlaneCount: 3,
 			},
 		},
@@ -38,7 +38,7 @@ func TestClusterResource_modelToCreateParams_NewFields(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := resource.modelToCreateParams(tt.model)
-			
+
 			if result.Name != tt.expected.Name {
 				t.Errorf("Expected name %q, got %q", tt.expected.Name, result.Name)
 			}

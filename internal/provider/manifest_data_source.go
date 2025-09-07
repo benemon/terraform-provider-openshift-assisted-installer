@@ -27,19 +27,19 @@ type ManifestDataSource struct {
 // All fields match exactly with Swagger manifest definition
 type ManifestDataSourceModel struct {
 	// Computed fields
-	ID        types.String `tfsdk:"id"`
-	
+	ID types.String `tfsdk:"id"`
+
 	// Required fields for lookup
 	ClusterID types.String `tfsdk:"cluster_id"`
 	FileName  types.String `tfsdk:"file_name"`
-	
+
 	// Swagger manifest fields
-	Folder    types.String `tfsdk:"folder"`
+	Folder         types.String `tfsdk:"folder"`
 	ManifestSource types.String `tfsdk:"manifest_source"` // Missing critical field!
-	
+
 	// Content (may be base64 encoded)
-	Content   types.String `tfsdk:"content"`
-	
+	Content types.String `tfsdk:"content"`
+
 	// Legacy fields (not in Swagger but keeping for backwards compatibility)
 	CreatedAt types.String `tfsdk:"created_at"`
 	UpdatedAt types.String `tfsdk:"updated_at"`
@@ -155,7 +155,7 @@ func (d *ManifestDataSource) Read(ctx context.Context, req datasource.ReadReques
 	if targetManifest == nil {
 		resp.Diagnostics.AddError(
 			"Manifest Not Found",
-			fmt.Sprintf("Manifest with filename '%s' in folder '%s' not found in cluster '%s'", 
+			fmt.Sprintf("Manifest with filename '%s' in folder '%s' not found in cluster '%s'",
 				data.FileName.ValueString(), folder, data.ClusterID.ValueString()),
 		)
 		return
@@ -163,7 +163,7 @@ func (d *ManifestDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 	// Map API response to data model
 	data.ManifestSource = types.StringValue(targetManifest.ManifestSource)
-	
+
 	// Download the manifest content
 	content, err := d.client.DownloadManifestContent(ctx, data.ClusterID.ValueString(), data.FileName.ValueString(), folder)
 	if err != nil {
@@ -173,10 +173,10 @@ func (d *ManifestDataSource) Read(ctx context.Context, req datasource.ReadReques
 		)
 		return
 	}
-	
+
 	// Set the content field
 	data.Content = types.StringValue(content)
-	
+
 	// Note: CreatedAt, UpdatedAt are not available from the API
 	data.CreatedAt = types.StringNull()
 	data.UpdatedAt = types.StringNull()

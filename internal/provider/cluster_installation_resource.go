@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -29,15 +29,15 @@ type ClusterInstallationResource struct {
 }
 
 type ClusterInstallationResourceModel struct {
-	Timeouts          timeouts.Value `tfsdk:"timeouts"`
-	ID                types.String   `tfsdk:"id"`
-	ClusterID         types.String   `tfsdk:"cluster_id"`
-	WaitForHosts      types.Bool     `tfsdk:"wait_for_hosts"`
-	ExpectedHostCount types.Int64    `tfsdk:"expected_host_count"`
-	Status            types.String   `tfsdk:"status"`
-	StatusInfo        types.String   `tfsdk:"status_info"`
-	InstallStartedAt  types.String   `tfsdk:"install_started_at"`
-	InstallCompletedAt types.String  `tfsdk:"install_completed_at"`
+	Timeouts           timeouts.Value `tfsdk:"timeouts"`
+	ID                 types.String   `tfsdk:"id"`
+	ClusterID          types.String   `tfsdk:"cluster_id"`
+	WaitForHosts       types.Bool     `tfsdk:"wait_for_hosts"`
+	ExpectedHostCount  types.Int64    `tfsdk:"expected_host_count"`
+	Status             types.String   `tfsdk:"status"`
+	StatusInfo         types.String   `tfsdk:"status_info"`
+	InstallStartedAt   types.String   `tfsdk:"install_started_at"`
+	InstallCompletedAt types.String   `tfsdk:"install_completed_at"`
 }
 
 func (r *ClusterInstallationResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -142,10 +142,10 @@ func (r *ClusterInstallationResource) Create(ctx context.Context, req resource.C
 	defer cancel()
 
 	clusterID := data.ClusterID.ValueString()
-	
+
 	// Set the ID immediately (same as cluster ID for this resource)
 	data.ID = types.StringValue(clusterID)
-	
+
 	tflog.Info(ctx, "Starting cluster installation", map[string]interface{}{
 		"cluster_id": clusterID,
 	})
@@ -175,14 +175,14 @@ func (r *ClusterInstallationResource) Create(ctx context.Context, req resource.C
 	if cluster.Status == "installing" || cluster.Status == "finalizing" {
 		tflog.Info(ctx, "Cluster installation already in progress", map[string]interface{}{
 			"cluster_id": clusterID,
-			"status": cluster.Status,
+			"status":     cluster.Status,
 		})
 	} else {
 		// Wait for hosts if requested
 		if data.WaitForHosts.ValueBool() {
 			expectedHosts := int(data.ExpectedHostCount.ValueInt64())
 			tflog.Info(ctx, "Waiting for hosts to be ready", map[string]interface{}{
-				"cluster_id": clusterID,
+				"cluster_id":     clusterID,
 				"expected_hosts": expectedHosts,
 			})
 
@@ -202,7 +202,7 @@ func (r *ClusterInstallationResource) Create(ctx context.Context, req resource.C
 		})
 
 		data.InstallStartedAt = types.StringValue(time.Now().UTC().Format(time.RFC3339))
-		
+
 		err = r.client.InstallCluster(ctx, clusterID)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -216,7 +216,7 @@ func (r *ClusterInstallationResource) Create(ctx context.Context, req resource.C
 	// Wait for installation to complete
 	tflog.Info(ctx, "Waiting for installation to complete", map[string]interface{}{
 		"cluster_id": clusterID,
-		"timeout": createTimeout.String(),
+		"timeout":    createTimeout.String(),
 	})
 
 	err = r.waitForInstallationComplete(ctx, clusterID, createTimeout)
@@ -225,7 +225,7 @@ func (r *ClusterInstallationResource) Create(ctx context.Context, req resource.C
 		cluster, _ = r.client.GetCluster(ctx, clusterID)
 		data.Status = types.StringValue(cluster.Status)
 		data.StatusInfo = types.StringValue(cluster.StatusInfo)
-		
+
 		resp.Diagnostics.AddError(
 			"Installation did not complete",
 			fmt.Sprintf("Cluster %s installation did not complete: %s. Current status: %s", clusterID, err, cluster.Status),
@@ -310,9 +310,9 @@ func (r *ClusterInstallationResource) waitForClusterReady(ctx context.Context, c
 			}
 
 			tflog.Debug(ctx, "Checking cluster readiness", map[string]interface{}{
-				"cluster_id": clusterID,
-				"status": cluster.Status,
-				"host_count": cluster.HostCount,
+				"cluster_id":     clusterID,
+				"status":         cluster.Status,
+				"host_count":     cluster.HostCount,
 				"expected_hosts": expectedHosts,
 			})
 
@@ -339,7 +339,7 @@ func (r *ClusterInstallationResource) waitForClusterReady(ctx context.Context, c
 func (r *ClusterInstallationResource) waitForInstallationComplete(ctx context.Context, clusterID string, timeout time.Duration) error {
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
-	
+
 	deadline := time.Now().Add(timeout)
 
 	for {
@@ -357,8 +357,8 @@ func (r *ClusterInstallationResource) waitForInstallationComplete(ctx context.Co
 			}
 
 			tflog.Debug(ctx, "Checking installation status", map[string]interface{}{
-				"cluster_id": clusterID,
-				"status": cluster.Status,
+				"cluster_id":  clusterID,
+				"status":      cluster.Status,
 				"status_info": cluster.StatusInfo,
 			})
 

@@ -25,8 +25,8 @@ type OperatorBundlesDataSource struct {
 
 // OperatorBundlesDataSourceModel describes the data source data model.
 type OperatorBundlesDataSourceModel struct {
-	ID      types.String               `tfsdk:"id"`
-	Bundles []OperatorBundleModel      `tfsdk:"bundles"`
+	ID      types.String          `tfsdk:"id"`
+	Bundles []OperatorBundleModel `tfsdk:"bundles"`
 }
 
 type OperatorBundleModel struct {
@@ -123,7 +123,7 @@ func (d *OperatorBundlesDataSource) Read(ctx context.Context, req datasource.Rea
 		for j, operatorName := range bundle.Operators {
 			operatorElements[j] = types.StringValue(operatorName)
 		}
-		
+
 		operatorList, listDiags := types.ListValueFrom(ctx, types.StringType, operatorElements)
 		if listDiags.HasError() {
 			resp.Diagnostics.Append(listDiags...)

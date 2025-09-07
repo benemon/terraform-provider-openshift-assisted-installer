@@ -115,7 +115,6 @@ func (p *OAIProvider) Resources(ctx context.Context) []func() resource.Resource 
 	}
 }
 
-
 func (p *OAIProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewOpenShiftVersionsDataSource,

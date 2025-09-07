@@ -18,10 +18,10 @@ type DetailedSupportedFeatures map[string]DetailedFeature
 
 // DetailedFeature represents detailed information about a feature
 type DetailedFeature struct {
-	SupportLevel     string                 `json:"support_level"`
-	Incompatibilities []string              `json:"incompatibilities,omitempty"`
-	Dependencies     []string              `json:"dependencies,omitempty"`
-	Properties       map[string]interface{} `json:"properties,omitempty"`
+	SupportLevel      string                 `json:"support_level"`
+	Incompatibilities []string               `json:"incompatibilities,omitempty"`
+	Dependencies      []string               `json:"dependencies,omitempty"`
+	Properties        map[string]interface{} `json:"properties,omitempty"`
 }
 
 // SupportedArchitectures represents architecture support levels

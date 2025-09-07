@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -13,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/benemon/terraform-provider-openshift-assisted-installer/internal/client"
@@ -50,17 +50,17 @@ type MachineNetworkModel struct {
 }
 
 type PlatformModel struct {
-	Type      types.String             `tfsdk:"type"`
-	External  *ExternalPlatformModel   `tfsdk:"external"`
-	Baremetal *BaremetalPlatformModel  `tfsdk:"baremetal"`
-	Nutanix   *NutanixPlatformModel    `tfsdk:"nutanix"`
-	VSphere   *VSpherePlatformModel    `tfsdk:"vsphere"`
-	OCI       *OCIPlatformModel        `tfsdk:"oci"`
+	Type      types.String            `tfsdk:"type"`
+	External  *ExternalPlatformModel  `tfsdk:"external"`
+	Baremetal *BaremetalPlatformModel `tfsdk:"baremetal"`
+	Nutanix   *NutanixPlatformModel   `tfsdk:"nutanix"`
+	VSphere   *VSpherePlatformModel   `tfsdk:"vsphere"`
+	OCI       *OCIPlatformModel       `tfsdk:"oci"`
 }
 
 type ExternalPlatformModel struct {
-	PlatformName            types.String `tfsdk:"platform_name"`
-	CloudControllerManager  types.String `tfsdk:"cloud_controller_manager"`
+	PlatformName           types.String `tfsdk:"platform_name"`
+	CloudControllerManager types.String `tfsdk:"cloud_controller_manager"`
 }
 
 type BaremetalPlatformModel struct {
@@ -101,36 +101,36 @@ type LoadBalancerModel struct {
 }
 
 type DiskEncryptionModel struct {
-	EnableOn   types.String `tfsdk:"enable_on"`
-	Mode       types.String `tfsdk:"mode"`
+	EnableOn    types.String `tfsdk:"enable_on"`
+	Mode        types.String `tfsdk:"mode"`
 	TangServers types.String `tfsdk:"tang_servers"`
 }
 
 type IgnitionEndpointModel struct {
-	URL         types.String `tfsdk:"url"`
-	CACertPEM   types.String `tfsdk:"ca_cert_pem"`
+	URL       types.String `tfsdk:"url"`
+	CACertPEM types.String `tfsdk:"ca_cert_pem"`
 }
 
 type ImageInfoModel struct {
-	SSHPublicKey         types.String `tfsdk:"ssh_public_key"`
-	SizeBytes            types.Int64  `tfsdk:"size_bytes"`
-	DownloadURL          types.String `tfsdk:"download_url"`
-	GeneratorVersion     types.String `tfsdk:"generator_version"`
-	CreatedAt            types.String `tfsdk:"created_at"`
-	ExpiresAt            types.String `tfsdk:"expires_at"`
-	StaticNetworkConfig  types.String `tfsdk:"static_network_config"`
+	SSHPublicKey        types.String `tfsdk:"ssh_public_key"`
+	SizeBytes           types.Int64  `tfsdk:"size_bytes"`
+	DownloadURL         types.String `tfsdk:"download_url"`
+	GeneratorVersion    types.String `tfsdk:"generator_version"`
+	CreatedAt           types.String `tfsdk:"created_at"`
+	ExpiresAt           types.String `tfsdk:"expires_at"`
+	StaticNetworkConfig types.String `tfsdk:"static_network_config"`
 }
 
 type MonitoredOperatorModel struct {
-	ClusterID           types.String `tfsdk:"cluster_id"`
-	Name                types.String `tfsdk:"name"`
-	Version             types.String `tfsdk:"version"`
-	Namespace           types.String `tfsdk:"namespace"`
-	SubscriptionName    types.String `tfsdk:"subscription_name"`
-	Status              types.String `tfsdk:"status"`
-	StatusInfo          types.String `tfsdk:"status_info"`
-	StatusUpdatedAt     types.String `tfsdk:"status_updated_at"`
-	TimeoutSeconds      types.Int64  `tfsdk:"timeout_seconds"`
+	ClusterID        types.String `tfsdk:"cluster_id"`
+	Name             types.String `tfsdk:"name"`
+	Version          types.String `tfsdk:"version"`
+	Namespace        types.String `tfsdk:"namespace"`
+	SubscriptionName types.String `tfsdk:"subscription_name"`
+	Status           types.String `tfsdk:"status"`
+	StatusInfo       types.String `tfsdk:"status_info"`
+	StatusUpdatedAt  types.String `tfsdk:"status_updated_at"`
+	TimeoutSeconds   types.Int64  `tfsdk:"timeout_seconds"`
 }
 
 func NewClusterResource() resource.Resource {
@@ -142,48 +142,48 @@ type ClusterResource struct {
 }
 
 type ClusterResourceModel struct {
-	Timeouts                     timeouts.Value `tfsdk:"timeouts"`
-	ID                           types.String   `tfsdk:"id"`
-	Name                         types.String   `tfsdk:"name"`
-	OpenshiftVersion             types.String   `tfsdk:"openshift_version"`
-	OCPReleaseImage              types.String   `tfsdk:"ocp_release_image"`
-	PullSecret                   types.String   `tfsdk:"pull_secret"`
-	CPUArchitecture              types.String   `tfsdk:"cpu_architecture"`
-	BaseDNSDomain                types.String   `tfsdk:"base_dns_domain"`
-	ClusterNetworkCIDR           types.String   `tfsdk:"cluster_network_cidr"`
-	ClusterNetworkHostPrefix     types.Int64    `tfsdk:"cluster_network_host_prefix"`
-	ServiceNetworkCIDR           types.String   `tfsdk:"service_network_cidr"`
-	ClusterNetworks              types.List     `tfsdk:"cluster_networks"`
-	ServiceNetworks              types.List     `tfsdk:"service_networks"`
-	MachineNetworks              types.List     `tfsdk:"machine_networks"`
-	APIVips                      types.List     `tfsdk:"api_vips"`
-	IngressVips                  types.List     `tfsdk:"ingress_vips"`
-	SSHPublicKey                 types.String   `tfsdk:"ssh_public_key"`
-	VipDHCPAllocation            types.Bool     `tfsdk:"vip_dhcp_allocation"`
-	HTTPProxy                    types.String   `tfsdk:"http_proxy"`
-	HTTPSProxy                   types.String   `tfsdk:"https_proxy"`
-	NoProxy                      types.String   `tfsdk:"no_proxy"`
-	UserManagedNetworking        types.Bool     `tfsdk:"user_managed_networking"`
-	AdditionalNTPSource          types.String   `tfsdk:"additional_ntp_source"`
-	Hyperthreading               types.String   `tfsdk:"hyperthreading"`
-	ControlPlaneCount            types.Int64    `tfsdk:"control_plane_count"`
-	HighAvailabilityMode         types.String   `tfsdk:"high_availability_mode"`
-	NetworkType                  types.String   `tfsdk:"network_type"`
-	SchedulableMasters           types.Bool     `tfsdk:"schedulable_masters"`
-	OLMOperators                 types.List     `tfsdk:"olm_operators"`
-	Platform                     types.Object   `tfsdk:"platform"`
-	LoadBalancer                 types.Object   `tfsdk:"load_balancer"`
-	DiskEncryption               types.Object   `tfsdk:"disk_encryption"`
-	IgnitionEndpoint             types.Object   `tfsdk:"ignition_endpoint"`
-	ImageInfo                    types.Object   `tfsdk:"image_info"`
-	MonitoredOperators           types.List     `tfsdk:"monitored_operators"`
-	Tags                         types.String   `tfsdk:"tags"`
-	Status                       types.String   `tfsdk:"status"`
-	StatusInfo                   types.String   `tfsdk:"status_info"`
-	InstallCompleted             types.Bool     `tfsdk:"install_completed"`
-	Kind                         types.String   `tfsdk:"kind"`
-	Href                         types.String   `tfsdk:"href"`
-	DeletedAt                    types.String   `tfsdk:"deleted_at"`
+	Timeouts                 timeouts.Value `tfsdk:"timeouts"`
+	ID                       types.String   `tfsdk:"id"`
+	Name                     types.String   `tfsdk:"name"`
+	OpenshiftVersion         types.String   `tfsdk:"openshift_version"`
+	OCPReleaseImage          types.String   `tfsdk:"ocp_release_image"`
+	PullSecret               types.String   `tfsdk:"pull_secret"`
+	CPUArchitecture          types.String   `tfsdk:"cpu_architecture"`
+	BaseDNSDomain            types.String   `tfsdk:"base_dns_domain"`
+	ClusterNetworkCIDR       types.String   `tfsdk:"cluster_network_cidr"`
+	ClusterNetworkHostPrefix types.Int64    `tfsdk:"cluster_network_host_prefix"`
+	ServiceNetworkCIDR       types.String   `tfsdk:"service_network_cidr"`
+	ClusterNetworks          types.List     `tfsdk:"cluster_networks"`
+	ServiceNetworks          types.List     `tfsdk:"service_networks"`
+	MachineNetworks          types.List     `tfsdk:"machine_networks"`
+	APIVips                  types.List     `tfsdk:"api_vips"`
+	IngressVips              types.List     `tfsdk:"ingress_vips"`
+	SSHPublicKey             types.String   `tfsdk:"ssh_public_key"`
+	VipDHCPAllocation        types.Bool     `tfsdk:"vip_dhcp_allocation"`
+	HTTPProxy                types.String   `tfsdk:"http_proxy"`
+	HTTPSProxy               types.String   `tfsdk:"https_proxy"`
+	NoProxy                  types.String   `tfsdk:"no_proxy"`
+	UserManagedNetworking    types.Bool     `tfsdk:"user_managed_networking"`
+	AdditionalNTPSource      types.String   `tfsdk:"additional_ntp_source"`
+	Hyperthreading           types.String   `tfsdk:"hyperthreading"`
+	ControlPlaneCount        types.Int64    `tfsdk:"control_plane_count"`
+	HighAvailabilityMode     types.String   `tfsdk:"high_availability_mode"`
+	NetworkType              types.String   `tfsdk:"network_type"`
+	SchedulableMasters       types.Bool     `tfsdk:"schedulable_masters"`
+	OLMOperators             types.List     `tfsdk:"olm_operators"`
+	Platform                 types.Object   `tfsdk:"platform"`
+	LoadBalancer             types.Object   `tfsdk:"load_balancer"`
+	DiskEncryption           types.Object   `tfsdk:"disk_encryption"`
+	IgnitionEndpoint         types.Object   `tfsdk:"ignition_endpoint"`
+	ImageInfo                types.Object   `tfsdk:"image_info"`
+	MonitoredOperators       types.List     `tfsdk:"monitored_operators"`
+	Tags                     types.String   `tfsdk:"tags"`
+	Status                   types.String   `tfsdk:"status"`
+	StatusInfo               types.String   `tfsdk:"status_info"`
+	InstallCompleted         types.Bool     `tfsdk:"install_completed"`
+	Kind                     types.String   `tfsdk:"kind"`
+	Href                     types.String   `tfsdk:"href"`
+	DeletedAt                types.String   `tfsdk:"deleted_at"`
 }
 
 func (r *ClusterResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -832,7 +832,7 @@ func (r *ClusterResource) modelToCreateParams(data ClusterResourceModel) models.
 	if !data.OCPReleaseImage.IsNull() {
 		params.OCPReleaseImage = data.OCPReleaseImage.ValueString()
 	}
-	
+
 	if !data.Tags.IsNull() {
 		params.Tags = data.Tags.ValueString()
 	}
@@ -938,7 +938,7 @@ func (r *ClusterResource) updateModelFromCluster(data *ClusterResourceModel, clu
 
 	data.VipDHCPAllocation = types.BoolValue(cluster.VipDHCPAllocation)
 	data.UserManagedNetworking = types.BoolValue(cluster.UserManagedNetworking)
-	
+
 	if cluster.ControlPlaneCount > 0 {
 		data.ControlPlaneCount = types.Int64Value(int64(cluster.ControlPlaneCount))
 	}
@@ -1035,7 +1035,7 @@ func (r *ClusterResource) updateModelFromCluster(data *ClusterResourceModel, clu
 	} else {
 		data.OCPReleaseImage = types.StringNull()
 	}
-	
+
 	if cluster.Tags != "" {
 		data.Tags = types.StringValue(cluster.Tags)
 	} else {
@@ -1076,7 +1076,7 @@ func (r *ClusterResource) updateModelFromCluster(data *ClusterResourceModel, clu
 		} else {
 			imageInfo.StaticNetworkConfig = types.StringNull()
 		}
-		
+
 		objValue, _ := types.ObjectValueFrom(context.Background(), map[string]attr.Type{
 			"ssh_public_key":        types.StringType,
 			"size_bytes":            types.Int64Type,
@@ -1104,8 +1104,8 @@ func (r *ClusterResource) updateModelFromCluster(data *ClusterResourceModel, clu
 		operators := make([]MonitoredOperatorModel, len(cluster.MonitoredOperators))
 		for i, op := range cluster.MonitoredOperators {
 			operators[i] = MonitoredOperatorModel{
-				ClusterID:        types.StringValue(op.ClusterID),
-				Name:             types.StringValue(op.Name),
+				ClusterID: types.StringValue(op.ClusterID),
+				Name:      types.StringValue(op.Name),
 			}
 			if op.Version != "" {
 				operators[i].Version = types.StringValue(op.Version)
@@ -1141,30 +1141,30 @@ func (r *ClusterResource) updateModelFromCluster(data *ClusterResourceModel, clu
 		}
 		listValue, _ := types.ListValueFrom(context.Background(), types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"cluster_id":         types.StringType,
-				"name":               types.StringType,
-				"version":            types.StringType,
-				"namespace":          types.StringType,
-				"subscription_name":  types.StringType,
-				"status":             types.StringType,
-				"status_info":        types.StringType,
-				"status_updated_at":  types.StringType,
-				"timeout_seconds":    types.Int64Type,
+				"cluster_id":        types.StringType,
+				"name":              types.StringType,
+				"version":           types.StringType,
+				"namespace":         types.StringType,
+				"subscription_name": types.StringType,
+				"status":            types.StringType,
+				"status_info":       types.StringType,
+				"status_updated_at": types.StringType,
+				"timeout_seconds":   types.Int64Type,
 			},
 		}, operators)
 		data.MonitoredOperators = listValue
 	} else {
 		data.MonitoredOperators = types.ListNull(types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"cluster_id":         types.StringType,
-				"name":               types.StringType,
-				"version":            types.StringType,
-				"namespace":          types.StringType,
-				"subscription_name":  types.StringType,
-				"status":             types.StringType,
-				"status_info":        types.StringType,
-				"status_updated_at":  types.StringType,
-				"timeout_seconds":    types.Int64Type,
+				"cluster_id":        types.StringType,
+				"name":              types.StringType,
+				"version":           types.StringType,
+				"namespace":         types.StringType,
+				"subscription_name": types.StringType,
+				"status":            types.StringType,
+				"status_info":       types.StringType,
+				"status_updated_at": types.StringType,
+				"timeout_seconds":   types.Int64Type,
 			},
 		})
 	}
@@ -1176,4 +1176,3 @@ func (r *ClusterResource) updateModelFromCluster(data *ClusterResourceModel, clu
 		data.DeletedAt = types.StringNull()
 	}
 }
-

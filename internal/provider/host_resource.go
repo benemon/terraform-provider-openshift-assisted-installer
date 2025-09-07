@@ -34,25 +34,25 @@ type HostResource struct {
 
 // HostResourceModel describes the resource data model.
 type HostResourceModel struct {
-	ID                            types.String                     `tfsdk:"id"`
-	InfraEnvID                    types.String                     `tfsdk:"infra_env_id"`
-	ClusterID                     types.String                     `tfsdk:"cluster_id"`
-	RequestedHostname             types.String                     `tfsdk:"requested_hostname"`
-	HostName                      types.String                     `tfsdk:"host_name"`
-	Role                          types.String                     `tfsdk:"role"`
-	DisksSelectedConfig           types.List                       `tfsdk:"disks_selected_config"`
-	DisksSkipFormatting           types.List                       `tfsdk:"disks_skip_formatting"`
-	MachineConfigPoolName         types.String                     `tfsdk:"machine_config_pool_name"`
-	IgnitionEndpointToken         types.String                     `tfsdk:"ignition_endpoint_token"`
-	IgnitionEndpointHTTPHeaders   types.List                       `tfsdk:"ignition_endpoint_http_headers"`
-	NodeLabels                    types.List                       `tfsdk:"node_labels"`
-	
+	ID                          types.String `tfsdk:"id"`
+	InfraEnvID                  types.String `tfsdk:"infra_env_id"`
+	ClusterID                   types.String `tfsdk:"cluster_id"`
+	RequestedHostname           types.String `tfsdk:"requested_hostname"`
+	HostName                    types.String `tfsdk:"host_name"`
+	Role                        types.String `tfsdk:"role"`
+	DisksSelectedConfig         types.List   `tfsdk:"disks_selected_config"`
+	DisksSkipFormatting         types.List   `tfsdk:"disks_skip_formatting"`
+	MachineConfigPoolName       types.String `tfsdk:"machine_config_pool_name"`
+	IgnitionEndpointToken       types.String `tfsdk:"ignition_endpoint_token"`
+	IgnitionEndpointHTTPHeaders types.List   `tfsdk:"ignition_endpoint_http_headers"`
+	NodeLabels                  types.List   `tfsdk:"node_labels"`
+
 	// Computed fields
-	Status                        types.String                     `tfsdk:"status"`
-	StatusInfo                    types.String                     `tfsdk:"status_info"`
-	Progress                      *HostProgressModel               `tfsdk:"progress"`
-	CreatedAt                     types.String                     `tfsdk:"created_at"`
-	UpdatedAt                     types.String                     `tfsdk:"updated_at"`
+	Status     types.String       `tfsdk:"status"`
+	StatusInfo types.String       `tfsdk:"status_info"`
+	Progress   *HostProgressModel `tfsdk:"progress"`
+	CreatedAt  types.String       `tfsdk:"created_at"`
+	UpdatedAt  types.String       `tfsdk:"updated_at"`
 }
 
 type HostProgressModel struct {
@@ -196,7 +196,7 @@ func (r *HostResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 					},
 				},
 			},
-			
+
 			// Computed attributes
 			"status": schema.StringAttribute{
 				MarkdownDescription: "Current status of the host.",
@@ -273,10 +273,10 @@ func (r *HostResource) Create(ctx context.Context, req resource.CreateRequest, r
 	// Note: Hosts are discovered automatically when they boot from the ISO
 	// The "create" operation here is really about configuring an existing discovered host
 	// We first need to wait for a host to be discovered in the specified infra-env
-	
+
 	// For now, we require the host ID to be provided as an import operation
 	// A full implementation would include polling for discovered hosts
-	
+
 	if data.ID.IsNull() || data.ID.ValueString() == "" {
 		resp.Diagnostics.AddError(
 			"Host ID Required",
@@ -512,45 +512,45 @@ func (r *HostResource) apiToTerraformModel(ctx context.Context, host *models.Hos
 	data.InfraEnvID = types.StringValue(host.InfraEnvID)
 	data.Status = types.StringValue(host.Status)
 	data.StatusInfo = types.StringValue(host.StatusInfo)
-	
+
 	if host.ClusterID != "" {
 		data.ClusterID = types.StringValue(host.ClusterID)
 	} else {
 		data.ClusterID = types.StringNull()
 	}
-	
+
 	if host.RequestedHostname != "" {
 		data.RequestedHostname = types.StringValue(host.RequestedHostname)
 	} else {
 		data.RequestedHostname = types.StringNull()
 	}
-	
+
 	if host.Role != "" {
 		data.Role = types.StringValue(host.Role)
 	} else {
 		data.Role = types.StringValue("auto-assign")
 	}
-	
+
 	// Convert progress information
 	if host.Progress != nil {
 		data.Progress = &HostProgressModel{
 			CurrentStage: types.StringValue(host.Progress.CurrentStage),
 			ProgressInfo: types.StringValue(host.Progress.ProgressInfo),
 		}
-		
+
 		if !host.Progress.StageStartedAt.IsZero() {
 			data.Progress.StageStartedAt = types.StringValue(host.Progress.StageStartedAt.Format("2006-01-02T15:04:05Z"))
 		}
-		
+
 		if !host.Progress.StageUpdatedAt.IsZero() {
 			data.Progress.StageUpdatedAt = types.StringValue(host.Progress.StageUpdatedAt.Format("2006-01-02T15:04:05Z"))
 		}
 	}
-	
+
 	if !host.CreatedAt.IsZero() {
 		data.CreatedAt = types.StringValue(host.CreatedAt.Format("2006-01-02T15:04:05Z"))
 	}
-	
+
 	if !host.UpdatedAt.IsZero() {
 		data.UpdatedAt = types.StringValue(host.UpdatedAt.Format("2006-01-02T15:04:05Z"))
 	}

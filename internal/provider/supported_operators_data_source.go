@@ -23,8 +23,8 @@ type SupportedOperatorsDataSource struct {
 }
 
 type SupportedOperatorsDataSourceModel struct {
-	ID        types.String   `tfsdk:"id"`
-	Operators types.List     `tfsdk:"operators"`
+	ID        types.String `tfsdk:"id"`
+	Operators types.List   `tfsdk:"operators"`
 }
 
 func (d *SupportedOperatorsDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -92,13 +92,13 @@ func (d *SupportedOperatorsDataSource) Read(ctx context.Context, req datasource.
 		for i, operator := range operators {
 			operatorElements[i] = types.StringValue(operator)
 		}
-		
+
 		operatorList, diags := types.ListValueFrom(ctx, types.StringType, operatorElements)
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		
+
 		data.Operators = operatorList
 	} else {
 		data.Operators = types.ListNull(types.StringType)

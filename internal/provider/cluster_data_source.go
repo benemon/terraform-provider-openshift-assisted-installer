@@ -26,112 +26,112 @@ type ClusterDataSource struct {
 // ClusterDataSourceModel describes the data source data model.
 type ClusterDataSourceModel struct {
 	// Required fields
-	ID                    types.String   `tfsdk:"id"`
-	Kind                  types.String   `tfsdk:"kind"`
-	Href                  types.String   `tfsdk:"href"`
-	Status                types.String   `tfsdk:"status"`
-	StatusInfo            types.String   `tfsdk:"status_info"`
-	
+	ID         types.String `tfsdk:"id"`
+	Kind       types.String `tfsdk:"kind"`
+	Href       types.String `tfsdk:"href"`
+	Status     types.String `tfsdk:"status"`
+	StatusInfo types.String `tfsdk:"status_info"`
+
 	// Core cluster info
-	Name                  types.String   `tfsdk:"name"`
-	UserName              types.String   `tfsdk:"user_name"`
-	OrgID                 types.String   `tfsdk:"org_id"`
-	EmailDomain           types.String   `tfsdk:"email_domain"`
-	OpenshiftVersion      types.String   `tfsdk:"openshift_version"`
-	OCPReleaseImage       types.String   `tfsdk:"ocp_release_image"`
-	OpenshiftClusterID    types.String   `tfsdk:"openshift_cluster_id"`
-	BaseDNSDomain         types.String   `tfsdk:"base_dns_domain"`
-	CPUArchitecture       types.String   `tfsdk:"cpu_architecture"`
-	
+	Name               types.String `tfsdk:"name"`
+	UserName           types.String `tfsdk:"user_name"`
+	OrgID              types.String `tfsdk:"org_id"`
+	EmailDomain        types.String `tfsdk:"email_domain"`
+	OpenshiftVersion   types.String `tfsdk:"openshift_version"`
+	OCPReleaseImage    types.String `tfsdk:"ocp_release_image"`
+	OpenshiftClusterID types.String `tfsdk:"openshift_cluster_id"`
+	BaseDNSDomain      types.String `tfsdk:"base_dns_domain"`
+	CPUArchitecture    types.String `tfsdk:"cpu_architecture"`
+
 	// Network configuration
-	ClusterNetworkCIDR    types.String   `tfsdk:"cluster_network_cidr"`
-	ClusterNetworkHostPrefix types.Int64 `tfsdk:"cluster_network_host_prefix"`
-	ServiceNetworkCIDR    types.String   `tfsdk:"service_network_cidr"`
-	MachineNetworkCIDR    types.String   `tfsdk:"machine_network_cidr"`
-	APIVips               []ClusterAPIVipModel  `tfsdk:"api_vips"`
-	APIVipDNSName         types.String   `tfsdk:"api_vip_dns_name"`
-	IngressVips           []ClusterAPIVipModel  `tfsdk:"ingress_vips"`
-	NetworkType           types.String   `tfsdk:"network_type"`
-	ClusterNetworks       types.List     `tfsdk:"cluster_networks"`
-	ServiceNetworks       types.List     `tfsdk:"service_networks"`
-	MachineNetworks       types.List     `tfsdk:"machine_networks"`
-	
+	ClusterNetworkCIDR       types.String         `tfsdk:"cluster_network_cidr"`
+	ClusterNetworkHostPrefix types.Int64          `tfsdk:"cluster_network_host_prefix"`
+	ServiceNetworkCIDR       types.String         `tfsdk:"service_network_cidr"`
+	MachineNetworkCIDR       types.String         `tfsdk:"machine_network_cidr"`
+	APIVips                  []ClusterAPIVipModel `tfsdk:"api_vips"`
+	APIVipDNSName            types.String         `tfsdk:"api_vip_dns_name"`
+	IngressVips              []ClusterAPIVipModel `tfsdk:"ingress_vips"`
+	NetworkType              types.String         `tfsdk:"network_type"`
+	ClusterNetworks          types.List           `tfsdk:"cluster_networks"`
+	ServiceNetworks          types.List           `tfsdk:"service_networks"`
+	MachineNetworks          types.List           `tfsdk:"machine_networks"`
+
 	// Host configuration
-	ControlPlaneCount     types.Int64    `tfsdk:"control_plane_count"`
-	HighAvailabilityMode  types.String   `tfsdk:"high_availability_mode"`
-	SchedulableMasters    types.Bool     `tfsdk:"schedulable_masters"`
-	SchedulableMastersForced types.Bool  `tfsdk:"schedulable_masters_forced_true"`
-	
+	ControlPlaneCount        types.Int64  `tfsdk:"control_plane_count"`
+	HighAvailabilityMode     types.String `tfsdk:"high_availability_mode"`
+	SchedulableMasters       types.Bool   `tfsdk:"schedulable_masters"`
+	SchedulableMastersForced types.Bool   `tfsdk:"schedulable_masters_forced_true"`
+
 	// Host counts
-	TotalHostCount        types.Int64    `tfsdk:"total_host_count"`
-	ReadyHostCount        types.Int64    `tfsdk:"ready_host_count"`
-	EnabledHostCount      types.Int64    `tfsdk:"enabled_host_count"`
-	
+	TotalHostCount   types.Int64 `tfsdk:"total_host_count"`
+	ReadyHostCount   types.Int64 `tfsdk:"ready_host_count"`
+	EnabledHostCount types.Int64 `tfsdk:"enabled_host_count"`
+
 	// Security & Access
-	SSHPublicKey          types.String   `tfsdk:"ssh_public_key"`
-	PullSecretSet         types.Bool     `tfsdk:"pull_secret_set"`
-	
+	SSHPublicKey  types.String `tfsdk:"ssh_public_key"`
+	PullSecretSet types.Bool   `tfsdk:"pull_secret_set"`
+
 	// Proxy configuration
-	HTTPProxy             types.String   `tfsdk:"http_proxy"`
-	HTTPSProxy            types.String   `tfsdk:"https_proxy"`
-	NoProxy               types.String   `tfsdk:"no_proxy"`
-	
+	HTTPProxy  types.String `tfsdk:"http_proxy"`
+	HTTPSProxy types.String `tfsdk:"https_proxy"`
+	NoProxy    types.String `tfsdk:"no_proxy"`
+
 	// Timestamps
-	StatusUpdatedAt       types.String   `tfsdk:"status_updated_at"`
-	InstallStartedAt      types.String   `tfsdk:"install_started_at"`
-	InstallCompletedAt    types.String   `tfsdk:"install_completed_at"`
-	CreatedAt             types.String   `tfsdk:"created_at"`
-	UpdatedAt             types.String   `tfsdk:"updated_at"`
-	
+	StatusUpdatedAt    types.String `tfsdk:"status_updated_at"`
+	InstallStartedAt   types.String `tfsdk:"install_started_at"`
+	InstallCompletedAt types.String `tfsdk:"install_completed_at"`
+	CreatedAt          types.String `tfsdk:"created_at"`
+	UpdatedAt          types.String `tfsdk:"updated_at"`
+
 	// Progress and validation
-	Progress              types.Object   `tfsdk:"progress"`
-	ValidationsInfo       types.String   `tfsdk:"validations_info"`
-	
+	Progress        types.Object `tfsdk:"progress"`
+	ValidationsInfo types.String `tfsdk:"validations_info"`
+
 	// Logs
-	LogsInfo              types.Object   `tfsdk:"logs_info"`
+	LogsInfo                  types.Object `tfsdk:"logs_info"`
 	ControllerLogsCollectedAt types.String `tfsdk:"controller_logs_collected_at"`
 	ControllerLogsStartedAt   types.String `tfsdk:"controller_logs_started_at"`
-	
+
 	// Advanced configuration
-	InstallConfigOverrides types.String  `tfsdk:"install_config_overrides"`
-	DiskEncryption        types.Object   `tfsdk:"disk_encryption"`
-	VipDhcpAllocation     types.Bool     `tfsdk:"vip_dhcp_allocation"`
-	UserManagedNetworking types.Bool     `tfsdk:"user_managed_networking"`
-	AdditionalNTPSource   types.String   `tfsdk:"additional_ntp_source"`
-	Hyperthreading        types.String   `tfsdk:"hyperthreading"`
-	
+	InstallConfigOverrides types.String `tfsdk:"install_config_overrides"`
+	DiskEncryption         types.Object `tfsdk:"disk_encryption"`
+	VipDhcpAllocation      types.Bool   `tfsdk:"vip_dhcp_allocation"`
+	UserManagedNetworking  types.Bool   `tfsdk:"user_managed_networking"`
+	AdditionalNTPSource    types.String `tfsdk:"additional_ntp_source"`
+	Hyperthreading         types.String `tfsdk:"hyperthreading"`
+
 	// System info
-	Platform              types.Object   `tfsdk:"platform"`
-	ImageInfo             types.Object   `tfsdk:"image_info"`
-	IgnitionEndpoint      types.Object   `tfsdk:"ignition_endpoint"`
-	LoadBalancer          types.Object   `tfsdk:"load_balancer"`
-	
-	// Connectivity and networking details  
+	Platform         types.Object `tfsdk:"platform"`
+	ImageInfo        types.Object `tfsdk:"image_info"`
+	IgnitionEndpoint types.Object `tfsdk:"ignition_endpoint"`
+	LoadBalancer     types.Object `tfsdk:"load_balancer"`
+
+	// Connectivity and networking details
 	ConnectivityMajorityGroups types.String `tfsdk:"connectivity_majority_groups"`
-	IPCollisions          types.String   `tfsdk:"ip_collisions"`
-	HostNetworks          types.List     `tfsdk:"host_networks"`
-	
+	IPCollisions               types.String `tfsdk:"ip_collisions"`
+	HostNetworks               types.List   `tfsdk:"host_networks"`
+
 	// Validation overrides
 	IgnoredHostValidations    types.String `tfsdk:"ignored_host_validations"`
 	IgnoredClusterValidations types.String `tfsdk:"ignored_cluster_validations"`
-	
+
 	// Operators and features
-	MonitoredOperators    types.List     `tfsdk:"monitored_operators"`
-	FeatureUsage          types.String   `tfsdk:"feature_usage"`
-	AMSSubscriptionID     types.String   `tfsdk:"ams_subscription_id"`
-	
+	MonitoredOperators types.List   `tfsdk:"monitored_operators"`
+	FeatureUsage       types.String `tfsdk:"feature_usage"`
+	AMSSubscriptionID  types.String `tfsdk:"ams_subscription_id"`
+
 	// Day-2 and import
-	Imported              types.Bool     `tfsdk:"imported"`
-	Tags                  types.String   `tfsdk:"tags"`
+	Imported                    types.Bool   `tfsdk:"imported"`
+	Tags                        types.String `tfsdk:"tags"`
 	LastInstallationPreparation types.Object `tfsdk:"last_installation_preparation"`
-	OrgSoftTimeoutsEnabled types.Bool    `tfsdk:"org_soft_timeouts_enabled"`
-	
+	OrgSoftTimeoutsEnabled      types.Bool   `tfsdk:"org_soft_timeouts_enabled"`
+
 	// Legacy support
-	HostsCount            types.Int64    `tfsdk:"hosts_count"`
-	ReadyHostsCount       types.Int64    `tfsdk:"ready_hosts_count"`
-	MastersCount          types.Int64    `tfsdk:"masters_count"`
-	WorkersCount          types.Int64    `tfsdk:"workers_count"`
-	InstallationStartedAt types.String   `tfsdk:"installation_started_at"`
+	HostsCount              types.Int64  `tfsdk:"hosts_count"`
+	ReadyHostsCount         types.Int64  `tfsdk:"ready_hosts_count"`
+	MastersCount            types.Int64  `tfsdk:"masters_count"`
+	WorkersCount            types.Int64  `tfsdk:"workers_count"`
+	InstallationStartedAt   types.String `tfsdk:"installation_started_at"`
 	InstallationCompletedAt types.String `tfsdk:"installation_completed_at"`
 }
 
@@ -173,7 +173,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "Additional information pertaining to the status of the cluster",
 				Computed:            true,
 			},
-			
+
 			// Core cluster info
 			"name": schema.StringAttribute{
 				MarkdownDescription: "Name of the OpenShift cluster",
@@ -211,7 +211,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "The CPU architecture of the image (x86_64, aarch64, arm64, ppc64le, s390x, multi)",
 				Computed:            true,
 			},
-			
+
 			// Network configuration
 			"cluster_network_cidr": schema.StringAttribute{
 				MarkdownDescription: "IP address block from which Pod IPs are allocated",
@@ -252,7 +252,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				Computed:            true,
 				ElementType:         types.ObjectType{},
 			},
-			
+
 			// VIP Configuration
 			"api_vips": schema.ListNestedAttribute{
 				MarkdownDescription: "The virtual IPs used to reach the OpenShift cluster's API",
@@ -298,7 +298,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "Indicate if virtual IP DHCP allocation mode is enabled",
 				Computed:            true,
 			},
-			
+
 			// Host configuration and counts
 			"control_plane_count": schema.Int64Attribute{
 				MarkdownDescription: "Specifies the required number of control plane nodes that should be part of the cluster",
@@ -328,7 +328,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "Hosts associated to this cluster that are not in 'disabled' state",
 				Computed:            true,
 			},
-			
+
 			// Security & Access
 			"ssh_public_key": schema.StringAttribute{
 				MarkdownDescription: "SSH public key for debugging OpenShift nodes",
@@ -338,7 +338,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "True if the pull secret has been added to the cluster",
 				Computed:            true,
 			},
-			
+
 			// Proxy configuration
 			"http_proxy": schema.StringAttribute{
 				MarkdownDescription: "A proxy URL to use for creating HTTP connections outside the cluster",
@@ -352,7 +352,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "A comma-separated list of destination domain names, domains, IP addresses, or other network CIDRs to exclude from proxying",
 				Computed:            true,
 			},
-			
+
 			// Timestamps
 			"status_updated_at": schema.StringAttribute{
 				MarkdownDescription: "The last time that the cluster status was updated",
@@ -374,7 +374,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "The last time that this cluster was updated",
 				Computed:            true,
 			},
-			
+
 			// Progress and validation
 			"progress": schema.SingleNestedAttribute{
 				MarkdownDescription: "Installation progress percentages of the cluster",
@@ -402,7 +402,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "JSON-formatted string containing the validation results for each validation id grouped by category",
 				Computed:            true,
 			},
-			
+
 			// Advanced configuration
 			"install_config_overrides": schema.StringAttribute{
 				MarkdownDescription: "JSON-formatted string containing the user overrides for the install-config.yaml file",
@@ -434,7 +434,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "Enable/disable hyperthreading on master nodes, worker nodes, or a combination of them",
 				Computed:            true,
 			},
-			
+
 			// System objects
 			"platform": schema.SingleNestedAttribute{
 				MarkdownDescription: "Platform configuration",
@@ -492,7 +492,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 					},
 				},
 			},
-			
+
 			// Logs
 			"logs_info": schema.SingleNestedAttribute{
 				MarkdownDescription: "The progress of log collection or empty if logs are not applicable",
@@ -516,7 +516,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "Timestamp when controller log collection started",
 				Computed:            true,
 			},
-			
+
 			// Connectivity and networking details
 			"connectivity_majority_groups": schema.StringAttribute{
 				MarkdownDescription: "JSON formatted string containing the majority groups for connectivity checks",
@@ -531,7 +531,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				Computed:            true,
 				ElementType:         types.ObjectType{},
 			},
-			
+
 			// Validation overrides
 			"ignored_host_validations": schema.StringAttribute{
 				MarkdownDescription: "JSON formatted string containing a list of host validations to be ignored",
@@ -541,7 +541,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "JSON formatted string containing a list of cluster validations to be ignored",
 				Computed:            true,
 			},
-			
+
 			// Operators and features
 			"monitored_operators": schema.ListAttribute{
 				MarkdownDescription: "Operators that are associated with this cluster",
@@ -556,7 +556,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "Unique identifier of the AMS subscription in OCM",
 				Computed:            true,
 			},
-			
+
 			// Day-2 and import
 			"imported": schema.BoolAttribute{
 				MarkdownDescription: "Indicates whether this cluster is an imported day-2 cluster or a regular cluster",
@@ -584,7 +584,7 @@ func (d *ClusterDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				MarkdownDescription: "Indication if organization soft timeouts is enabled for the cluster",
 				Computed:            true,
 			},
-			
+
 			// Legacy support (backwards compatibility)
 			"hosts_count": schema.Int64Attribute{
 				MarkdownDescription: "Total number of hosts in the cluster (legacy field, use total_host_count)",
@@ -662,7 +662,7 @@ func (d *ClusterDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	data.Status = types.StringValue(cluster.Status)
 	data.StatusInfo = types.StringValue(cluster.StatusInfo)
 	data.Kind = types.StringValue(cluster.Kind)
-	
+
 	// Handle platform - construct nested object
 	if cluster.Platform != nil && cluster.Platform.Type != "" {
 		platformObj, diag := types.ObjectValue(
@@ -692,20 +692,20 @@ func (d *ClusterDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		for _, vip := range cluster.APIVips {
 			apiVips = append(apiVips, ClusterAPIVipModel{
 				IP:           types.StringValue(vip.IP),
-				ClusterID:    data.ID, // Use the cluster ID from the data
+				ClusterID:    data.ID,               // Use the cluster ID from the data
 				Verification: types.StringValue(""), // Not available in basic cluster model
 			})
 		}
 		data.APIVips = apiVips
 	}
 
-	// Handle Ingress VIPs  
+	// Handle Ingress VIPs
 	if cluster.IngressVips != nil {
 		var ingressVips []ClusterAPIVipModel
 		for _, vip := range cluster.IngressVips {
 			ingressVips = append(ingressVips, ClusterAPIVipModel{
 				IP:           types.StringValue(vip.IP),
-				ClusterID:    data.ID, // Use the cluster ID from the data
+				ClusterID:    data.ID,               // Use the cluster ID from the data
 				Verification: types.StringValue(""), // Not available in basic cluster model
 			})
 		}

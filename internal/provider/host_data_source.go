@@ -29,76 +29,76 @@ type HostDataSource struct {
 // All fields match exactly with Swagger host definition
 type HostDataSourceModel struct {
 	// Required fields per Swagger
-	ID                    types.String   `tfsdk:"id"`
-	Kind                  types.String   `tfsdk:"kind"`
-	Href                  types.String   `tfsdk:"href"`
-	Status                types.String   `tfsdk:"status"`
-	StatusInfo            types.String   `tfsdk:"status_info"`
-	
+	ID         types.String `tfsdk:"id"`
+	Kind       types.String `tfsdk:"kind"`
+	Href       types.String `tfsdk:"href"`
+	Status     types.String `tfsdk:"status"`
+	StatusInfo types.String `tfsdk:"status_info"`
+
 	// Associations
-	InfraEnvID            types.String   `tfsdk:"infra_env_id"`
-	ClusterID             types.String   `tfsdk:"cluster_id"`
-	
+	InfraEnvID types.String `tfsdk:"infra_env_id"`
+	ClusterID  types.String `tfsdk:"cluster_id"`
+
 	// Status and progress
-	StatusUpdatedAt       types.String   `tfsdk:"status_updated_at"`
-	Progress              types.Object   `tfsdk:"progress"`
-	StageStartedAt        types.String   `tfsdk:"stage_started_at"`
-	StageUpdatedAt        types.String   `tfsdk:"stage_updated_at"`
-	ProgressStages        types.List     `tfsdk:"progress_stages"`
-	
+	StatusUpdatedAt types.String `tfsdk:"status_updated_at"`
+	Progress        types.Object `tfsdk:"progress"`
+	StageStartedAt  types.String `tfsdk:"stage_started_at"`
+	StageUpdatedAt  types.String `tfsdk:"stage_updated_at"`
+	ProgressStages  types.List   `tfsdk:"progress_stages"`
+
 	// Connectivity (JSON strings per Swagger)
-	Connectivity          types.String   `tfsdk:"connectivity"`
-	APIVipConnectivity    types.String   `tfsdk:"api_vip_connectivity"`
-	TangConnectivity      types.String   `tfsdk:"tang_connectivity"`
-	
+	Connectivity       types.String `tfsdk:"connectivity"`
+	APIVipConnectivity types.String `tfsdk:"api_vip_connectivity"`
+	TangConnectivity   types.String `tfsdk:"tang_connectivity"`
+
 	// Hardware inventory (JSON string per Swagger)
-	Inventory             types.String   `tfsdk:"inventory"`
-	FreeAddresses         types.String   `tfsdk:"free_addresses"`
-	NTPSources            types.String   `tfsdk:"ntp_sources"`
-	DisksInfo             types.String   `tfsdk:"disks_info"`
-	
+	Inventory     types.String `tfsdk:"inventory"`
+	FreeAddresses types.String `tfsdk:"free_addresses"`
+	NTPSources    types.String `tfsdk:"ntp_sources"`
+	DisksInfo     types.String `tfsdk:"disks_info"`
+
 	// Host role and configuration
-	Role                  types.String   `tfsdk:"role"`
-	SuggestedRole         types.String   `tfsdk:"suggested_role"`
-	Bootstrap             types.Bool     `tfsdk:"bootstrap"`
-	
+	Role          types.String `tfsdk:"role"`
+	SuggestedRole types.String `tfsdk:"suggested_role"`
+	Bootstrap     types.Bool   `tfsdk:"bootstrap"`
+
 	// Logs
-	LogsInfo              types.Object   `tfsdk:"logs_info"`
-	LogsCollectedAt       types.String   `tfsdk:"logs_collected_at"`
-	LogsStartedAt         types.String   `tfsdk:"logs_started_at"`
-	
+	LogsInfo        types.Object `tfsdk:"logs_info"`
+	LogsCollectedAt types.String `tfsdk:"logs_collected_at"`
+	LogsStartedAt   types.String `tfsdk:"logs_started_at"`
+
 	// Installation
-	InstallerVersion      types.String   `tfsdk:"installer_version"`
-	InstallationDiskPath  types.String   `tfsdk:"installation_disk_path"`
-	InstallationDiskID    types.String   `tfsdk:"installation_disk_id"`
-	
+	InstallerVersion     types.String `tfsdk:"installer_version"`
+	InstallationDiskPath types.String `tfsdk:"installation_disk_path"`
+	InstallationDiskID   types.String `tfsdk:"installation_disk_id"`
+
 	// Timestamps
-	CreatedAt             types.String   `tfsdk:"created_at"`
-	UpdatedAt             types.String   `tfsdk:"updated_at"`
-	CheckedInAt           types.String   `tfsdk:"checked_in_at"`
-	RegisteredAt          types.String   `tfsdk:"registered_at"`
-	
+	CreatedAt    types.String `tfsdk:"created_at"`
+	UpdatedAt    types.String `tfsdk:"updated_at"`
+	CheckedInAt  types.String `tfsdk:"checked_in_at"`
+	RegisteredAt types.String `tfsdk:"registered_at"`
+
 	// Host details
-	UserName              types.String   `tfsdk:"user_name"`
-	RequestedHostname     types.String   `tfsdk:"requested_hostname"`
-	ConnectionTimedOut    types.Bool     `tfsdk:"connection_timed_out"`
-	DiscoveryAgentVersion types.String   `tfsdk:"discovery_agent_version"`
-	MediaStatus           types.String   `tfsdk:"media_status"`
-	
+	UserName              types.String `tfsdk:"user_name"`
+	RequestedHostname     types.String `tfsdk:"requested_hostname"`
+	ConnectionTimedOut    types.Bool   `tfsdk:"connection_timed_out"`
+	DiscoveryAgentVersion types.String `tfsdk:"discovery_agent_version"`
+	MediaStatus           types.String `tfsdk:"media_status"`
+
 	// Advanced configuration (JSON strings per Swagger)
-	IgnitionConfigOverrides types.String `tfsdk:"ignition_config_overrides"`
-	InstallerArgs         types.String   `tfsdk:"installer_args"`
-	Timestamp             types.Int64    `tfsdk:"timestamp"`
-	MachineConfigPoolName types.String   `tfsdk:"machine_config_pool_name"`
-	ImagesStatus          types.String   `tfsdk:"images_status"`
-	DomainNameResolutions types.String   `tfsdk:"domain_name_resolutions"`
-	IgnitionEndpointTokenSet types.Bool  `tfsdk:"ignition_endpoint_token_set"`
-	NodeLabels            types.String   `tfsdk:"node_labels"`
-	DisksToBeFormatted    types.String   `tfsdk:"disks_to_be_formatted"`
-	SkipFormattingDisks   types.String   `tfsdk:"skip_formatting_disks"`
-	
+	IgnitionConfigOverrides  types.String `tfsdk:"ignition_config_overrides"`
+	InstallerArgs            types.String `tfsdk:"installer_args"`
+	Timestamp                types.Int64  `tfsdk:"timestamp"`
+	MachineConfigPoolName    types.String `tfsdk:"machine_config_pool_name"`
+	ImagesStatus             types.String `tfsdk:"images_status"`
+	DomainNameResolutions    types.String `tfsdk:"domain_name_resolutions"`
+	IgnitionEndpointTokenSet types.Bool   `tfsdk:"ignition_endpoint_token_set"`
+	NodeLabels               types.String `tfsdk:"node_labels"`
+	DisksToBeFormatted       types.String `tfsdk:"disks_to_be_formatted"`
+	SkipFormattingDisks      types.String `tfsdk:"skip_formatting_disks"`
+
 	// Validation info (JSON string per Swagger)
-	ValidationsInfo       types.String   `tfsdk:"validations_info"`
+	ValidationsInfo types.String `tfsdk:"validations_info"`
 }
 
 func (d *HostDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -136,13 +136,13 @@ func (d *HostDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				MarkdownDescription: "Additional information about the host status",
 				Computed:            true,
 			},
-			
+
 			// Associations
 			"cluster_id": schema.StringAttribute{
 				MarkdownDescription: "The cluster that this host is associated with",
 				Computed:            true,
 			},
-			
+
 			// Status and progress - matching Swagger exactly
 			"validations_info": schema.StringAttribute{
 				MarkdownDescription: "JSON-formatted string containing the validation results for each validation id grouped by category (network, hardware, etc.)",
@@ -191,7 +191,7 @@ func (d *HostDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				Computed:            true,
 				ElementType:         types.ObjectType{},
 			},
-			
+
 			// Connectivity (JSON strings per Swagger)
 			"connectivity": schema.StringAttribute{
 				MarkdownDescription: "JSON string containing connectivity information",
@@ -205,7 +205,7 @@ func (d *HostDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				MarkdownDescription: "JSON string containing Tang connectivity information",
 				Computed:            true,
 			},
-			
+
 			// Hardware inventory (JSON string per Swagger - NOT parsed objects)
 			"inventory": schema.StringAttribute{
 				MarkdownDescription: "JSON string containing hardware inventory information collected from the host",
@@ -223,7 +223,7 @@ func (d *HostDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				MarkdownDescription: "JSON string containing additional information about disks",
 				Computed:            true,
 			},
-			
+
 			// Host role and configuration
 			"role": schema.StringAttribute{
 				MarkdownDescription: "The role assigned to this host (master, worker, auto-assign)",
@@ -237,7 +237,7 @@ func (d *HostDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				MarkdownDescription: "Whether this host is the bootstrap node",
 				Computed:            true,
 			},
-			
+
 			// Logs
 			"logs_info": schema.SingleNestedAttribute{
 				MarkdownDescription: "The progress of log collection or empty if logs are not applicable",
@@ -261,7 +261,7 @@ func (d *HostDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				MarkdownDescription: "When log collection started",
 				Computed:            true,
 			},
-			
+
 			// Installation
 			"installer_version": schema.StringAttribute{
 				MarkdownDescription: "Installer version",
@@ -275,7 +275,7 @@ func (d *HostDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				MarkdownDescription: "Contains the inventory disk id to install on",
 				Computed:            true,
 			},
-			
+
 			// Timestamps
 			"created_at": schema.StringAttribute{
 				MarkdownDescription: "When the host was created",
@@ -293,7 +293,7 @@ func (d *HostDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				MarkdownDescription: "The last time the host's agent tried to register in the service",
 				Computed:            true,
 			},
-			
+
 			// Host details
 			"user_name": schema.StringAttribute{
 				MarkdownDescription: "Username for host access",
@@ -315,7 +315,7 @@ func (d *HostDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				MarkdownDescription: "Media status (connected, disconnected)",
 				Computed:            true,
 			},
-			
+
 			// Advanced configuration (JSON strings per Swagger)
 			"ignition_config_overrides": schema.StringAttribute{
 				MarkdownDescription: "JSON formatted string containing the user overrides for the host's pointer ignition",
@@ -424,7 +424,7 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		progressInfo := types.StringValue("")
 		stageStartedAt := types.StringValue("")
 		stageUpdatedAt := types.StringValue("")
-		
+
 		if host.Progress.CurrentStage != "" {
 			currentStage = types.StringValue(host.Progress.CurrentStage)
 		}
@@ -437,21 +437,21 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		if !host.Progress.StageUpdatedAt.IsZero() {
 			stageUpdatedAt = types.StringValue(host.Progress.StageUpdatedAt.String())
 		}
-		
+
 		progressObj, diag := types.ObjectValue(
 			map[string]attr.Type{
-				"current_stage":             types.StringType,
-				"progress_info":            types.StringType,
-				"installation_percentage":  types.Int64Type,
-				"stage_started_at":         types.StringType,
-				"stage_updated_at":         types.StringType,
+				"current_stage":           types.StringType,
+				"progress_info":           types.StringType,
+				"installation_percentage": types.Int64Type,
+				"stage_started_at":        types.StringType,
+				"stage_updated_at":        types.StringType,
 			},
 			map[string]attr.Value{
-				"current_stage":             currentStage,
-				"progress_info":            progressInfo,
-				"installation_percentage":  types.Int64Value(0), // Not available in basic Progress model
-				"stage_started_at":         stageStartedAt,
-				"stage_updated_at":         stageUpdatedAt,
+				"current_stage":           currentStage,
+				"progress_info":           progressInfo,
+				"installation_percentage": types.Int64Value(0), // Not available in basic Progress model
+				"stage_started_at":        stageStartedAt,
+				"stage_updated_at":        stageUpdatedAt,
 			},
 		)
 		resp.Diagnostics.Append(diag...)

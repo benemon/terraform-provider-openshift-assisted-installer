@@ -93,7 +93,9 @@ func (c *Client) refreshAccessToken(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to refresh token: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
@@ -149,7 +151,7 @@ func (c *Client) buildURL(endpoint string) string {
 
 func (c *Client) doRequest(ctx context.Context, method, endpoint string, body interface{}) (*http.Response, error) {
 	var reqBody io.Reader
-	
+
 	if body != nil {
 		jsonBody, err := json.Marshal(body)
 		if err != nil {
@@ -168,15 +170,15 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body in
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
-	
+
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	
+
 	req.Header.Set("Accept", "application/json")
 
 	resp, err := c.httpClient.Do(req)
@@ -185,7 +187,9 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body in
 	}
 
 	if resp.StatusCode >= 400 {
-		defer resp.Body.Close()
+		defer func() {
+			_ = resp.Body.Close()
+		}()
 		bodyBytes, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(bodyBytes))
 	}
@@ -194,12 +198,14 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body in
 }
 
 func (c *Client) unmarshalResponse(resp *http.Response, target interface{}) error {
-	defer resp.Body.Close()
-	
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
 	if err := json.NewDecoder(resp.Body).Decode(target); err != nil {
 		return fmt.Errorf("failed to unmarshal response: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -349,7 +355,7 @@ func (c *Client) DeleteManifest(ctx context.Context, clusterID string, folder, f
 	q.Set("folder", folder)
 	q.Set("file_name", fileName)
 	u.RawQuery = q.Encode()
-	
+
 	req, err := http.NewRequestWithContext(ctx, "DELETE", u.String(), nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
@@ -360,7 +366,7 @@ func (c *Client) DeleteManifest(ctx context.Context, clusterID string, folder, f
 	if err != nil {
 		return fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
@@ -370,7 +376,9 @@ func (c *Client) DeleteManifest(ctx context.Context, clusterID string, folder, f
 	if err != nil {
 		return fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode >= 400 {
 		bodyBytes, _ := io.ReadAll(resp.Body)
@@ -399,18 +407,18 @@ func (c *Client) DownloadManifestContent(ctx context.Context, clusterID, fileNam
 	if folder == "" {
 		folder = "manifests"
 	}
-	
+
 	u, _ := url.Parse(c.buildURL(fmt.Sprintf("clusters/%s/manifests/files", clusterID)))
 	params := url.Values{}
 	params.Add("file_name", fileName)
 	params.Add("folder", folder)
 	u.RawQuery = params.Encode()
-	
+
 	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
 	if err != nil {
 		return "", fmt.Errorf("error creating request: %w", err)
 	}
-	
+
 	// Add authentication header
 	accessToken, err := c.getAccessToken(ctx)
 	if err != nil {
@@ -420,23 +428,25 @@ func (c *Client) DownloadManifestContent(ctx context.Context, clusterID, fileNam
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
 	req.Header.Set("Accept", "application/octet-stream")
-	
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("error making request: %w", err)
 	}
-	defer resp.Body.Close()
-	
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		return "", fmt.Errorf("error response %d: %s", resp.StatusCode, string(body))
 	}
-	
+
 	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("error reading response body: %w", err)
 	}
-	
+
 	return string(content), nil
 }
 
@@ -464,7 +474,7 @@ func (c *Client) GetOpenShiftVersions(ctx context.Context, version string, onlyL
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
@@ -476,7 +486,9 @@ func (c *Client) GetOpenShiftVersions(ctx context.Context, version string, onlyL
 	}
 
 	if resp.StatusCode >= 400 {
-		defer resp.Body.Close()
+		defer func() {
+			_ = resp.Body.Close()
+		}()
 		bodyBytes, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(bodyBytes))
 	}
@@ -548,7 +560,9 @@ func (c *Client) UpdateHost(ctx context.Context, infraEnvID, hostID string, para
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	var host models.Host
 	if err := json.NewDecoder(resp.Body).Decode(&host); err != nil {
@@ -563,7 +577,9 @@ func (c *Client) GetOperatorBundles(ctx context.Context) (*models.Bundles, error
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	var bundles models.Bundles
 	if err := json.NewDecoder(resp.Body).Decode(&bundles); err != nil {
@@ -579,7 +595,9 @@ func (c *Client) GetOperatorBundle(ctx context.Context, bundleID string) (*model
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	var bundle models.Bundle
 	if err := json.NewDecoder(resp.Body).Decode(&bundle); err != nil {
@@ -612,7 +630,7 @@ func (c *Client) GetSupportedFeatures(ctx context.Context, openshiftVersion, cpu
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
@@ -622,7 +640,9 @@ func (c *Client) GetSupportedFeatures(ctx context.Context, openshiftVersion, cpu
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
@@ -653,7 +673,7 @@ func (c *Client) GetSupportedArchitectures(ctx context.Context, openshiftVersion
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
@@ -663,7 +683,9 @@ func (c *Client) GetSupportedArchitectures(ctx context.Context, openshiftVersion
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
@@ -701,7 +723,7 @@ func (c *Client) GetDetailedSupportedFeatures(ctx context.Context, openshiftVers
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
@@ -711,7 +733,9 @@ func (c *Client) GetDetailedSupportedFeatures(ctx context.Context, openshiftVers
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
@@ -724,10 +748,10 @@ func (c *Client) GetDetailedSupportedFeatures(ctx context.Context, openshiftVers
 	type DetailedResponse struct {
 		Features []struct {
 			FeatureSupportLevelID string                 `json:"feature-support-level-id"`
-			SupportLevel         string                 `json:"support_level"`
-			Incompatibilities    []string               `json:"incompatibilities,omitempty"`
-			Dependencies         []string               `json:"dependencies,omitempty"`
-			Properties           map[string]interface{} `json:"properties,omitempty"`
+			SupportLevel          string                 `json:"support_level"`
+			Incompatibilities     []string               `json:"incompatibilities,omitempty"`
+			Dependencies          []string               `json:"dependencies,omitempty"`
+			Properties            map[string]interface{} `json:"properties,omitempty"`
 		} `json:"features"`
 	}
 
@@ -740,10 +764,10 @@ func (c *Client) GetDetailedSupportedFeatures(ctx context.Context, openshiftVers
 	features := make(models.DetailedSupportedFeatures)
 	for _, feature := range detailedResp.Features {
 		features[feature.FeatureSupportLevelID] = models.DetailedFeature{
-			SupportLevel:     feature.SupportLevel,
+			SupportLevel:      feature.SupportLevel,
 			Incompatibilities: feature.Incompatibilities,
-			Dependencies:     feature.Dependencies,
-			Properties:       feature.Properties,
+			Dependencies:      feature.Dependencies,
+			Properties:        feature.Properties,
 		}
 	}
 
@@ -753,7 +777,7 @@ func (c *Client) GetDetailedSupportedFeatures(ctx context.Context, openshiftVers
 // GetClusterCredentials retrieves admin credentials for an installed cluster
 func (c *Client) GetClusterCredentials(ctx context.Context, clusterID string) (*models.Credentials, error) {
 	url := fmt.Sprintf("%s/%s/clusters/%s/credentials", c.baseURL, APIVersion, clusterID)
-	
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -764,7 +788,7 @@ func (c *Client) GetClusterCredentials(ctx context.Context, clusterID string) (*
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
@@ -774,7 +798,9 @@ func (c *Client) GetClusterCredentials(ctx context.Context, clusterID string) (*
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
@@ -822,7 +848,7 @@ func (c *Client) GetClusterEvents(ctx context.Context, clusterID string, params 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
@@ -832,7 +858,9 @@ func (c *Client) GetClusterEvents(ctx context.Context, clusterID string, params 
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
@@ -850,7 +878,7 @@ func (c *Client) GetClusterEvents(ctx context.Context, clusterID string, params 
 // DownloadClusterCredentialFile downloads a specific credential file (kubeconfig, kubeadmin-password, etc.)
 func (c *Client) DownloadClusterCredentialFile(ctx context.Context, clusterID, fileName string) ([]byte, error) {
 	url := fmt.Sprintf("%s/%s/clusters/%s/downloads/credentials?file_name=%s", c.baseURL, APIVersion, clusterID, fileName)
-	
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -861,7 +889,7 @@ func (c *Client) DownloadClusterCredentialFile(ctx context.Context, clusterID, f
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
@@ -870,7 +898,9 @@ func (c *Client) DownloadClusterCredentialFile(ctx context.Context, clusterID, f
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
@@ -889,7 +919,7 @@ func (c *Client) DownloadClusterCredentialFile(ctx context.Context, clusterID, f
 // GetClusterValidations retrieves validation information for a cluster
 func (c *Client) GetClusterValidations(ctx context.Context, clusterID string) (*models.ClusterValidationResponse, error) {
 	url := fmt.Sprintf("%s/%s/clusters/%s", c.baseURL, APIVersion, clusterID)
-	
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -900,7 +930,7 @@ func (c *Client) GetClusterValidations(ctx context.Context, clusterID string) (*
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
@@ -910,7 +940,9 @@ func (c *Client) GetClusterValidations(ctx context.Context, clusterID string) (*
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
@@ -933,7 +965,7 @@ func (c *Client) GetClusterValidations(ctx context.Context, clusterID string) (*
 // GetHostValidations retrieves validation information for all hosts in a cluster
 func (c *Client) GetHostValidations(ctx context.Context, clusterID string) (*models.HostsValidationResponse, error) {
 	url := fmt.Sprintf("%s/%s/clusters/%s/hosts", c.baseURL, APIVersion, clusterID)
-	
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -944,7 +976,7 @@ func (c *Client) GetHostValidations(ctx context.Context, clusterID string) (*mod
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
@@ -954,7 +986,9 @@ func (c *Client) GetHostValidations(ctx context.Context, clusterID string) (*mod
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
@@ -963,7 +997,7 @@ func (c *Client) GetHostValidations(ctx context.Context, clusterID string) (*mod
 
 	// Parse the hosts response to extract validations_info from each host
 	var hostsResp []struct {
-		ID              string                              `json:"id"`
+		ID              string                             `json:"id"`
 		ValidationsInfo map[string][]models.ValidationInfo `json:"validations_info"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&hostsResp); err != nil {
@@ -987,7 +1021,7 @@ func (c *Client) GetHostValidations(ctx context.Context, clusterID string) (*mod
 // GetSingleHostValidations retrieves validation information for a specific host
 func (c *Client) GetSingleHostValidations(ctx context.Context, infraEnvID, hostID string) (*models.HostValidationResponse, error) {
 	url := fmt.Sprintf("%s/%s/infra-envs/%s/hosts/%s", c.baseURL, APIVersion, infraEnvID, hostID)
-	
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -998,7 +1032,7 @@ func (c *Client) GetSingleHostValidations(ctx context.Context, infraEnvID, hostI
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
@@ -1008,7 +1042,9 @@ func (c *Client) GetSingleHostValidations(ctx context.Context, infraEnvID, hostI
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
@@ -1017,7 +1053,7 @@ func (c *Client) GetSingleHostValidations(ctx context.Context, infraEnvID, hostI
 
 	// Parse the host response to extract validations_info
 	var hostResp struct {
-		ID              string                              `json:"id"`
+		ID              string                             `json:"id"`
 		ValidationsInfo map[string][]models.ValidationInfo `json:"validations_info"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&hostResp); err != nil {
@@ -1057,7 +1093,7 @@ func (c *Client) DownloadClusterLogs(ctx context.Context, clusterID string, para
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
@@ -1066,7 +1102,9 @@ func (c *Client) DownloadClusterLogs(ctx context.Context, clusterID string, para
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
@@ -1110,7 +1148,7 @@ func (c *Client) DownloadClusterFiles(ctx context.Context, clusterID, fileName s
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	if accessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
@@ -1119,7 +1157,9 @@ func (c *Client) DownloadClusterFiles(ctx context.Context, clusterID, fileName s
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)

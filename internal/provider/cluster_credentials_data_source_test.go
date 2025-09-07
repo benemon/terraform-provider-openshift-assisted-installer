@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -53,24 +52,24 @@ func TestClusterCredentialsDataSource_Schema(t *testing.T) {
 
 func TestClusterCredentialsDataSource_Configure(t *testing.T) {
 	ds := &ClusterCredentialsDataSource{}
-	
+
 	// Test with valid client
 	testClient := client.NewClient(client.ClientConfig{
 		BaseURL:      "https://api.example.com",
 		OfflineToken: "test-token",
 	})
-	
+
 	configReq := datasource.ConfigureRequest{
 		ProviderData: testClient,
 	}
 	configResp := &datasource.ConfigureResponse{}
-	
+
 	ds.Configure(context.Background(), configReq, configResp)
-	
+
 	if configResp.Diagnostics.HasError() {
 		t.Errorf("Configure() returned diagnostics: %v", configResp.Diagnostics)
 	}
-	
+
 	if ds.client != testClient {
 		t.Error("Configure() did not set client correctly")
 	}
@@ -78,14 +77,14 @@ func TestClusterCredentialsDataSource_Configure(t *testing.T) {
 
 func TestClusterCredentialsDataSource_Metadata(t *testing.T) {
 	ds := NewClusterCredentialsDataSource()
-	
+
 	metadataReq := datasource.MetadataRequest{
 		ProviderTypeName: "oai",
 	}
 	metadataResp := &datasource.MetadataResponse{}
-	
+
 	ds.Metadata(context.Background(), metadataReq, metadataResp)
-	
+
 	if metadataResp.TypeName != "oai_cluster_credentials" {
 		t.Errorf("Expected type name 'oai_cluster_credentials', got '%s'", metadataResp.TypeName)
 	}
@@ -122,7 +121,7 @@ func SkipTestClusterCredentialsDataSource_Read(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(mockCredentials)
+		_ = json.NewEncoder(w).Encode(mockCredentials)
 	}))
 	defer server.Close()
 
@@ -141,11 +140,11 @@ func SkipTestClusterCredentialsDataSource_Read(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					data "oai_cluster_credentials" "test" {
 						cluster_id = "test-cluster-id"
 					}
-				`),
+				`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.oai_cluster_credentials.test", "cluster_id", "test-cluster-id"),
 					resource.TestCheckResourceAttr("data.oai_cluster_credentials.test", "username", "kubeadmin"),
@@ -165,7 +164,7 @@ func SkipTestClusterCredentialsDataSource_Read_Error(t *testing.T) {
 	// Create mock server that returns an error
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("Cluster not found"))
+		_, _ = w.Write([]byte("Cluster not found"))
 	}))
 	defer server.Close()
 

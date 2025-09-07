@@ -47,36 +47,36 @@ func TestClusterFilesDataSource_Schema(t *testing.T) {
 
 func TestClusterFilesDataSource_Configure(t *testing.T) {
 	dataSource := NewClusterFilesDataSource().(*ClusterFilesDataSource)
-	
+
 	// Test with nil provider data
 	req := datasource.ConfigureRequest{ProviderData: nil}
 	resp := &datasource.ConfigureResponse{}
-	
+
 	dataSource.Configure(context.Background(), req, resp)
-	
+
 	if resp.Diagnostics.HasError() {
 		t.Error("Configure should not error with nil provider data")
 	}
-	
+
 	// Test with wrong provider data type
 	req.ProviderData = "wrong-type"
 	resp = &datasource.ConfigureResponse{}
-	
+
 	dataSource.Configure(context.Background(), req, resp)
-	
+
 	if !resp.Diagnostics.HasError() {
 		t.Error("Configure should error with wrong provider data type")
 	}
-	
+
 	// Test with correct provider data
 	testClient := client.NewClient(client.ClientConfig{
 		BaseURL: "http://test.example.com",
 	})
 	req.ProviderData = testClient
 	resp = &datasource.ConfigureResponse{}
-	
+
 	dataSource.Configure(context.Background(), req, resp)
-	
+
 	if resp.Diagnostics.HasError() {
 		t.Errorf("Configure should not error with correct provider data: %+v", resp.Diagnostics)
 	}
@@ -108,7 +108,7 @@ data:
 		}
 
 		w.Header().Set("Content-Type", "application/octet-stream")
-		w.Write([]byte(mockFileContent))
+		_, _ = w.Write([]byte(mockFileContent))
 	}))
 	defer server.Close()
 

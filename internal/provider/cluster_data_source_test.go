@@ -11,15 +11,15 @@ import (
 
 func TestClusterDataSource_Schema(t *testing.T) {
 	ds := NewClusterDataSource()
-	
+
 	schemaReq := datasource.SchemaRequest{}
 	schemaResp := &datasource.SchemaResponse{}
-	
+
 	ds.Schema(context.Background(), schemaReq, schemaResp)
-	
+
 	// Verify no diagnostics
 	assert.False(t, schemaResp.Diagnostics.HasError())
-	
+
 	// Verify schema structure - essential Swagger-compliant fields
 	schema := schemaResp.Schema
 	assert.NotNil(t, schema.Attributes["id"])
@@ -32,7 +32,7 @@ func TestClusterDataSource_Schema(t *testing.T) {
 	assert.NotNil(t, schema.Attributes["service_network_cidr"])
 	assert.NotNil(t, schema.Attributes["api_vips"])
 	assert.NotNil(t, schema.Attributes["ingress_vips"])
-	
+
 	// Verify required field
 	idAttr := schema.Attributes["id"]
 	assert.True(t, idAttr.IsRequired())
@@ -40,48 +40,48 @@ func TestClusterDataSource_Schema(t *testing.T) {
 
 func TestClusterDataSource_Metadata(t *testing.T) {
 	ds := NewClusterDataSource()
-	
+
 	metadataReq := datasource.MetadataRequest{
 		ProviderTypeName: "oai",
 	}
 	metadataResp := &datasource.MetadataResponse{}
-	
+
 	ds.Metadata(context.Background(), metadataReq, metadataResp)
-	
+
 	assert.Equal(t, "oai_cluster", metadataResp.TypeName)
 }
 
 func TestClusterDataSource_Configure(t *testing.T) {
 	ds := &ClusterDataSource{}
-	
+
 	// Test with valid client
 	testClient := client.NewClient(client.ClientConfig{
 		BaseURL:      "https://api.example.com",
 		OfflineToken: "test-token",
 	})
-	
+
 	configReq := datasource.ConfigureRequest{
 		ProviderData: testClient,
 	}
 	configResp := &datasource.ConfigureResponse{}
-	
+
 	ds.Configure(context.Background(), configReq, configResp)
-	
+
 	assert.False(t, configResp.Diagnostics.HasError())
 	assert.Equal(t, testClient, ds.client)
 }
 
 func TestClusterDataSource_ConfigureError(t *testing.T) {
 	ds := &ClusterDataSource{}
-	
+
 	// Test with invalid client type
 	configReq := datasource.ConfigureRequest{
 		ProviderData: "invalid-client",
 	}
 	configResp := &datasource.ConfigureResponse{}
-	
+
 	ds.Configure(context.Background(), configReq, configResp)
-	
+
 	assert.True(t, configResp.Diagnostics.HasError())
 	assert.Nil(t, ds.client)
 }

@@ -39,15 +39,15 @@ type HostValidationModel struct {
 
 // HostValidationsDataSourceModel describes the data source data model.
 type HostValidationsDataSourceModel struct {
-	ID               types.String            `tfsdk:"id"`
-	ClusterID        types.String            `tfsdk:"cluster_id"`
-	HostID           types.String            `tfsdk:"host_id"`
-	InfraEnvID       types.String            `tfsdk:"infra_env_id"`
-	ValidationTypes  []types.String          `tfsdk:"validation_types"`
-	StatusFilter     []types.String          `tfsdk:"status_filter"`
-	ValidationNames  []types.String          `tfsdk:"validation_names"`
-	Categories       []types.String          `tfsdk:"categories"`
-	Validations      []HostValidationModel   `tfsdk:"validations"`
+	ID              types.String          `tfsdk:"id"`
+	ClusterID       types.String          `tfsdk:"cluster_id"`
+	HostID          types.String          `tfsdk:"host_id"`
+	InfraEnvID      types.String          `tfsdk:"infra_env_id"`
+	ValidationTypes []types.String        `tfsdk:"validation_types"`
+	StatusFilter    []types.String        `tfsdk:"status_filter"`
+	ValidationNames []types.String        `tfsdk:"validation_names"`
+	Categories      []types.String        `tfsdk:"categories"`
+	Validations     []HostValidationModel `tfsdk:"validations"`
 }
 
 func (d *HostValidationsDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {

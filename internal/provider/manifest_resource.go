@@ -36,14 +36,14 @@ type ManifestResource struct {
 
 // ManifestResourceModel describes the resource data model.
 type ManifestResourceModel struct {
-	ID               types.String `tfsdk:"id"`
-	ClusterID        types.String `tfsdk:"cluster_id"`
-	FileName         types.String `tfsdk:"file_name"`
-	Folder           types.String `tfsdk:"folder"`
-	Content          types.String `tfsdk:"content"`
-	
+	ID        types.String `tfsdk:"id"`
+	ClusterID types.String `tfsdk:"cluster_id"`
+	FileName  types.String `tfsdk:"file_name"`
+	Folder    types.String `tfsdk:"folder"`
+	Content   types.String `tfsdk:"content"`
+
 	// Computed fields
-	ManifestSource   types.String `tfsdk:"manifest_source"`
+	ManifestSource types.String `tfsdk:"manifest_source"`
 }
 
 func (r *ManifestResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -99,7 +99,7 @@ func (r *ManifestResource) Schema(ctx context.Context, req resource.SchemaReques
 				MarkdownDescription: "Content of the manifest in YAML or JSON format. The content will be automatically base64-encoded for the API.",
 				Required:            true,
 			},
-			
+
 			// Computed attributes
 			"manifest_source": schema.StringAttribute{
 				MarkdownDescription: "Source information for the manifest.",

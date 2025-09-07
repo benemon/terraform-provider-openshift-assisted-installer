@@ -13,10 +13,10 @@ import (
 
 func TestSupportedOperatorsDataSource_Read(t *testing.T) {
 	tests := []struct {
-		name           string
-		mockResponse   string
-		expectedCount  int
-		expectError    bool
+		name          string
+		mockResponse  string
+		expectedCount int
+		expectError   bool
 	}{
 		{
 			name: "successful fetch operators",
@@ -52,7 +52,7 @@ func TestSupportedOperatorsDataSource_Read(t *testing.T) {
 				if r.Method == "GET" && r.URL.Path == "/v2/supported-operators" {
 					w.Header().Set("Content-Type", "application/json")
 					w.WriteHeader(http.StatusOK)
-					w.Write([]byte(tt.mockResponse))
+					_, _ = w.Write([]byte(tt.mockResponse))
 					return
 				}
 				w.WriteHeader(http.StatusNotFound)
@@ -61,7 +61,7 @@ func TestSupportedOperatorsDataSource_Read(t *testing.T) {
 
 			// Create client
 			client := client.NewClient(client.ClientConfig{
-				BaseURL: server.URL,
+				BaseURL:      server.URL,
 				OfflineToken: "test-token",
 			})
 
@@ -107,13 +107,13 @@ func TestSupportedOperatorsDataSource_Read(t *testing.T) {
 						"cnv-operator":           false,
 						"lvm-operator":           false,
 					}
-					
+
 					for _, operator := range operators {
 						if _, exists := expectedOperators[operator]; exists {
 							expectedOperators[operator] = true
 						}
 					}
-					
+
 					for operator, found := range expectedOperators {
 						if !found {
 							t.Errorf("Expected operator %s not found", operator)
@@ -127,16 +127,16 @@ func TestSupportedOperatorsDataSource_Read(t *testing.T) {
 
 func TestSupportedOperatorsDataSource_Schema(t *testing.T) {
 	dataSource := NewSupportedOperatorsDataSource()
-	
+
 	req := datasource.SchemaRequest{}
 	resp := &datasource.SchemaResponse{}
-	
+
 	dataSource.Schema(context.Background(), req, resp)
-	
+
 	if resp.Schema.Attributes == nil {
 		t.Error("Schema should have attributes")
 	}
-	
+
 	// Check required attributes
 	requiredAttrs := []string{"id", "operators"}
 	for _, attr := range requiredAttrs {
@@ -148,14 +148,14 @@ func TestSupportedOperatorsDataSource_Schema(t *testing.T) {
 
 func TestSupportedOperatorsDataSource_Metadata(t *testing.T) {
 	dataSource := NewSupportedOperatorsDataSource()
-	
+
 	req := datasource.MetadataRequest{
 		ProviderTypeName: "oai",
 	}
 	resp := &datasource.MetadataResponse{}
-	
+
 	dataSource.Metadata(context.Background(), req, resp)
-	
+
 	expected := "oai_supported_operators"
 	if resp.TypeName != expected {
 		t.Errorf("Expected TypeName %q, got %q", expected, resp.TypeName)
@@ -164,18 +164,18 @@ func TestSupportedOperatorsDataSource_Metadata(t *testing.T) {
 
 func TestSupportedOperatorsDataSource_Configure_Error(t *testing.T) {
 	dataSource := NewSupportedOperatorsDataSource()
-	
+
 	// Test with wrong provider data type
 	req := datasource.ConfigureRequest{
 		ProviderData: "invalid-type",
 	}
 	resp := &datasource.ConfigureResponse{}
-	
+
 	// Cast to the concrete type to test Configure method
 	if configurable, ok := dataSource.(*SupportedOperatorsDataSource); ok {
 		configurable.Configure(context.Background(), req, resp)
 	}
-	
+
 	if !resp.Diagnostics.HasError() {
 		t.Error("Expected configuration error with invalid provider data type")
 	}
@@ -183,18 +183,18 @@ func TestSupportedOperatorsDataSource_Configure_Error(t *testing.T) {
 
 func TestSupportedOperatorsDataSource_Configure_Nil(t *testing.T) {
 	dataSource := NewSupportedOperatorsDataSource()
-	
+
 	// Test with nil provider data (should not error)
 	req := datasource.ConfigureRequest{
 		ProviderData: nil,
 	}
 	resp := &datasource.ConfigureResponse{}
-	
+
 	// Cast to the concrete type to test Configure method
 	if configurable, ok := dataSource.(*SupportedOperatorsDataSource); ok {
 		configurable.Configure(context.Background(), req, resp)
 	}
-	
+
 	if resp.Diagnostics.HasError() {
 		t.Error("Should not error with nil provider data")
 	}

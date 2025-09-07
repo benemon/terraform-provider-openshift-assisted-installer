@@ -38,13 +38,13 @@ type ClusterValidationModel struct {
 
 // ClusterValidationsDataSourceModel describes the data source data model.
 type ClusterValidationsDataSourceModel struct {
-	ID               types.String                 `tfsdk:"id"`
-	ClusterID        types.String                 `tfsdk:"cluster_id"`
-	ValidationTypes  []types.String               `tfsdk:"validation_types"`
-	StatusFilter     []types.String               `tfsdk:"status_filter"`
-	ValidationNames  []types.String               `tfsdk:"validation_names"`
-	Categories       []types.String               `tfsdk:"categories"`
-	Validations      []ClusterValidationModel     `tfsdk:"validations"`
+	ID              types.String             `tfsdk:"id"`
+	ClusterID       types.String             `tfsdk:"cluster_id"`
+	ValidationTypes []types.String           `tfsdk:"validation_types"`
+	StatusFilter    []types.String           `tfsdk:"status_filter"`
+	ValidationNames []types.String           `tfsdk:"validation_names"`
+	Categories      []types.String           `tfsdk:"categories"`
+	Validations     []ClusterValidationModel `tfsdk:"validations"`
 }
 
 func (d *ClusterValidationsDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {

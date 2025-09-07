@@ -23,7 +23,7 @@ func TestClient_UpdateCluster(t *testing.T) {
 		if r.Method != "PATCH" {
 			t.Errorf("Expected PATCH request, got %s", r.Method)
 		}
-		
+
 		if r.URL.Path != "/v2/clusters/test-cluster-id" {
 			t.Errorf("Expected path /v2/clusters/test-cluster-id, got %s", r.URL.Path)
 		}
@@ -35,12 +35,12 @@ func TestClient_UpdateCluster(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(expectedCluster)
+		_ = json.NewEncoder(w).Encode(expectedCluster)
 	}))
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
 	})
 
@@ -64,7 +64,7 @@ func TestClient_InstallCluster(t *testing.T) {
 		if r.Method != "POST" {
 			t.Errorf("Expected POST request, got %s", r.Method)
 		}
-		
+
 		if r.URL.Path != "/v2/clusters/test-cluster-id/actions/install" {
 			t.Errorf("Expected path /v2/clusters/test-cluster-id/actions/install, got %s", r.URL.Path)
 		}
@@ -74,7 +74,7 @@ func TestClient_InstallCluster(t *testing.T) {
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
 	})
 
@@ -101,12 +101,12 @@ func TestClient_InfraEnvOperations(t *testing.T) {
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
-			json.NewEncoder(w).Encode(expectedInfraEnv)
+			_ = json.NewEncoder(w).Encode(expectedInfraEnv)
 		}))
 		defer server.Close()
 
 		client := NewClient(ClientConfig{
-			BaseURL: server.URL,
+			BaseURL:      server.URL,
 			OfflineToken: "test-token",
 		})
 
@@ -137,12 +137,12 @@ func TestClient_InfraEnvOperations(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(expectedInfraEnv)
+			_ = json.NewEncoder(w).Encode(expectedInfraEnv)
 		}))
 		defer server.Close()
 
 		client := NewClient(ClientConfig{
-			BaseURL: server.URL,
+			BaseURL:      server.URL,
 			OfflineToken: "test-token",
 		})
 
@@ -166,7 +166,7 @@ func TestClient_InfraEnvOperations(t *testing.T) {
 		defer server.Close()
 
 		client := NewClient(ClientConfig{
-			BaseURL: server.URL,
+			BaseURL:      server.URL,
 			OfflineToken: "test-token",
 		})
 
@@ -198,7 +198,7 @@ func TestClient_ManifestOperations(t *testing.T) {
 		defer server.Close()
 
 		client := NewClient(ClientConfig{
-			BaseURL: server.URL,
+			BaseURL:      server.URL,
 			OfflineToken: "test-token",
 		})
 
@@ -232,12 +232,12 @@ func TestClient_ManifestOperations(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(expectedManifests)
+			_ = json.NewEncoder(w).Encode(expectedManifests)
 		}))
 		defer server.Close()
 
 		client := NewClient(ClientConfig{
-			BaseURL: server.URL,
+			BaseURL:      server.URL,
 			OfflineToken: "test-token",
 		})
 
@@ -273,7 +273,7 @@ func TestClient_ManifestOperations(t *testing.T) {
 		defer server.Close()
 
 		client := NewClient(ClientConfig{
-			BaseURL: server.URL,
+			BaseURL:      server.URL,
 			OfflineToken: "test-token",
 		})
 
@@ -311,12 +311,12 @@ func TestClient_VersionsAndOperators(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(expectedVersions)
+			_ = json.NewEncoder(w).Encode(expectedVersions)
 		}))
 		defer server.Close()
 
 		client := NewClient(ClientConfig{
-			BaseURL: server.URL,
+			BaseURL:      server.URL,
 			OfflineToken: "test-token",
 		})
 
@@ -339,12 +339,12 @@ func TestClient_VersionsAndOperators(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(expectedOperators)
+			_ = json.NewEncoder(w).Encode(expectedOperators)
 		}))
 		defer server.Close()
 
 		client := NewClient(ClientConfig{
-			BaseURL: server.URL,
+			BaseURL:      server.URL,
 			OfflineToken: "test-token",
 		})
 
@@ -380,12 +380,12 @@ func TestClient_HostOperations(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(expectedHosts)
+			_ = json.NewEncoder(w).Encode(expectedHosts)
 		}))
 		defer server.Close()
 
 		client := NewClient(ClientConfig{
-			BaseURL: server.URL,
+			BaseURL:      server.URL,
 			OfflineToken: "test-token",
 		})
 
@@ -419,7 +419,7 @@ func TestClient_HostOperations(t *testing.T) {
 		defer server.Close()
 
 		client := NewClient(ClientConfig{
-			BaseURL: server.URL,
+			BaseURL:      server.URL,
 			OfflineToken: "test-token",
 		})
 
@@ -443,7 +443,7 @@ func TestClient_ContextCancellation(t *testing.T) {
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
 	})
 
@@ -466,9 +466,9 @@ func TestClient_Timeout(t *testing.T) {
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
-		Timeout: 50 * time.Millisecond,
+		Timeout:      50 * time.Millisecond,
 	})
 
 	_, err := client.GetCluster(context.Background(), "test-cluster-id")

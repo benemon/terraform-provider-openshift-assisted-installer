@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/benemon/terraform-provider-openshift-assisted-installer/internal/models"
 )
@@ -36,7 +36,7 @@ func TestClusterResource_OLMOperators_modelToCreateParams(t *testing.T) {
 				OpenshiftVersion: StringValue("4.15.20"),
 				PullSecret:       StringValue("pull-secret"),
 				CPUArchitecture:  StringValue("x86_64"),
-				OLMOperators:     createOLMOperatorsList([]OLMOperatorModel{
+				OLMOperators: createOLMOperatorsList([]OLMOperatorModel{
 					{Name: StringValue("local-storage-operator"), Properties: types.StringNull()},
 				}),
 			},
@@ -51,7 +51,7 @@ func TestClusterResource_OLMOperators_modelToCreateParams(t *testing.T) {
 				OpenshiftVersion: StringValue("4.15.20"),
 				PullSecret:       StringValue("pull-secret"),
 				CPUArchitecture:  StringValue("x86_64"),
-				OLMOperators:     createOLMOperatorsList([]OLMOperatorModel{
+				OLMOperators: createOLMOperatorsList([]OLMOperatorModel{
 					{Name: StringValue("local-storage-operator"), Properties: StringValue("{\"version\":\"4.15\"}")},
 					{Name: StringValue("odf-operator"), Properties: StringValue("{\"version\":\"4.15\",\"namespace\":\"openshift-storage\"}")},
 				}),
@@ -224,6 +224,6 @@ func createOLMOperatorsList(operators []OLMOperatorModel) types.List {
 			"properties": types.StringType,
 		},
 	}, operators)
-	
+
 	return listValue
 }

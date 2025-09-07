@@ -23,18 +23,18 @@ type OpenShiftVersionsDataSource struct {
 }
 
 type OpenShiftVersionsDataSourceModel struct {
-	ID         types.String                        `tfsdk:"id"`
-	Version    types.String                        `tfsdk:"version"`
-	OnlyLatest types.Bool                          `tfsdk:"only_latest"`
-	Versions   []OpenShiftVersionModel             `tfsdk:"versions"`
+	ID         types.String            `tfsdk:"id"`
+	Version    types.String            `tfsdk:"version"`
+	OnlyLatest types.Bool              `tfsdk:"only_latest"`
+	Versions   []OpenShiftVersionModel `tfsdk:"versions"`
 }
 
 type OpenShiftVersionModel struct {
-	Version          types.String   `tfsdk:"version"`
-	DisplayName      types.String   `tfsdk:"display_name"`
-	SupportLevel     types.String   `tfsdk:"support_level"`
-	Default          types.Bool     `tfsdk:"default"`
-	CPUArchitectures types.List     `tfsdk:"cpu_architectures"`
+	Version          types.String `tfsdk:"version"`
+	DisplayName      types.String `tfsdk:"display_name"`
+	SupportLevel     types.String `tfsdk:"support_level"`
+	Default          types.Bool   `tfsdk:"default"`
+	CPUArchitectures types.List   `tfsdk:"cpu_architectures"`
 }
 
 func (d *OpenShiftVersionsDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -119,7 +119,7 @@ func (d *OpenShiftVersionsDataSource) Read(ctx context.Context, req datasource.R
 	// Extract filter parameters
 	var versionFilter string
 	var onlyLatest bool
-	
+
 	if !data.Version.IsNull() {
 		versionFilter = data.Version.ValueString()
 	}

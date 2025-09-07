@@ -41,26 +41,26 @@ func TestClusterLogsDataSource_Schema(t *testing.T) {
 
 func TestClusterLogsDataSource_Configure(t *testing.T) {
 	dataSource := NewClusterLogsDataSource().(*ClusterLogsDataSource)
-	
+
 	// Test with nil provider data
 	req := datasource.ConfigureRequest{ProviderData: nil}
 	resp := &datasource.ConfigureResponse{}
-	
+
 	dataSource.Configure(context.Background(), req, resp)
-	
+
 	if resp.Diagnostics.HasError() {
 		t.Error("Configure should not error with nil provider data")
 	}
-	
+
 	// Test with correct provider data
 	testClient := client.NewClient(client.ClientConfig{
 		BaseURL: "http://test.example.com",
 	})
 	req.ProviderData = testClient
 	resp = &datasource.ConfigureResponse{}
-	
+
 	dataSource.Configure(context.Background(), req, resp)
-	
+
 	if resp.Diagnostics.HasError() {
 		t.Errorf("Configure should not error with correct provider data: %+v", resp.Diagnostics)
 	}
@@ -81,7 +81,7 @@ func TestClusterLogsDataSource_Read(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte(mockLogContent))
+		_, _ = w.Write([]byte(mockLogContent))
 	}))
 	defer server.Close()
 

@@ -25,12 +25,12 @@ type SupportLevelsDataSource struct {
 
 // SupportLevelsDataSourceModel describes the data source data model.
 type SupportLevelsDataSourceModel struct {
-	ID                 types.String         `tfsdk:"id"`
-	OpenShiftVersion   types.String         `tfsdk:"openshift_version"`
-	CPUArchitecture    types.String         `tfsdk:"cpu_architecture"`
-	PlatformType       types.String         `tfsdk:"platform_type"`
-	Features           map[string]string    `tfsdk:"features"`
-	Architectures      map[string]string    `tfsdk:"architectures"`
+	ID               types.String      `tfsdk:"id"`
+	OpenShiftVersion types.String      `tfsdk:"openshift_version"`
+	CPUArchitecture  types.String      `tfsdk:"cpu_architecture"`
+	PlatformType     types.String      `tfsdk:"platform_type"`
+	Features         map[string]string `tfsdk:"features"`
+	Architectures    map[string]string `tfsdk:"architectures"`
 }
 
 func (d *SupportLevelsDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -115,10 +115,10 @@ func (d *SupportLevelsDataSource) Read(ctx context.Context, req datasource.ReadR
 	}
 
 	tflog.Info(ctx, "Fetching support levels", map[string]any{
-		"data_source":        "oai_support_levels",
-		"openshift_version":  openshiftVersion,
-		"cpu_architecture":   cpuArchitecture,
-		"platform_type":      platformType,
+		"data_source":       "oai_support_levels",
+		"openshift_version": openshiftVersion,
+		"cpu_architecture":  cpuArchitecture,
+		"platform_type":     platformType,
 	})
 
 	// Fetch feature support levels
@@ -128,7 +128,7 @@ func (d *SupportLevelsDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	// Fetch architecture support levels  
+	// Fetch architecture support levels
 	architectures, err := d.client.GetSupportedArchitectures(ctx, openshiftVersion)
 	if err != nil {
 		resp.Diagnostics.AddError("Error fetching supported architectures", fmt.Sprintf("Could not read supported architectures: %s", err))

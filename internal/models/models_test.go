@@ -41,15 +41,15 @@ func TestCluster_JSONMarshal(t *testing.T) {
 	if len(unmarshaled.APIVips) != len(cluster.APIVips) {
 		t.Errorf("APIVips length mismatch: got %d, want %d", len(unmarshaled.APIVips), len(cluster.APIVips))
 	}
-	
+
 	if len(cluster.APIVips) > 0 && unmarshaled.APIVips[0].IP != cluster.APIVips[0].IP {
 		t.Errorf("APIVips[0].IP mismatch: got %s, want %s", unmarshaled.APIVips[0].IP, cluster.APIVips[0].IP)
 	}
-	
+
 	if len(unmarshaled.IngressVips) != len(cluster.IngressVips) {
 		t.Errorf("IngressVips length mismatch: got %d, want %d", len(unmarshaled.IngressVips), len(cluster.IngressVips))
 	}
-	
+
 	if len(cluster.IngressVips) > 0 && unmarshaled.IngressVips[0].IP != cluster.IngressVips[0].IP {
 		t.Errorf("IngressVips[0].IP mismatch: got %s, want %s", unmarshaled.IngressVips[0].IP, cluster.IngressVips[0].IP)
 	}
@@ -150,14 +150,14 @@ func TestClusterCreateParams_Validation(t *testing.T) {
 		{
 			name: "valid complete params",
 			params: ClusterCreateParams{
-				Name:             "test-cluster",
-				OpenshiftVersion: "4.15.20",
-				PullSecret:       "fake-secret",
-				CPUArchitecture:  "x86_64",
-				BaseDNSDomain:    "example.com",
-				APIVips:          []APIVip{{IP: "192.168.1.100"}},
-				IngressVips:      []IngressVip{{IP: "192.168.1.101"}},
-				SSHPublicKey:     "ssh-rsa AAAA...",
+				Name:              "test-cluster",
+				OpenshiftVersion:  "4.15.20",
+				PullSecret:        "fake-secret",
+				CPUArchitecture:   "x86_64",
+				BaseDNSDomain:     "example.com",
+				APIVips:           []APIVip{{IP: "192.168.1.100"}},
+				IngressVips:       []IngressVip{{IP: "192.168.1.101"}},
+				SSHPublicKey:      "ssh-rsa AAAA...",
 				ControlPlaneCount: 3,
 				OLMOperators: []OLMOperator{
 					{Name: "local-storage-operator", Properties: "{\"version\":\"4.15\"}"},
@@ -401,15 +401,15 @@ func TestOpenshiftVersions_JSONMarshal(t *testing.T) {
 
 func TestHost_JSONMarshal(t *testing.T) {
 	host := &Host{
-		Kind:       "Host",
-		ID:         "host-123",
-		ClusterID:  "cluster-456",
-		InfraEnvID: "infra-789",
-		Status:     "known",
-		StatusInfo: "Host is ready",
+		Kind:              "Host",
+		ID:                "host-123",
+		ClusterID:         "cluster-456",
+		InfraEnvID:        "infra-789",
+		Status:            "known",
+		StatusInfo:        "Host is ready",
 		RequestedHostname: "worker-1",
-		Role:       "worker",
-		CreatedAt:  time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+		Role:              "worker",
+		CreatedAt:         time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 		Progress: &Progress{
 			CurrentStage: "Waiting for control plane",
 			ProgressInfo: "Waiting for control plane to be ready",
@@ -437,7 +437,7 @@ func TestHost_JSONMarshal(t *testing.T) {
 	if unmarshaled.Progress == nil {
 		t.Error("Progress should not be nil")
 	} else if unmarshaled.Progress.CurrentStage != host.Progress.CurrentStage {
-		t.Errorf("Progress.CurrentStage mismatch: got %s, want %s", 
+		t.Errorf("Progress.CurrentStage mismatch: got %s, want %s",
 			unmarshaled.Progress.CurrentStage, host.Progress.CurrentStage)
 	}
 }

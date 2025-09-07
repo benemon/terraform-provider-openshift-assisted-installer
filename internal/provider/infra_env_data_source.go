@@ -27,38 +27,38 @@ type InfraEnvDataSource struct {
 // All fields match exactly with Swagger infra-env definition
 type InfraEnvDataSourceModel struct {
 	// Required fields per Swagger
-	ID               types.String `tfsdk:"id"`
-	Kind             types.String `tfsdk:"kind"`
-	Href             types.String `tfsdk:"href"`
-	Name             types.String `tfsdk:"name"`
-	Type             types.Object `tfsdk:"type"`
-	CreatedAt        types.String `tfsdk:"created_at"`
-	UpdatedAt        types.String `tfsdk:"updated_at"`
-	
+	ID        types.String `tfsdk:"id"`
+	Kind      types.String `tfsdk:"kind"`
+	Href      types.String `tfsdk:"href"`
+	Name      types.String `tfsdk:"name"`
+	Type      types.Object `tfsdk:"type"`
+	CreatedAt types.String `tfsdk:"created_at"`
+	UpdatedAt types.String `tfsdk:"updated_at"`
+
 	// Core infra-env info
 	OpenshiftVersion types.String `tfsdk:"openshift_version"`
 	UserName         types.String `tfsdk:"user_name"`
 	OrgID            types.String `tfsdk:"org_id"`
 	EmailDomain      types.String `tfsdk:"email_domain"`
-	
+
 	// Proxy configuration
-	Proxy            types.Object `tfsdk:"proxy"`
-	
+	Proxy types.Object `tfsdk:"proxy"`
+
 	// Network and NTP configuration
 	AdditionalNTPSources types.String `tfsdk:"additional_ntp_sources"`
 	SSHAuthorizedKey     types.String `tfsdk:"ssh_authorized_key"`
 	StaticNetworkConfig  types.String `tfsdk:"static_network_config"`
-	
+
 	// Security
-	PullSecretSet        types.Bool   `tfsdk:"pull_secret_set"`
+	PullSecretSet         types.Bool   `tfsdk:"pull_secret_set"`
 	AdditionalTrustBundle types.String `tfsdk:"additional_trust_bundle"`
-	
+
 	// Ignition configuration
 	IgnitionConfigOverride types.String `tfsdk:"ignition_config_override"`
-	
+
 	// Cluster association
-	ClusterID        types.String `tfsdk:"cluster_id"`
-	
+	ClusterID types.String `tfsdk:"cluster_id"`
+
 	// Image details
 	SizeBytes        types.Int64  `tfsdk:"size_bytes"`
 	DownloadURL      types.String `tfsdk:"download_url"`
@@ -113,7 +113,7 @@ func (d *InfraEnvDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				MarkdownDescription: "The last time that this infra-env was updated",
 				Computed:            true,
 			},
-			
+
 			// Core infra-env info
 			"openshift_version": schema.StringAttribute{
 				MarkdownDescription: "Version of the OpenShift cluster (used to infer the RHCOS version)",
@@ -131,7 +131,7 @@ func (d *InfraEnvDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				MarkdownDescription: "Email domain",
 				Computed:            true,
 			},
-			
+
 			// Proxy configuration
 			"proxy": schema.SingleNestedAttribute{
 				MarkdownDescription: "HTTP/HTTPS proxy configuration",
@@ -142,7 +142,7 @@ func (d *InfraEnvDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 						Computed:            true,
 					},
 					"https_proxy": schema.StringAttribute{
-						MarkdownDescription: "A proxy URL to use for creating HTTPS connections outside the cluster", 
+						MarkdownDescription: "A proxy URL to use for creating HTTPS connections outside the cluster",
 						Computed:            true,
 					},
 					"no_proxy": schema.StringAttribute{
@@ -151,7 +151,7 @@ func (d *InfraEnvDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 					},
 				},
 			},
-			
+
 			// Network and NTP configuration
 			"additional_ntp_sources": schema.StringAttribute{
 				MarkdownDescription: "A comma-separated list of NTP sources (name or IP) going to be added to all the hosts",
@@ -165,7 +165,7 @@ func (d *InfraEnvDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				MarkdownDescription: "Static network configuration string in the format expected by discovery ignition generation",
 				Computed:            true,
 			},
-			
+
 			// Security
 			"pull_secret_set": schema.BoolAttribute{
 				MarkdownDescription: "True if the pull secret has been added to the cluster",
@@ -175,19 +175,19 @@ func (d *InfraEnvDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				MarkdownDescription: "PEM-encoded X.509 certificate bundle. Hosts discovered by this infra-env will trust the certificates in this bundle",
 				Computed:            true,
 			},
-			
+
 			// Ignition configuration
 			"ignition_config_override": schema.StringAttribute{
 				MarkdownDescription: "JSON formatted string containing the user overrides for the initial ignition config",
 				Computed:            true,
 			},
-			
+
 			// Cluster association
 			"cluster_id": schema.StringAttribute{
 				MarkdownDescription: "If set, all hosts that register will be associated with the specified cluster",
 				Computed:            true,
 			},
-			
+
 			// Image details
 			"size_bytes": schema.Int64Attribute{
 				MarkdownDescription: "Image size in bytes",
@@ -263,7 +263,7 @@ func (d *InfraEnvDataSource) Read(ctx context.Context, req datasource.ReadReques
 	data.CPUArchitecture = types.StringValue(infraEnv.CPUArchitecture)
 	data.OpenshiftVersion = types.StringValue(infraEnv.OpenshiftVersion)
 	data.DownloadURL = types.StringValue(infraEnv.DownloadURL)
-	// Handle type - construct nested object  
+	// Handle type - construct nested object
 	if infraEnv.Type != "" {
 		typeObj, diag := types.ObjectValue(
 			map[string]attr.Type{

@@ -86,7 +86,7 @@ func TestOAIProvider_Resources(t *testing.T) {
 	for _, resourceName := range resourceNames {
 		found := false
 		for _, r := range resources {
-			// Create an instance to check the type  
+			// Create an instance to check the type
 			instance := r()
 			switch resourceName {
 			case "cluster":
@@ -147,15 +147,15 @@ func TestOAIProvider_DataSources(t *testing.T) {
 	if !foundVersions {
 		t.Error("OpenShiftVersionsDataSource not found in data sources list")
 	}
-	
+
 	if !foundOperators {
 		t.Error("SupportedOperatorsDataSource not found in data sources list")
 	}
-	
+
 	if !foundBundles {
 		t.Error("OperatorBundlesDataSource not found in data sources list")
 	}
-	
+
 	if !foundLevels {
 		t.Error("SupportLevelsDataSource not found in data sources list")
 	}

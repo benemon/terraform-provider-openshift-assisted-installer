@@ -48,11 +48,11 @@ type InfraEnvResourceModel struct {
 	StaticNetworkConfig    []InfraEnvStaticNetworkModel  `tfsdk:"static_network_config"`
 	KernelArguments        []InfraEnvKernelArgumentModel `tfsdk:"kernel_arguments"`
 	IgnitionConfigOverride types.String                  `tfsdk:"ignition_config_override"`
-	
+
 	// Computed fields
-	DownloadURL            types.String                  `tfsdk:"download_url"`
-	ExpiresAt              types.String                  `tfsdk:"expires_at"`
-	Type                   types.String                  `tfsdk:"type"`
+	DownloadURL types.String `tfsdk:"download_url"`
+	ExpiresAt   types.String `tfsdk:"expires_at"`
+	Type        types.String `tfsdk:"type"`
 }
 
 type InfraEnvProxyModel struct {
@@ -62,13 +62,13 @@ type InfraEnvProxyModel struct {
 }
 
 type InfraEnvStaticNetworkModel struct {
-	NetworkYAML types.String `tfsdk:"network_yaml"`
+	NetworkYAML     types.String                `tfsdk:"network_yaml"`
 	MACInterfaceMap []InfraEnvMACInterfaceModel `tfsdk:"mac_interface_map"`
 }
 
 type InfraEnvMACInterfaceModel struct {
-	MACAddress        types.String `tfsdk:"mac_address"`
-	LogicalNICName    types.String `tfsdk:"logical_nic_name"`
+	MACAddress     types.String `tfsdk:"mac_address"`
+	LogicalNICName types.String `tfsdk:"logical_nic_name"`
 }
 
 type InfraEnvKernelArgumentModel struct {
@@ -220,7 +220,7 @@ func (r *InfraEnvResource) Schema(ctx context.Context, req resource.SchemaReques
 				MarkdownDescription: "Custom ignition configuration to override defaults.",
 				Optional:            true,
 			},
-			
+
 			// Computed attributes
 			"download_url": schema.StringAttribute{
 				MarkdownDescription: "URL to download the discovery ISO.",
@@ -443,7 +443,7 @@ func (r *InfraEnvResource) terraformToCreateAPIModel(ctx context.Context, data *
 			params.StaticNetworkConfig[i] = models.HostStaticNetworkConfig{
 				NetworkYAML: config.NetworkYAML.ValueString(),
 			}
-			
+
 			if len(config.MACInterfaceMap) > 0 {
 				params.StaticNetworkConfig[i].MACInterfaceMap = make([]models.MACInterfaceMapEntry, len(config.MACInterfaceMap))
 				for j, macMap := range config.MACInterfaceMap {
@@ -530,7 +530,7 @@ func (r *InfraEnvResource) terraformToUpdateAPIModel(ctx context.Context, data *
 			params.StaticNetworkConfig[i] = models.HostStaticNetworkConfig{
 				NetworkYAML: config.NetworkYAML.ValueString(),
 			}
-			
+
 			if len(config.MACInterfaceMap) > 0 {
 				params.StaticNetworkConfig[i].MACInterfaceMap = make([]models.MACInterfaceMapEntry, len(config.MACInterfaceMap))
 				for j, macMap := range config.MACInterfaceMap {
@@ -562,44 +562,44 @@ func (r *InfraEnvResource) apiToTerraformModel(ctx context.Context, infraEnv *mo
 	data.Name = types.StringValue(infraEnv.Name)
 	data.Type = types.StringValue(infraEnv.Type)
 	data.CPUArchitecture = types.StringValue(infraEnv.CPUArchitecture)
-	
+
 	// Always set computed fields to avoid "unknown value" errors
 	if infraEnv.ClusterID != "" {
 		data.ClusterID = types.StringValue(infraEnv.ClusterID)
 	} else {
 		data.ClusterID = types.StringNull()
 	}
-	
+
 	if infraEnv.OpenshiftVersion != "" {
 		data.OpenShiftVersion = types.StringValue(infraEnv.OpenshiftVersion)
 	} else {
 		data.OpenShiftVersion = types.StringNull()
 	}
-	
+
 	if infraEnv.SSHAuthorizedKey != "" {
 		data.SSHAuthorizedKey = types.StringValue(infraEnv.SSHAuthorizedKey)
 	} else {
 		data.SSHAuthorizedKey = types.StringNull()
 	}
-	
+
 	if infraEnv.DownloadURL != "" {
 		data.DownloadURL = types.StringValue(infraEnv.DownloadURL)
 	} else {
 		data.DownloadURL = types.StringNull()
 	}
-	
+
 	if !infraEnv.ExpiresAt.IsZero() {
 		data.ExpiresAt = types.StringValue(infraEnv.ExpiresAt.Format("2006-01-02T15:04:05Z"))
 	} else {
 		data.ExpiresAt = types.StringNull()
 	}
-	
+
 	if infraEnv.AdditionalNTPSources != "" {
 		data.AdditionalNTPSources = types.StringValue(infraEnv.AdditionalNTPSources)
 	} else {
 		data.AdditionalNTPSources = types.StringNull()
 	}
-	
+
 	if infraEnv.AdditionalTrustBundle != "" {
 		data.AdditionalTrustBundle = types.StringValue(infraEnv.AdditionalTrustBundle)
 	} else {

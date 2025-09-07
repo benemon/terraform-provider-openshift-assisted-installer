@@ -30,7 +30,7 @@ func TestClient_UpdateManifest(t *testing.T) {
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
 	})
 
@@ -47,12 +47,12 @@ func TestClient_UpdateManifest(t *testing.T) {
 
 func TestClient_GetHost(t *testing.T) {
 	expectedHost := &models.Host{
-		ID:         "host-id",
-		InfraEnvID: "infra-env-id",
-		Status:     "known",
-		StatusInfo: "Host is ready",
+		ID:                "host-id",
+		InfraEnvID:        "infra-env-id",
+		Status:            "known",
+		StatusInfo:        "Host is ready",
 		RequestedHostname: "worker-1",
-		Role:       "worker",
+		Role:              "worker",
 	}
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -61,12 +61,12 @@ func TestClient_GetHost(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(expectedHost)
+		_ = json.NewEncoder(w).Encode(expectedHost)
 	}))
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
 	})
 
@@ -100,7 +100,7 @@ func TestClient_UnbindHost(t *testing.T) {
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
 	})
 
@@ -130,12 +130,12 @@ func TestClient_UpdateInfraEnv(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(expectedInfraEnv)
+		_ = json.NewEncoder(w).Encode(expectedInfraEnv)
 	}))
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
 	})
 
@@ -176,12 +176,12 @@ func TestClient_ListInfraEnvs(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(expectedInfraEnvs)
+		_ = json.NewEncoder(w).Encode(expectedInfraEnvs)
 	}))
 	defer server.Close()
 
 	client := NewClient(ClientConfig{
-		BaseURL: server.URL,
+		BaseURL:      server.URL,
 		OfflineToken: "test-token",
 	})
 

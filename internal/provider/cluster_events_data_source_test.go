@@ -63,7 +63,7 @@ func SkipTestClusterEventsDataSource_Read(t *testing.T) {
 			},
 			{
 				Name:      "Host discovery",
-				ClusterID: "test-cluster-id", 
+				ClusterID: "test-cluster-id",
 				HostID:    "host-456",
 				Severity:  "info",
 				Category:  "user",
@@ -98,7 +98,7 @@ func SkipTestClusterEventsDataSource_Read(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(mockEvents)
+		_ = json.NewEncoder(w).Encode(mockEvents)
 	}))
 	defer server.Close()
 
@@ -137,7 +137,7 @@ func SkipTestClusterEventsDataSource_Read(t *testing.T) {
 	// Verify the response contains events
 	var result ClusterEventsDataSourceModel
 	resp.State.Get(context.Background(), &result)
-	
+
 	if len(result.Events) != 2 {
 		t.Errorf("Expected 2 events, got %d", len(result.Events))
 	}
@@ -145,36 +145,36 @@ func SkipTestClusterEventsDataSource_Read(t *testing.T) {
 
 func TestClusterEventsDataSource_Configure(t *testing.T) {
 	dataSource := NewClusterEventsDataSource().(*ClusterEventsDataSource)
-	
+
 	// Test with nil provider data
 	req := datasource.ConfigureRequest{ProviderData: nil}
 	resp := &datasource.ConfigureResponse{}
-	
+
 	dataSource.Configure(context.Background(), req, resp)
-	
+
 	if resp.Diagnostics.HasError() {
 		t.Error("Configure should not error with nil provider data")
 	}
-	
+
 	// Test with wrong provider data type
 	req.ProviderData = "wrong-type"
 	resp = &datasource.ConfigureResponse{}
-	
+
 	dataSource.Configure(context.Background(), req, resp)
-	
+
 	if !resp.Diagnostics.HasError() {
 		t.Error("Configure should error with wrong provider data type")
 	}
-	
+
 	// Test with correct provider data
 	testClient := client.NewClient(client.ClientConfig{
 		BaseURL: "http://test.example.com",
 	})
 	req.ProviderData = testClient
 	resp = &datasource.ConfigureResponse{}
-	
+
 	dataSource.Configure(context.Background(), req, resp)
-	
+
 	if resp.Diagnostics.HasError() {
 		t.Errorf("Configure should not error with correct provider data: %+v", resp.Diagnostics)
 	}
