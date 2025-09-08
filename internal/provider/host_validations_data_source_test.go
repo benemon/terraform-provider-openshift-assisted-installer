@@ -547,13 +547,13 @@ func TestHostValidationsDataSource_Metadata(t *testing.T) {
 	dataSource := NewHostValidationsDataSource()
 
 	req := datasource.MetadataRequest{
-		ProviderTypeName: "oai",
+		ProviderTypeName: "openshift_assisted_installer",
 	}
 	resp := &datasource.MetadataResponse{}
 
 	dataSource.Metadata(context.Background(), req, resp)
 
-	expected := "oai_host_validations"
+	expected := "openshift_assisted_installer_host_validations"
 	if resp.TypeName != expected {
 		t.Errorf("Expected TypeName %q, got %q", expected, resp.TypeName)
 	}

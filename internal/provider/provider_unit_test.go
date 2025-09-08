@@ -17,8 +17,8 @@ func TestOAIProvider_Metadata(t *testing.T) {
 
 	p.Metadata(context.Background(), req, resp)
 
-	if resp.TypeName != "oai" {
-		t.Errorf("Expected TypeName 'oai', got %s", resp.TypeName)
+	if resp.TypeName != "openshift_assisted_installer" {
+		t.Errorf("Expected TypeName 'openshift_assisted_installer', got %s", resp.TypeName)
 	}
 
 	if resp.Version != "test" {

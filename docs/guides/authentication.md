@@ -29,7 +29,7 @@ Offline tokens provide long-term authentication that automatically refreshes acc
 
 **Method 1: Provider Configuration**
 ```hcl
-provider "oai" {
+provider "openshift-assisted-installer" {
   offline_token = var.offline_token
 }
 
@@ -46,7 +46,7 @@ export OFFLINE_TOKEN="your-offline-token-here"
 ```
 
 ```hcl
-provider "oai" {
+provider "openshift-assisted-installer" {
   # Token automatically read from OFFLINE_TOKEN environment variable
 }
 ```
@@ -58,7 +58,7 @@ offline_token = "your-offline-token-here"
 ```
 
 ```hcl
-provider "oai" {
+provider "openshift-assisted-installer" {
   offline_token = var.offline_token
 }
 
@@ -73,7 +73,7 @@ variable "offline_token" {
 ### Complete Configuration Example
 
 ```hcl
-provider "oai" {
+provider "openshift-assisted-installer" {
   # Authentication
   offline_token = var.offline_token
   
@@ -136,7 +136,7 @@ provider "oai" {
      name  = "openshift/tokens"
    }
    
-   provider "oai" {
+   provider "openshift-assisted-installer" {
      offline_token = data.vault_kv_secret_v2.tokens.data.offline_token
    }
    ```
@@ -151,7 +151,7 @@ provider "oai" {
 For enhanced security in enterprise environments:
 
 ```hcl
-provider "oai" {
+provider "openshift-assisted-installer" {
   endpoint = "https://your-private-assisted-service.company.com/api/assisted-install"
   timeout  = "120s"  # Longer timeout for internal networks
 }
@@ -172,7 +172,7 @@ Implement regular token rotation:
 
 ```hcl
 # dev.tfvars
-provider "oai" {
+provider "openshift-assisted-installer" {
   timeout = "300s"  # Longer timeout for slower development environments
 }
 ```
@@ -181,7 +181,7 @@ provider "oai" {
 
 ```hcl
 # prod.tfvars
-provider "oai" {
+provider "openshift-assisted-installer" {
   timeout = "30s"   # Strict timeout for production reliability
 }
 ```
@@ -200,7 +200,7 @@ locals {
   }
 }
 
-provider "oai" {
+provider "openshift-assisted-installer" {
   timeout = local.config[var.environment].timeout
 }
 ```

@@ -38,7 +38,7 @@ type OAIProviderModel struct {
 }
 
 func (p *OAIProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "oai"
+	resp.TypeName = "openshift_assisted_installer"
 	resp.Version = p.version
 }
 

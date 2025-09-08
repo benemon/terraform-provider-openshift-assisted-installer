@@ -42,13 +42,13 @@ func TestClusterDataSource_Metadata(t *testing.T) {
 	ds := NewClusterDataSource()
 
 	metadataReq := datasource.MetadataRequest{
-		ProviderTypeName: "oai",
+		ProviderTypeName: "openshift_assisted_installer",
 	}
 	metadataResp := &datasource.MetadataResponse{}
 
 	ds.Metadata(context.Background(), metadataReq, metadataResp)
 
-	assert.Equal(t, "oai_cluster", metadataResp.TypeName)
+	assert.Equal(t, "openshift_assisted_installer_cluster", metadataResp.TypeName)
 }
 
 func TestClusterDataSource_Configure(t *testing.T) {

@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_openshift_versions"
+page_title: "Data Source: openshift_assisted_installer_versions"
 subcategory: "General Information"
 ---
 
-# oai_openshift_versions Data Source
+# openshift_assisted_installer_versions Data Source
 
 Retrieves available OpenShift versions from the Assisted Service API. Use this data source to discover supported OpenShift versions for cluster deployment.
 
@@ -12,46 +12,46 @@ Retrieves available OpenShift versions from the Assisted Service API. Use this d
 ### List All Versions
 
 ```hcl
-data "oai_openshift_versions" "available" {}
+data "openshift_assisted_installer_versions" "available" {}
 
 output "all_versions" {
-  value = data.oai_openshift_versions.available.versions
+  value = data.openshift_assisted_installer_versions.available.versions
 }
 ```
 
 ### Filter by Version Pattern
 
 ```hcl
-data "oai_openshift_versions" "stable_4_14" {
+data "openshift_assisted_installer_versions" "stable_4_14" {
   version_filter = "4.16"
 }
 
 output "openshift_4_14_versions" {
-  value = data.oai_openshift_versions.stable_4_14.versions
+  value = data.openshift_assisted_installer_versions.stable_4_14.versions
 }
 ```
 
 ### Get Latest Versions Only
 
 ```hcl
-data "oai_openshift_versions" "latest" {
+data "openshift_assisted_installer_versions" "latest" {
   only_latest = true
 }
 
 output "latest_versions" {
-  value = data.oai_openshift_versions.latest.versions
+  value = data.openshift_assisted_installer_versions.latest.versions
 }
 ```
 
 ### Filter by Architecture
 
 ```hcl
-data "oai_openshift_versions" "arm64" {
+data "openshift_assisted_installer_versions" "arm64" {
   cpu_architecture = "arm64"
 }
 
 output "arm64_versions" {
-  value = data.oai_openshift_versions.arm64.versions
+  value = data.openshift_assisted_installer_versions.arm64.versions
 }
 ```
 
@@ -102,18 +102,18 @@ The following attributes are exported:
 ### Select Latest Stable Version
 
 ```hcl
-data "oai_openshift_versions" "production" {
+data "openshift_assisted_installer_versions" "production" {
   only_latest = true
 }
 
 locals {
   latest_production = [
-    for v in data.oai_openshift_versions.production.versions :
+    for v in data.openshift_assisted_installer_versions.production.versions :
     v if v.support_level == "production"
   ][0]
 }
 
-resource "oai_cluster" "example" {
+resource "openshift_assisted_installer_cluster" "example" {
   openshift_version = local.latest_production.version
   # ... other configuration
 }
@@ -122,11 +122,11 @@ resource "oai_cluster" "example" {
 ### Version Compatibility Check
 
 ```hcl
-data "oai_openshift_versions" "available" {}
+data "openshift_assisted_installer_versions" "available" {}
 
 locals {
   compatible_versions = [
-    for v in data.oai_openshift_versions.available.versions :
+    for v in data.openshift_assisted_installer_versions.available.versions :
     v if contains(v.cpu_architectures, var.target_architecture)
   ]
 }
@@ -140,12 +140,12 @@ output "compatible_versions" {
 ### Multi-Architecture Deployment
 
 ```hcl
-data "oai_openshift_versions" "multi_arch" {
+data "openshift_assisted_installer_versions" "multi_arch" {
   cpu_architecture = "multi"
 }
 
-resource "oai_cluster" "heterogeneous" {
-  openshift_version = data.oai_openshift_versions.multi_arch.versions[0].version
+resource "openshift_assisted_installer_cluster" "heterogeneous" {
+  openshift_version = data.openshift_assisted_installer_versions.multi_arch.versions[0].version
   cpu_architecture  = "multi"
   # ... other configuration
 }
@@ -155,32 +155,32 @@ resource "oai_cluster" "heterogeneous" {
 
 ```hcl
 # Production environment - use stable versions only
-data "oai_openshift_versions" "prod" {
+data "openshift_assisted_installer_versions" "prod" {
   only_latest = true
 }
 
 locals {
   prod_version = [
-    for v in data.oai_openshift_versions.prod.versions :
+    for v in data.openshift_assisted_installer_versions.prod.versions :
     v if v.support_level == "production"
   ][0].version
 }
 
 # Development environment - allow beta versions
-data "oai_openshift_versions" "dev" {
+data "openshift_assisted_installer_versions" "dev" {
   version_filter = "4.17"  # Latest development branch
 }
 
 locals {
-  dev_version = data.oai_openshift_versions.dev.versions[0].version
+  dev_version = data.openshift_assisted_installer_versions.dev.versions[0].version
 }
 
-resource "oai_cluster" "production" {
+resource "openshift_assisted_installer_cluster" "production" {
   openshift_version = local.prod_version
   # ... other configuration
 }
 
-resource "oai_cluster" "development" {
+resource "openshift_assisted_installer_cluster" "development" {
   openshift_version = local.dev_version
   # ... other configuration
 }
@@ -208,15 +208,15 @@ resource "oai_cluster" "development" {
 ### Version Validation
 
 ```hcl
-data "oai_openshift_versions" "available" {}
+data "openshift_assisted_installer_versions" "available" {}
 
 locals {
   is_valid_version = contains([
-    for v in data.oai_openshift_versions.available.versions : v.version
+    for v in data.openshift_assisted_installer_versions.available.versions : v.version
   ], var.requested_version)
 }
 
-resource "oai_cluster" "validated" {
+resource "openshift_assisted_installer_cluster" "validated" {
   count = local.is_valid_version ? 1 : 0
   
   openshift_version = var.requested_version
@@ -227,14 +227,14 @@ resource "oai_cluster" "validated" {
 ### Automatic Version Updates
 
 ```hcl
-data "oai_openshift_versions" "latest" {
+data "openshift_assisted_installer_versions" "latest" {
   version_filter = "4.16"  # Stay within major.minor family
   only_latest    = true
 }
 
-resource "oai_cluster" "auto_update" {
+resource "openshift_assisted_installer_cluster" "auto_update" {
   # Automatically uses latest 4.16.x version
-  openshift_version = data.oai_openshift_versions.latest.versions[0].version
+  openshift_version = data.openshift_assisted_installer_versions.latest.versions[0].version
   # ... other configuration
 }
 ```

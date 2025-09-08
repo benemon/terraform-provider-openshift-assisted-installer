@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_infra_env"
+page_title: "Data Source: openshift_assisted_installer_infra_env"
 subcategory: "Infrastructure Environment"
 ---
 
-# oai_infra_env Data Source
+# openshift_assisted_installer_infra_env Data Source
 
 Retrieves information about an existing infrastructure environment from the Assisted Service API.
 
@@ -12,24 +12,24 @@ Retrieves information about an existing infrastructure environment from the Assi
 ### Read Existing Infrastructure Environment
 
 ```hcl
-data "oai_infra_env" "existing" {
+data "openshift_assisted_installer_infra_env" "existing" {
   infra_env_id = "650e8400-e29b-41d4-a716-446655440000"
 }
 
 output "iso_download_url" {
-  value = data.oai_infra_env.existing.download_url
+  value = data.openshift_assisted_installer_infra_env.existing.download_url
 }
 ```
 
 ### Get Infrastructure Environment for Cluster
 
 ```hcl
-data "oai_infra_env" "cluster_env" {
-  infra_env_id = oai_infra_env.example.id
+data "openshift_assisted_installer_infra_env" "cluster_env" {
+  infra_env_id = openshift_assisted_installer_infra_env.example.id
 }
 
 output "discovered_hosts" {
-  value = data.oai_infra_env.cluster_env.host_count
+  value = data.openshift_assisted_installer_infra_env.cluster_env.host_count
 }
 ```
 

@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_supported_operators"
+page_title: "Data Source: openshift_assisted_installer_supported_operators"
 subcategory: "General Information"
 ---
 
-# oai_supported_operators Data Source
+# openshift_assisted_installer_supported_operators Data Source
 
 Retrieves the list of OLM operators supported by the OpenShift Assisted Service. Use this data source to discover available operators for installation during cluster deployment.
 
@@ -12,48 +12,48 @@ Retrieves the list of OLM operators supported by the OpenShift Assisted Service.
 ### List All Supported Operators
 
 ```hcl
-data "oai_supported_operators" "all" {}
+data "openshift_assisted_installer_supported_operators" "all" {}
 
 output "available_operators" {
-  value = data.oai_supported_operators.all.operators
+  value = data.openshift_assisted_installer_supported_operators.all.operators
 }
 ```
 
 ### Filter by OpenShift Version
 
 ```hcl
-data "oai_supported_operators" "for_version" {
+data "openshift_assisted_installer_supported_operators" "for_version" {
   openshift_version = "4.16"
 }
 
 output "operators_4_14" {
-  value = data.oai_supported_operators.for_version.operators
+  value = data.openshift_assisted_installer_supported_operators.for_version.operators
 }
 ```
 
 ### Filter by Architecture
 
 ```hcl
-data "oai_supported_operators" "arm64" {
+data "openshift_assisted_installer_supported_operators" "arm64" {
   cpu_architecture = "arm64"
 }
 
 output "arm64_operators" {
-  value = data.oai_supported_operators.arm64.operators
+  value = data.openshift_assisted_installer_supported_operators.arm64.operators
 }
 ```
 
 ### Comprehensive Filtering
 
 ```hcl
-data "oai_supported_operators" "specific" {
+data "openshift_assisted_installer_supported_operators" "specific" {
   openshift_version = "4.16"
   cpu_architecture  = "x86_64"
   platform_type     = "baremetal"
 }
 
 output "filtered_operators" {
-  value = data.oai_supported_operators.specific.operators
+  value = data.openshift_assisted_installer_supported_operators.specific.operators
 }
 ```
 
@@ -111,7 +111,7 @@ The supported operators typically include (availability may vary by version and 
 ### Select Operators for Cluster Deployment
 
 ```hcl
-data "oai_supported_operators" "available" {
+data "openshift_assisted_installer_supported_operators" "available" {
   openshift_version = "4.16"
   cpu_architecture  = "x86_64"
 }
@@ -125,7 +125,7 @@ locals {
   ]
   
   # Validate all required operators are available
-  available_operators = toset(data.oai_supported_operators.available.operators)
+  available_operators = toset(data.openshift_assisted_installer_supported_operators.available.operators)
   missing_operators = [
     for op in local.required_operators :
     op if !contains(local.available_operators, op)
@@ -133,7 +133,7 @@ locals {
 }
 
 # Only proceed if all operators are available
-resource "oai_cluster" "with_operators" {
+resource "openshift_assisted_installer_cluster" "with_operators" {
   count = length(local.missing_operators) == 0 ? 1 : 0
   
   name              = "cluster-with-operators"
@@ -156,12 +156,12 @@ output "missing_operators" {
 ### Environment-Specific Operator Selection
 
 ```hcl
-data "oai_supported_operators" "production" {
+data "openshift_assisted_installer_supported_operators" "production" {
   openshift_version = "4.16"
   platform_type     = "baremetal"
 }
 
-data "oai_supported_operators" "development" {
+data "openshift_assisted_installer_supported_operators" "development" {
   openshift_version = "4.16"
   platform_type     = "baremetal"
 }
@@ -182,7 +182,7 @@ locals {
   ])
 }
 
-resource "oai_cluster" "production" {
+resource "openshift_assisted_installer_cluster" "production" {
   # ... basic configuration
   olm_operators = [
     for op in local.prod_operators : {
@@ -191,12 +191,12 @@ resource "oai_cluster" "production" {
   ]
 }
 
-resource "oai_cluster" "development" {
+resource "openshift_assisted_installer_cluster" "development" {
   # ... basic configuration  
   olm_operators = [
     for op in local.dev_operators : {
       name = op
-    } if contains(data.oai_supported_operators.development.operators, op)
+    } if contains(data.openshift_assisted_installer_supported_operators.development.operators, op)
   ]
 }
 ```
@@ -204,23 +204,23 @@ resource "oai_cluster" "development" {
 ### Architecture-Specific Deployments
 
 ```hcl
-data "oai_supported_operators" "x86_64" {
+data "openshift_assisted_installer_supported_operators" "x86_64" {
   cpu_architecture = "x86_64"
 }
 
-data "oai_supported_operators" "arm64" {
+data "openshift_assisted_installer_supported_operators" "arm64" {
   cpu_architecture = "arm64"
 }
 
 locals {
   # Operators available on all architectures
   universal_operators = setintersection(
-    toset(data.oai_supported_operators.x86_64.operators),
-    toset(data.oai_supported_operators.arm64.operators)
+    toset(data.openshift_assisted_installer_supported_operators.x86_64.operators),
+    toset(data.openshift_assisted_installer_supported_operators.arm64.operators)
   )
 }
 
-resource "oai_cluster" "multi_arch" {
+resource "openshift_assisted_installer_cluster" "multi_arch" {
   cpu_architecture = "multi"
   # ... other configuration
   
@@ -236,7 +236,7 @@ resource "oai_cluster" "multi_arch" {
 ### Operator Validation and Documentation
 
 ```hcl
-data "oai_supported_operators" "current" {
+data "openshift_assisted_installer_supported_operators" "current" {
   openshift_version = var.openshift_version
 }
 
@@ -265,7 +265,7 @@ locals {
     for category, ops in local.operator_categories :
     category => [
       for op in ops :
-      op if contains(data.oai_supported_operators.current.operators, op)
+      op if contains(data.openshift_assisted_installer_supported_operators.current.operators, op)
     ]
   }
 }
@@ -293,7 +293,7 @@ variable "enable_monitoring" {
   default     = false
 }
 
-data "oai_supported_operators" "available" {
+data "openshift_assisted_installer_supported_operators" "available" {
   openshift_version = var.openshift_version
 }
 
@@ -306,11 +306,11 @@ locals {
   # Only include operators that are actually supported
   validated_operators = [
     for op in local.conditional_operators :
-    op if contains(data.oai_supported_operators.available.operators, op)
+    op if contains(data.openshift_assisted_installer_supported_operators.available.operators, op)
   ]
 }
 
-resource "oai_cluster" "conditional" {
+resource "openshift_assisted_installer_cluster" "conditional" {
   # ... basic configuration
   olm_operators = [
     for op in local.validated_operators : {

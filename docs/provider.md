@@ -18,7 +18,7 @@ terraform {
   }
 }
 
-provider "oai" {
+provider "openshift-assisted-installer" {
   offline_token = var.offline_token
   endpoint      = "https://api.openshift.com/api/assisted-install"
   timeout       = "60s"
@@ -46,19 +46,19 @@ The provider uses Red Hat's offline token authentication system:
 export OFFLINE_TOKEN="your-offline-token-here"
 
 # Or configure directly in Terraform
-provider "oai" {
+provider "openshift-assisted-installer" {
   offline_token = "your-offline-token-here"
 }
 ```
 
 ## Resources
 
-### `oai_cluster`
+### `openshift_assisted_installer_cluster`
 
 Manages OpenShift cluster definitions and configurations.
 
 ```hcl
-resource "oai_cluster" "example" {
+resource "openshift_assisted_installer_cluster" "example" {
   name                 = "my-cluster"
   base_dns_domain      = "example.com"
   openshift_version    = "4.16.0"
@@ -83,13 +83,13 @@ resource "oai_cluster" "example" {
 - `control_plane_count` (Optional) - Number of control plane nodes (1 for SNO, 3+ for HA)
 - `schedulable_masters` (Optional) - Allow workloads on control plane nodes
 
-### `oai_cluster_installation`
+### `openshift_assisted_installer_cluster_installation`
 
 Triggers and monitors cluster installation progress.
 
 ```hcl
-resource "oai_cluster_installation" "example" {
-  cluster_id          = oai_cluster.example.id
+resource "openshift_assisted_installer_cluster_installation" "example" {
+  cluster_id          = openshift_assisted_installer_cluster.example.id
   wait_for_hosts      = true
   expected_host_count = 3
   
@@ -104,14 +104,14 @@ resource "oai_cluster_installation" "example" {
 - `wait_for_hosts` (Optional) - Wait for hosts before starting installation
 - `expected_host_count` (Optional) - Number of hosts to wait for
 
-### `oai_infra_env`
+### `openshift_assisted_installer_infra_env`
 
 Manages infrastructure environments for host discovery.
 
 ```hcl
-resource "oai_infra_env" "example" {
+resource "openshift_assisted_installer_infra_env" "example" {
   name              = "my-infra-env"
-  cluster_id        = oai_cluster.example.id
+  cluster_id        = openshift_assisted_installer_cluster.example.id
   cpu_architecture  = "x86_64"
   pull_secret       = var.pull_secret
   ssh_authorized_key = var.ssh_public_key
@@ -126,13 +126,13 @@ resource "oai_infra_env" "example" {
 - `cluster_id` (Optional) - Associate with a specific cluster
 - `image_type` (Optional) - ISO type: "full-iso" or "minimal-iso"
 
-### `oai_host`
+### `openshift_assisted_installer_host`
 
 Manages individual cluster hosts and their configuration.
 
 ```hcl
-resource "oai_host" "worker" {
-  infra_env_id        = oai_infra_env.example.id
+resource "openshift_assisted_installer_host" "worker" {
+  infra_env_id        = openshift_assisted_installer_infra_env.example.id
   host_id             = "discovered-host-id"
   host_name           = "worker-1"
   host_role           = "worker"
@@ -140,18 +140,18 @@ resource "oai_host" "worker" {
 }
 ```
 
-### `oai_manifest`
+### `openshift_assisted_installer_manifest`
 
 Applies custom configuration manifests to clusters.
 
 ```hcl
-resource "oai_manifest" "example" {
-  cluster_id = oai_cluster.example.id
+resource "openshift_assisted_installer_manifest" "example" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   folder     = "manifests"
   file_name  = "custom-config.yaml"
   
   content = templatefile("${path.module}/manifests/config.yaml", {
-    cluster_name = oai_cluster.example.name
+    cluster_name = openshift_assisted_installer_cluster.example.name
   })
 }
 ```
@@ -160,51 +160,51 @@ resource "oai_manifest" "example" {
 
 ### Cluster Information
 
-#### `oai_openshift_versions`
+#### `openshift_assisted_installer_versions`
 
 Retrieves available OpenShift versions.
 
 ```hcl
-data "oai_openshift_versions" "latest" {
+data "openshift_assisted_installer_versions" "latest" {
   only_latest = true
 }
 
 # Use in cluster configuration
-resource "oai_cluster" "example" {
-  openshift_version = data.oai_openshift_versions.latest.versions[0].version
+resource "openshift_assisted_installer_cluster" "example" {
+  openshift_version = data.openshift_assisted_installer_versions.latest.versions[0].version
 }
 ```
 
-#### `oai_supported_operators`
+#### `openshift_assisted_installer_supported_operators`
 
 Lists available OLM operators.
 
 ```hcl
-data "oai_supported_operators" "all" {}
+data "openshift_assisted_installer_supported_operators" "all" {}
 
 # Filter operators
 locals {
   storage_operators = [
-    for op in data.oai_supported_operators.all.operators :
+    for op in data.openshift_assisted_installer_supported_operators.all.operators :
     op if contains(["lso", "odf", "ceph"], op)
   ]
 }
 ```
 
-#### `oai_operator_bundles`
+#### `openshift_assisted_installer_operator_bundles`
 
 Retrieves operator bundle information.
 
 ```hcl
-data "oai_operator_bundles" "virtualization" {}
+data "openshift_assisted_installer_operator_bundles" "virtualization" {}
 ```
 
-#### `oai_support_levels`
+#### `openshift_assisted_installer_support_levels`
 
 Checks feature support levels by platform and architecture.
 
 ```hcl
-data "oai_support_levels" "features" {
+data "openshift_assisted_installer_support_levels" "features" {
   openshift_version = "4.16.0"
   cpu_architecture  = "x86_64"
   platform_type     = "baremetal"
@@ -213,33 +213,33 @@ data "oai_support_levels" "features" {
 
 ### Post-Installation Access
 
-#### `oai_cluster_credentials`
+#### `openshift_assisted_installer_cluster_credentials`
 
 Retrieves cluster admin credentials after installation.
 
 ```hcl
-data "oai_cluster_credentials" "admin" {
-  cluster_id = oai_cluster.example.id
-  depends_on = [oai_cluster_installation.example]
+data "openshift_assisted_installer_cluster_credentials" "admin" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
+  depends_on = [openshift_assisted_installer_cluster_installation.example]
 }
 
 output "cluster_access" {
   value = {
-    username    = data.oai_cluster_credentials.admin.username
-    password    = data.oai_cluster_credentials.admin.password
-    console_url = data.oai_cluster_credentials.admin.console_url
+    username    = data.openshift_assisted_installer_cluster_credentials.admin.username
+    password    = data.openshift_assisted_installer_cluster_credentials.admin.password
+    console_url = data.openshift_assisted_installer_cluster_credentials.admin.console_url
   }
   sensitive = true
 }
 ```
 
-#### `oai_cluster_events`
+#### `openshift_assisted_installer_cluster_events`
 
 Retrieves installation and cluster events for monitoring.
 
 ```hcl
-data "oai_cluster_events" "installation" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_events" "installation" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   severities = ["error", "critical"]
   limit      = 100
   order      = "desc"
@@ -248,50 +248,50 @@ data "oai_cluster_events" "installation" {
 # Monitor installation progress
 output "recent_errors" {
   value = [
-    for event in data.oai_cluster_events.installation.events :
+    for event in data.openshift_assisted_installer_cluster_events.installation.events :
     "${event.event_time}: ${event.message}"
     if contains(["error", "critical"], event.severity)
   ]
 }
 ```
 
-#### `oai_cluster_logs`
+#### `openshift_assisted_installer_cluster_logs`
 
 Downloads cluster logs for troubleshooting.
 
 ```hcl
-data "oai_cluster_logs" "installation" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_logs" "installation" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   logs_type  = "controller"
 }
 
 # Save logs locally
 resource "local_file" "logs" {
-  content  = data.oai_cluster_logs.installation.content
+  content  = data.openshift_assisted_installer_cluster_logs.installation.content
   filename = "${path.module}/installation.log"
 }
 ```
 
-#### `oai_cluster_files`
+#### `openshift_assisted_installer_cluster_files`
 
 Downloads cluster configuration files.
 
 ```hcl
 # Download kubeconfig
-data "oai_cluster_files" "kubeconfig" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_files" "kubeconfig" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   file_name  = "kubeconfig"
 }
 
 # Download install configuration
-data "oai_cluster_files" "install_config" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_files" "install_config" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   file_name  = "install-config.yaml"
 }
 
 # Save kubeconfig locally
 resource "local_file" "kubeconfig" {
-  content  = data.oai_cluster_files.kubeconfig.content
+  content  = data.openshift_assisted_installer_cluster_files.kubeconfig.content
   filename = "${path.module}/kubeconfig"
 }
 ```
@@ -309,37 +309,37 @@ resource "local_file" "kubeconfig" {
 
 ### Validation Data Sources
 
-#### `oai_cluster_validations`
+#### `openshift_assisted_installer_cluster_validations`
 
 Checks cluster-level validation status for pre-installation readiness.
 
 ```hcl
-data "oai_cluster_validations" "ready" {
-  cluster_id        = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_validations" "ready" {
+  cluster_id        = openshift_assisted_installer_cluster.example.id
   validation_type   = "blocking"
   status            = "failure"
 }
 
 # Ensure cluster is ready before installation
 locals {
-  cluster_ready = length(data.oai_cluster_validations.ready.validations) == 0
+  cluster_ready = length(data.openshift_assisted_installer_cluster_validations.ready.validations) == 0
 }
 ```
 
-#### `oai_host_validations`
+#### `openshift_assisted_installer_host_validations`
 
 Validates host readiness for cluster installation.
 
 ```hcl
-data "oai_host_validations" "hosts" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_host_validations" "hosts" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   categories = ["hardware", "network"]
 }
 
 # Check if all hosts pass validation
 locals {
   hosts_ready = alltrue([
-    for host in data.oai_host_validations.hosts.validations :
+    for host in data.openshift_assisted_installer_host_validations.hosts.validations :
     alltrue([for v in host.validations : v.status == "success"])
   ])
 }
@@ -347,62 +347,62 @@ locals {
 
 ### Resource Information Data Sources
 
-#### `oai_cluster`
+#### `openshift_assisted_installer_cluster`
 
 Retrieves information about an existing cluster.
 
 ```hcl
-data "oai_cluster" "existing" {
+data "openshift_assisted_installer_cluster" "existing" {
   cluster_id = var.cluster_id
 }
 
 output "cluster_status" {
-  value = data.oai_cluster.existing.status
+  value = data.openshift_assisted_installer_cluster.existing.status
 }
 ```
 
-#### `oai_infra_env`
+#### `openshift_assisted_installer_infra_env`
 
 Gets infrastructure environment details including discovery ISO URL.
 
 ```hcl
-data "oai_infra_env" "discovery" {
-  infra_env_id = oai_infra_env.example.id
+data "openshift_assisted_installer_infra_env" "discovery" {
+  infra_env_id = openshift_assisted_installer_infra_env.example.id
 }
 
 output "iso_download" {
-  value = data.oai_infra_env.discovery.download_url
+  value = data.openshift_assisted_installer_infra_env.discovery.download_url
 }
 ```
 
-#### `oai_host`
+#### `openshift_assisted_installer_host`
 
 Retrieves discovered host information.
 
 ```hcl
-data "oai_host" "master1" {
-  infra_env_id = oai_infra_env.example.id
+data "openshift_assisted_installer_host" "master1" {
+  infra_env_id = openshift_assisted_installer_infra_env.example.id
   host_id      = var.master1_host_id
 }
 
 output "host_inventory" {
-  value = data.oai_host.master1.inventory
+  value = data.openshift_assisted_installer_host.master1.inventory
 }
 ```
 
-#### `oai_manifest`
+#### `openshift_assisted_installer_manifest`
 
 Downloads manifest content from a cluster.
 
 ```hcl
-data "oai_manifest" "custom" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_manifest" "custom" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   file_name  = "99-custom-config.yaml"
   folder     = "manifests"
 }
 
 output "manifest_content" {
-  value = data.oai_manifest.custom.content
+  value = data.openshift_assisted_installer_manifest.custom.content
 }
 ```
 
@@ -412,7 +412,7 @@ output "manifest_content" {
 
 ```hcl
 # 1. Define cluster
-resource "oai_cluster" "production" {
+resource "openshift_assisted_installer_cluster" "production" {
   name                = "prod-cluster"
   openshift_version   = "4.16.0"
   cpu_architecture    = "x86_64" 
@@ -427,16 +427,16 @@ resource "oai_cluster" "production" {
 }
 
 # 2. Create discovery environment
-resource "oai_infra_env" "production" {
-  name         = "${oai_cluster.production.name}-infra"
-  cluster_id   = oai_cluster.production.id
+resource "openshift_assisted_installer_infra_env" "production" {
+  name         = "${openshift_assisted_installer_cluster.production.name}-infra"
+  cluster_id   = openshift_assisted_installer_cluster.production.id
   pull_secret  = var.pull_secret
   image_type   = "full-iso"
 }
 
 # 3. Apply custom manifests
-resource "oai_manifest" "monitoring" {
-  cluster_id = oai_cluster.production.id
+resource "openshift_assisted_installer_manifest" "monitoring" {
+  cluster_id = openshift_assisted_installer_cluster.production.id
   file_name  = "monitoring-config.yaml"
   folder     = "manifests"
   
@@ -446,8 +446,8 @@ resource "oai_manifest" "monitoring" {
 }
 
 # 4. Trigger installation
-resource "oai_cluster_installation" "production" {
-  cluster_id          = oai_cluster.production.id
+resource "openshift_assisted_installer_cluster_installation" "production" {
+  cluster_id          = openshift_assisted_installer_cluster.production.id
   wait_for_hosts      = true
   expected_host_count = 6  # 3 masters + 3 workers
   
@@ -457,20 +457,20 @@ resource "oai_cluster_installation" "production" {
 }
 
 # 5. Access cluster post-installation
-data "oai_cluster_credentials" "admin" {
-  cluster_id = oai_cluster.production.id
-  depends_on = [oai_cluster_installation.production]
+data "openshift_assisted_installer_cluster_credentials" "admin" {
+  cluster_id = openshift_assisted_installer_cluster.production.id
+  depends_on = [openshift_assisted_installer_cluster_installation.production]
 }
 
-data "oai_cluster_files" "kubeconfig" {
-  cluster_id = oai_cluster.production.id
+data "openshift_assisted_installer_cluster_files" "kubeconfig" {
+  cluster_id = openshift_assisted_installer_cluster.production.id
   file_name  = "kubeconfig"
-  depends_on = [oai_cluster_installation.production]
+  depends_on = [openshift_assisted_installer_cluster_installation.production]
 }
 
 # 6. Monitor and troubleshoot
-data "oai_cluster_events" "health" {
-  cluster_id = oai_cluster.production.id
+data "openshift_assisted_installer_cluster_events" "health" {
+  cluster_id = openshift_assisted_installer_cluster.production.id
   severities = ["warning", "error", "critical"]
 }
 ```
@@ -481,7 +481,7 @@ data "oai_cluster_events" "health" {
 # Monitor installation health
 locals {
   installation_errors = [
-    for event in data.oai_cluster_events.health.events :
+    for event in data.openshift_assisted_installer_cluster_events.health.events :
     event if contains(["error", "critical"], event.severity)
   ]
   

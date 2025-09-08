@@ -1,13 +1,13 @@
 terraform {
   required_providers {
-    oai = {
+    openshift_assisted_installer = {
       source  = "benemon/openshift-assisted-installer"
       version = "~> 0.1"
     }
   }
 }
 
-provider "oai" {
+provider "openshift_assisted_installer" {
   # Uses OFFLINE_TOKEN environment variable
 }
 
@@ -16,7 +16,7 @@ provider "oai" {
 # ==============================================================================
 
 # Example: Check cluster-level validations for readiness
-data "oai_cluster_validations" "readiness_check" {
+data "openshift_assisted_installer_cluster_validations" "readiness_check" {
   cluster_id = var.cluster_id
   
   # Only check blocking validations that would prevent installation
@@ -27,7 +27,7 @@ data "oai_cluster_validations" "readiness_check" {
 }
 
 # Example: Check host-level validations for all hosts in cluster
-data "oai_host_validations" "cluster_hosts" {
+data "openshift_assisted_installer_host_validations" "cluster_hosts" {
   cluster_id = var.cluster_id
   
   # Focus on blocking validations
@@ -38,7 +38,7 @@ data "oai_host_validations" "cluster_hosts" {
 }
 
 # Example: Check specific operator requirements
-data "oai_host_validations" "storage_requirements" {
+data "openshift_assisted_installer_host_validations" "storage_requirements" {
   cluster_id = var.cluster_id
   
   # Filter for storage operator requirements only
@@ -50,7 +50,7 @@ data "oai_host_validations" "storage_requirements" {
 }
 
 # Example: Check network-related validations
-data "oai_cluster_validations" "network_readiness" {
+data "openshift_assisted_installer_cluster_validations" "network_readiness" {
   cluster_id = var.cluster_id
   
   # Filter by network category
@@ -58,7 +58,7 @@ data "oai_cluster_validations" "network_readiness" {
 }
 
 # Example: Check hardware readiness for specific host
-data "oai_host_validations" "specific_host" {
+data "openshift_assisted_installer_host_validations" "specific_host" {
   infra_env_id = var.infra_env_id
   host_id      = var.host_id
   
@@ -73,19 +73,19 @@ data "oai_host_validations" "specific_host" {
 locals {
   # Count blocking cluster failures
   cluster_blocking_failures = [
-    for validation in data.oai_cluster_validations.readiness_check.validations :
+    for validation in data.openshift_assisted_installer_cluster_validations.readiness_check.validations :
     validation if validation.status == "failure" && validation.validation_type == "blocking"
   ]
   
   # Count blocking host failures
   host_blocking_failures = [
-    for validation in data.oai_host_validations.cluster_hosts.validations :
+    for validation in data.openshift_assisted_installer_host_validations.cluster_hosts.validations :
     validation if validation.status == "failure" && validation.validation_type == "blocking"
   ]
   
   # Check storage validation status
   storage_validation_failures = [
-    for validation in data.oai_host_validations.storage_requirements.validations :
+    for validation in data.openshift_assisted_installer_host_validations.storage_requirements.validations :
     validation if validation.status == "failure"
   ]
   
@@ -202,7 +202,7 @@ output "network_validation_details" {
   description = "Detailed network validation status"
   value = {
     validations = [
-      for validation in data.oai_cluster_validations.network_readiness.validations :
+      for validation in data.openshift_assisted_installer_cluster_validations.network_readiness.validations :
       {
         id       = validation.validation_id
         status   = validation.status
@@ -213,20 +213,20 @@ output "network_validation_details" {
     ]
     
     # Network readiness summary
-    total_network_validations = length(data.oai_cluster_validations.network_readiness.validations)
+    total_network_validations = length(data.openshift_assisted_installer_cluster_validations.network_readiness.validations)
     
     passing_network_validations = length([
-      for v in data.oai_cluster_validations.network_readiness.validations :
+      for v in data.openshift_assisted_installer_cluster_validations.network_readiness.validations :
       v if v.status == "success"
     ])
     
     failing_network_validations = length([
-      for v in data.oai_cluster_validations.network_readiness.validations :
+      for v in data.openshift_assisted_installer_cluster_validations.network_readiness.validations :
       v if v.status == "failure"
     ])
     
     network_ready = length([
-      for v in data.oai_cluster_validations.network_readiness.validations :
+      for v in data.openshift_assisted_installer_cluster_validations.network_readiness.validations :
       v if v.status == "failure" && v.validation_type == "blocking"
     ]) == 0
   }

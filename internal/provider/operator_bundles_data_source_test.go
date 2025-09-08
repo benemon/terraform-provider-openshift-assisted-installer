@@ -132,13 +132,13 @@ func TestOperatorBundlesDataSource_Metadata(t *testing.T) {
 	ds := NewOperatorBundlesDataSource()
 
 	metadataReq := datasource.MetadataRequest{
-		ProviderTypeName: "oai",
+		ProviderTypeName: "openshift_assisted_installer",
 	}
 	metadataResp := &datasource.MetadataResponse{}
 
 	ds.Metadata(context.Background(), metadataReq, metadataResp)
 
-	assert.Equal(t, "oai_operator_bundles", metadataResp.TypeName)
+	assert.Equal(t, "openshift_assisted_installer_operator_bundles", metadataResp.TypeName)
 }
 
 func TestOperatorBundlesDataSource_ReadError(t *testing.T) {

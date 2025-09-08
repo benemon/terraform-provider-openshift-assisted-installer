@@ -1,13 +1,13 @@
 terraform {
   required_providers {
-    oai = {
+    openshift_assisted_installer = {
       source  = "benemon/openshift-assisted-installer"
       version = "~> 0.1"
     }
   }
 }
 
-provider "oai" {
+provider "openshift_assisted_installer" {
   # Uses OFFLINE_TOKEN environment variable
 }
 
@@ -16,7 +16,7 @@ provider "oai" {
 # ==============================================================================
 
 # Example 1: Basic cluster readiness check
-data "oai_cluster_validations" "basic_readiness" {
+data "openshift_assisted_installer_cluster_validations" "basic_readiness" {
   cluster_id = var.cluster_id
   
   # Only show blocking failures that prevent installation
@@ -25,29 +25,29 @@ data "oai_cluster_validations" "basic_readiness" {
 }
 
 # Example 2: All cluster validation status (comprehensive view)
-data "oai_cluster_validations" "comprehensive" {
+data "openshift_assisted_installer_cluster_validations" "comprehensive" {
   cluster_id = var.cluster_id
 }
 
 # Example 3: Network-specific troubleshooting
-data "oai_cluster_validations" "network_cluster" {
+data "openshift_assisted_installer_cluster_validations" "network_cluster" {
   cluster_id = var.cluster_id
   categories = ["network"]
 }
 
-data "oai_host_validations" "network_hosts" {
+data "openshift_assisted_installer_host_validations" "network_hosts" {
   cluster_id = var.cluster_id
   categories = ["network"]
 }
 
 # Example 4: Hardware validation across all hosts
-data "oai_host_validations" "hardware_check" {
+data "openshift_assisted_installer_host_validations" "hardware_check" {
   cluster_id = var.cluster_id
   categories = ["hardware"]
 }
 
 # Example 5: Operator requirements validation
-data "oai_host_validations" "operator_requirements" {
+data "openshift_assisted_installer_host_validations" "operator_requirements" {
   cluster_id = var.cluster_id
   validation_names = [
     "lso-requirements-satisfied",
@@ -58,7 +58,7 @@ data "oai_host_validations" "operator_requirements" {
 }
 
 # Example 6: Specific host deep-dive (when you have a problematic host)
-data "oai_host_validations" "specific_host_debug" {
+data "openshift_assisted_installer_host_validations" "specific_host_debug" {
   # Use this when troubleshooting a specific host
   count = var.debug_host_id != "" ? 1 : 0
   
@@ -67,13 +67,13 @@ data "oai_host_validations" "specific_host_debug" {
 }
 
 # Example 7: Platform-specific validations (e.g., vSphere)
-data "oai_host_validations" "platform_validations" {
+data "openshift_assisted_installer_host_validations" "platform_validations" {
   cluster_id = var.cluster_id
   categories = ["platform"]
 }
 
 # Example 8: Storage and disk validations
-data "oai_host_validations" "storage_validations" {
+data "openshift_assisted_installer_host_validations" "storage_validations" {
   cluster_id = var.cluster_id
   categories = ["storage"]
 }
@@ -84,26 +84,26 @@ data "oai_host_validations" "storage_validations" {
 
 locals {
   # Basic readiness assessment
-  has_blocking_cluster_failures = length(data.oai_cluster_validations.basic_readiness.validations) > 0
+  has_blocking_cluster_failures = length(data.openshift_assisted_installer_cluster_validations.basic_readiness.validations) > 0
   
   # Comprehensive analysis
-  all_cluster_validations = data.oai_cluster_validations.comprehensive.validations
-  all_host_validations    = data.oai_host_validations.hardware_check.validations
+  all_cluster_validations = data.openshift_assisted_installer_cluster_validations.comprehensive.validations
+  all_host_validations    = data.openshift_assisted_installer_host_validations.hardware_check.validations
   
   # Network analysis
   network_cluster_issues = [
-    for v in data.oai_cluster_validations.network_cluster.validations :
+    for v in data.openshift_assisted_installer_cluster_validations.network_cluster.validations :
     v if v.status == "failure"
   ]
   
   network_host_issues = [
-    for v in data.oai_host_validations.network_hosts.validations :
+    for v in data.openshift_assisted_installer_host_validations.network_hosts.validations :
     v if v.status == "failure"
   ]
   
   # Hardware analysis
   hardware_issues = [
-    for v in data.oai_host_validations.hardware_check.validations :
+    for v in data.openshift_assisted_installer_host_validations.hardware_check.validations :
     v if v.status == "failure"
   ]
   
@@ -115,7 +115,7 @@ locals {
   
   # Operator requirements analysis
   operator_failures = [
-    for v in data.oai_host_validations.operator_requirements.validations :
+    for v in data.openshift_assisted_installer_host_validations.operator_requirements.validations :
     v if v.status == "failure"
   ]
   
@@ -137,13 +137,13 @@ locals {
   
   # Platform issues (e.g., vSphere-specific)
   platform_issues = [
-    for v in data.oai_host_validations.platform_validations.validations :
+    for v in data.openshift_assisted_installer_host_validations.platform_validations.validations :
     v if v.status == "failure"
   ]
   
   # Storage issues
   storage_issues = [
-    for v in data.oai_host_validations.storage_validations.validations :
+    for v in data.openshift_assisted_installer_host_validations.storage_validations.validations :
     v if v.status == "failure"
   ]
   
@@ -347,7 +347,7 @@ output "specific_host_debug" {
     host_id = var.debug_host_id
     
     validations = [
-      for v in data.oai_host_validations.specific_host_debug[0].validations : {
+      for v in data.openshift_assisted_installer_host_validations.specific_host_debug[0].validations : {
         validation = v.validation_id
         status     = v.status
         message    = v.message
@@ -358,7 +358,7 @@ output "specific_host_debug" {
     ]
     
     failure_summary = [
-      for v in data.oai_host_validations.specific_host_debug[0].validations :
+      for v in data.openshift_assisted_installer_host_validations.specific_host_debug[0].validations :
       "${v.category}/${v.validation_id}: ${v.message}" 
       if v.status == "failure"
     ]

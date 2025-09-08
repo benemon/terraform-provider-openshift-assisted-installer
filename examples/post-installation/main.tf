@@ -1,13 +1,13 @@
 terraform {
   required_providers {
-    oai = {
+    openshift_assisted_installer = {
       source  = "benemon/openshift-assisted-installer"
       version = "~> 0.1"
     }
   }
 }
 
-provider "oai" {
+provider "openshift_assisted_installer" {
   # Uses OFFLINE_TOKEN environment variable
 }
 
@@ -22,12 +22,12 @@ variable "cluster_id" {
 # ==============================================================================
 
 # Get cluster admin credentials after installation
-data "oai_cluster_credentials" "admin" {
+data "openshift_assisted_installer_cluster_credentials" "admin" {
   cluster_id = var.cluster_id
 }
 
 # Get cluster events for monitoring and troubleshooting
-data "oai_cluster_events" "cluster_events" {
+data "openshift_assisted_installer_cluster_events" "cluster_events" {
   cluster_id = var.cluster_id
   severities = ["error", "critical"]  # Filter for important events
   limit      = 100
@@ -35,7 +35,7 @@ data "oai_cluster_events" "cluster_events" {
 }
 
 # Get installation events for all clusters
-data "oai_cluster_events" "all_events" {
+data "openshift_assisted_installer_cluster_events" "all_events" {
   # No cluster_id filter - gets events from all clusters
   severities     = ["info", "warning", "error"]
   categories     = ["user"]
@@ -44,23 +44,23 @@ data "oai_cluster_events" "all_events" {
 }
 
 # Download cluster logs for troubleshooting
-data "oai_cluster_logs" "cluster_logs" {
+data "openshift_assisted_installer_cluster_logs" "cluster_logs" {
   cluster_id = var.cluster_id
   logs_type  = "controller"  # Optional: specify log type
 }
 
 # Download specific cluster files
-data "oai_cluster_files" "kubeconfig" {
+data "openshift_assisted_installer_cluster_files" "kubeconfig" {
   cluster_id = var.cluster_id
   file_name  = "kubeconfig"
 }
 
-data "oai_cluster_files" "install_config" {
+data "openshift_assisted_installer_cluster_files" "install_config" {
   cluster_id = var.cluster_id
   file_name  = "install-config.yaml"
 }
 
-data "oai_cluster_files" "manifests" {
+data "openshift_assisted_installer_cluster_files" "manifests" {
   cluster_id = var.cluster_id
   file_name  = "manifests"
 }
@@ -72,16 +72,16 @@ data "oai_cluster_files" "manifests" {
 output "cluster_access" {
   description = "Cluster access information"
   value = {
-    username    = data.oai_cluster_credentials.admin.username
-    password    = data.oai_cluster_credentials.admin.password  # Sensitive
-    console_url = data.oai_cluster_credentials.admin.console_url
+    username    = data.openshift_assisted_installer_cluster_credentials.admin.username
+    password    = data.openshift_assisted_installer_cluster_credentials.admin.password  # Sensitive
+    console_url = data.openshift_assisted_installer_cluster_credentials.admin.console_url
   }
   sensitive = true
 }
 
 output "recent_errors" {
   description = "Recent error events in the cluster"
-  value = [for event in data.oai_cluster_events.cluster_events.events : {
+  value = [for event in data.openshift_assisted_installer_cluster_events.cluster_events.events : {
     time     = event.event_time
     severity = event.severity
     message  = event.message
@@ -91,15 +91,15 @@ output "recent_errors" {
 output "installation_summary" {
   description = "Summary of installation progress"
   value = {
-    total_events = length(data.oai_cluster_events.cluster_events.events)
-    error_count  = length([for event in data.oai_cluster_events.cluster_events.events : event if event.severity == "error"])
-    warning_count = length([for event in data.oai_cluster_events.cluster_events.events : event if event.severity == "warning"])
+    total_events = length(data.openshift_assisted_installer_cluster_events.cluster_events.events)
+    error_count  = length([for event in data.openshift_assisted_installer_cluster_events.cluster_events.events : event if event.severity == "error"])
+    warning_count = length([for event in data.openshift_assisted_installer_cluster_events.cluster_events.events : event if event.severity == "warning"])
   }
 }
 
 # Save kubeconfig to local file (optional)
 resource "local_file" "kubeconfig" {
-  content  = data.oai_cluster_files.kubeconfig.content
+  content  = data.openshift_assisted_installer_cluster_files.kubeconfig.content
   filename = "${path.module}/kubeconfig-${var.cluster_id}"
 }
 

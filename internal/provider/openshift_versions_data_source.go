@@ -38,7 +38,7 @@ type OpenShiftVersionModel struct {
 }
 
 func (d *OpenShiftVersionsDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_openshift_versions"
+	resp.TypeName = req.ProviderTypeName + "_versions"
 }
 
 func (d *OpenShiftVersionsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {

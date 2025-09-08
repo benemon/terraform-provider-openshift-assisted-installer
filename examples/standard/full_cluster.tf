@@ -1,6 +1,6 @@
 terraform {
   required_providers {
-    oai = {
+    openshift_assisted_installer = {
       source  = "benemon/openshift-assisted-installer"
       version = "~> 0.1"
     }
@@ -9,7 +9,7 @@ terraform {
 
 # Configure the OpenShift Assisted Installer Provider  
 # Set OFFLINE_TOKEN environment variable for authentication
-provider "oai" {
+provider "openshift_assisted_installer" {
   # endpoint = "https://api.openshift.com/api/assisted-install"  # Optional: Override default
   # timeout = "900s"  # Optional: Increase timeout for large installations
 }
@@ -21,19 +21,19 @@ provider "oai" {
 # ==============================================================================
 
 # Get the latest OpenShift version
-data "oai_openshift_versions" "latest" {
+data "openshift_assisted_installer_openshift_versions" "latest" {
   only_latest = true
 }
 
 # Get operator bundles for comprehensive setup
-data "oai_operator_bundles" "available" {}
+data "openshift_assisted_installer_operator_bundles" "available" {}
 
 locals {
   cluster_name = "production-cluster"
   base_domain  = "example.com"
   
   # Use the latest production version
-  openshift_version = [for v in data.oai_openshift_versions.latest.versions : v.version 
+  openshift_version = [for v in data.openshift_assisted_installer_openshift_versions.latest.versions : v.version 
     if v.support_level == "production"][0]
     
   # Network configuration
@@ -43,7 +43,7 @@ locals {
 }
 
 # Create a full production OpenShift cluster
-resource "oai_cluster" "production_cluster" {
+resource "openshift_assisted_installer_cluster" "production_cluster" {
   # Basic cluster configuration
   name              = local.cluster_name
   base_dns_domain   = local.base_domain
@@ -153,9 +153,9 @@ resource "oai_cluster" "production_cluster" {
 }
 
 # Create infrastructure environment for host discovery
-resource "oai_infra_env" "production_infra" {
+resource "openshift_assisted_installer_infra_env" "production_infra" {
   name              = "${local.cluster_name}-infra"
-  cluster_id        = oai_cluster.production_cluster.id
+  cluster_id        = openshift_assisted_installer_cluster.production_cluster.id
   cpu_architecture  = "x86_64"
   pull_secret       = file("pull-secret.json")
   
@@ -195,8 +195,8 @@ resource "oai_infra_env" "production_infra" {
 }
 
 # Production-grade manifests
-resource "oai_manifest" "cluster_monitoring_config" {
-  cluster_id = oai_cluster.production_cluster.id
+resource "openshift_assisted_installer_manifest" "cluster_monitoring_config" {
+  cluster_id = openshift_assisted_installer_cluster.production_cluster.id
   file_name  = "cluster-monitoring-config.yaml"
   folder     = "manifests"
   
@@ -227,8 +227,8 @@ resource "oai_manifest" "cluster_monitoring_config" {
   EOT
 }
 
-resource "oai_manifest" "oauth_config" {
-  cluster_id = oai_cluster.production_cluster.id
+resource "openshift_assisted_installer_manifest" "oauth_config" {
+  cluster_id = openshift_assisted_installer_cluster.production_cluster.id
   file_name  = "oauth-htpasswd.yaml"
   folder     = "manifests"
   
@@ -257,8 +257,8 @@ resource "oai_manifest" "oauth_config" {
   EOT
 }
 
-resource "oai_manifest" "ingress_controller" {
-  cluster_id = oai_cluster.production_cluster.id
+resource "openshift_assisted_installer_manifest" "ingress_controller" {
+  cluster_id = openshift_assisted_installer_cluster.production_cluster.id
   file_name  = "ingress-controller.yaml"
   folder     = "manifests"
   
@@ -291,27 +291,27 @@ resource "oai_manifest" "ingress_controller" {
 output "cluster_info" {
   description = "Production cluster information"
   value = {
-    cluster_id          = oai_cluster.production_cluster.id
-    cluster_name        = oai_cluster.production_cluster.name
-    base_domain         = oai_cluster.production_cluster.base_dns_domain
-    version             = oai_cluster.production_cluster.openshift_version
-    architecture        = oai_cluster.production_cluster.cpu_architecture
-    control_nodes       = oai_cluster.production_cluster.control_plane_count
-    dedicated_masters   = !oai_cluster.production_cluster.schedulable_masters
-    api_vip            = oai_cluster.production_cluster.api_vips[0].ip
-    ingress_vip        = oai_cluster.production_cluster.ingress_vips[0].ip
+    cluster_id          = openshift_assisted_installer_cluster.production_cluster.id
+    cluster_name        = openshift_assisted_installer_cluster.production_cluster.name
+    base_domain         = openshift_assisted_installer_cluster.production_cluster.base_dns_domain
+    version             = openshift_assisted_installer_cluster.production_cluster.openshift_version
+    architecture        = openshift_assisted_installer_cluster.production_cluster.cpu_architecture
+    control_nodes       = openshift_assisted_installer_cluster.production_cluster.control_plane_count
+    dedicated_masters   = !openshift_assisted_installer_cluster.production_cluster.schedulable_masters
+    api_vip            = openshift_assisted_installer_cluster.production_cluster.api_vips[0].ip
+    ingress_vip        = openshift_assisted_installer_cluster.production_cluster.ingress_vips[0].ip
   }
 }
 
 output "network_config" {
   description = "Network configuration details"
   value = {
-    cluster_cidr       = oai_cluster.production_cluster.cluster_network_cidr
-    service_cidr       = oai_cluster.production_cluster.service_network_cidr  
-    machine_networks   = oai_cluster.production_cluster.machine_networks
-    load_balancer      = oai_cluster.production_cluster.load_balancer
-    vip_dhcp          = oai_cluster.production_cluster.vip_dhcp_allocation
-    ntp_source        = oai_cluster.production_cluster.additional_ntp_source
+    cluster_cidr       = openshift_assisted_installer_cluster.production_cluster.cluster_network_cidr
+    service_cidr       = openshift_assisted_installer_cluster.production_cluster.service_network_cidr  
+    machine_networks   = openshift_assisted_installer_cluster.production_cluster.machine_networks
+    load_balancer      = openshift_assisted_installer_cluster.production_cluster.load_balancer
+    vip_dhcp          = openshift_assisted_installer_cluster.production_cluster.vip_dhcp_allocation
+    ntp_source        = openshift_assisted_installer_cluster.production_cluster.additional_ntp_source
   }
 }
 
@@ -329,22 +329,22 @@ output "access_info" {
 output "infra_env_info" {
   description = "Infrastructure environment for host discovery"
   value = {
-    infra_env_id  = oai_infra_env.production_infra.id
-    download_url  = oai_infra_env.production_infra.download_url
-    image_type    = oai_infra_env.production_infra.image_type
-    expires_at    = oai_infra_env.production_infra.expires_at
+    infra_env_id  = openshift_assisted_installer_infra_env.production_infra.id
+    download_url  = openshift_assisted_installer_infra_env.production_infra.download_url
+    image_type    = openshift_assisted_installer_infra_env.production_infra.image_type
+    expires_at    = openshift_assisted_installer_infra_env.production_infra.expires_at
   }
 }
 
 output "operators_installed" {
   description = "Operators that will be installed"
-  value = [for op in oai_cluster.production_cluster.olm_operators : op.name]
+  value = [for op in openshift_assisted_installer_cluster.production_cluster.olm_operators : op.name]
 }
 
 output "installation_guide" {
   description = "Complete installation guide"
   value = {
-    step_1  = "Download discovery ISO: ${oai_infra_env.production_infra.download_url}"
+    step_1  = "Download discovery ISO: ${openshift_assisted_installer_infra_env.production_infra.download_url}"
     step_2  = "Boot 3+ machines from ISO (3 for masters, 2+ for workers recommended)"
     step_3  = "Wait for hosts to be discovered and validated"
     step_4  = "Assign master role to 3 hosts, worker role to remaining hosts"

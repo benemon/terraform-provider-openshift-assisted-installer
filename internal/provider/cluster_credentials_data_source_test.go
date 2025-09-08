@@ -79,14 +79,14 @@ func TestClusterCredentialsDataSource_Metadata(t *testing.T) {
 	ds := NewClusterCredentialsDataSource()
 
 	metadataReq := datasource.MetadataRequest{
-		ProviderTypeName: "oai",
+		ProviderTypeName: "openshift_assisted_installer",
 	}
 	metadataResp := &datasource.MetadataResponse{}
 
 	ds.Metadata(context.Background(), metadataReq, metadataResp)
 
-	if metadataResp.TypeName != "oai_cluster_credentials" {
-		t.Errorf("Expected type name 'oai_cluster_credentials', got '%s'", metadataResp.TypeName)
+	if metadataResp.TypeName != "openshift_assisted_installer_cluster_credentials" {
+		t.Errorf("Expected type name 'openshift_assisted_installer_cluster_credentials', got '%s'", metadataResp.TypeName)
 	}
 }
 
@@ -136,20 +136,20 @@ func SkipTestClusterCredentialsDataSource_Read(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"oai": providerserver.NewProtocol6WithError(testProvider),
+			"openshift_assisted_installer": providerserver.NewProtocol6WithError(testProvider),
 		},
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					data "oai_cluster_credentials" "test" {
+					data "openshift_assisted_installer_cluster_credentials" "test" {
 						cluster_id = "test-cluster-id"
 					}
 				`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.oai_cluster_credentials.test", "cluster_id", "test-cluster-id"),
-					resource.TestCheckResourceAttr("data.oai_cluster_credentials.test", "username", "kubeadmin"),
-					resource.TestCheckResourceAttr("data.oai_cluster_credentials.test", "password", "secret123"),
-					resource.TestCheckResourceAttr("data.oai_cluster_credentials.test", "console_url", "https://console-openshift-console.apps.test-cluster.example.com"),
+					resource.TestCheckResourceAttr("data.openshift_assisted_installer_cluster_credentials.test", "cluster_id", "test-cluster-id"),
+					resource.TestCheckResourceAttr("data.openshift_assisted_installer_cluster_credentials.test", "username", "kubeadmin"),
+					resource.TestCheckResourceAttr("data.openshift_assisted_installer_cluster_credentials.test", "password", "secret123"),
+					resource.TestCheckResourceAttr("data.openshift_assisted_installer_cluster_credentials.test", "console_url", "https://console-openshift-console.apps.test-cluster.example.com"),
 				),
 			},
 		},
@@ -179,12 +179,12 @@ func SkipTestClusterCredentialsDataSource_Read_Error(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"oai": providerserver.NewProtocol6WithError(testProvider),
+			"openshift_assisted_installer": providerserver.NewProtocol6WithError(testProvider),
 		},
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					data "oai_cluster_credentials" "test" {
+					data "openshift_assisted_installer_cluster_credentials" "test" {
 						cluster_id = "nonexistent-cluster"
 					}
 				`,

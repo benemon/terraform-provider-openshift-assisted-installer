@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_cluster_files"
+page_title: "Data Source: openshift_assisted_installer_cluster_files"
 subcategory: "Cluster Management"
 ---
 
-# oai_cluster_files Data Source
+# openshift_assisted_installer_cluster_files Data Source
 
 Lists and retrieves files associated with a cluster, including manifests, discovery ignition, and installation files.
 
@@ -12,13 +12,13 @@ Lists and retrieves files associated with a cluster, including manifests, discov
 ### List All Cluster Files
 
 ```hcl
-data "oai_cluster_files" "all" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_files" "all" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
 }
 
 output "manifest_files" {
   value = [
-    for file in data.oai_cluster_files.all.files :
+    for file in data.openshift_assisted_installer_cluster_files.all.files :
     file.file_name if file.folder == "manifests"
   ]
 }
@@ -27,27 +27,27 @@ output "manifest_files" {
 ### Filter by File Type
 
 ```hcl
-data "oai_cluster_files" "ignition" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_files" "ignition" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   file_type  = "ignition"
 }
 
 output "ignition_files" {
-  value = data.oai_cluster_files.ignition.files
+  value = data.openshift_assisted_installer_cluster_files.ignition.files
 }
 ```
 
 ### Get Specific Folder Files
 
 ```hcl
-data "oai_cluster_files" "openshift" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_files" "openshift" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   folder     = "openshift"
 }
 
 output "openshift_manifests" {
   value = {
-    for file in data.oai_cluster_files.openshift.files :
+    for file in data.openshift_assisted_installer_cluster_files.openshift.files :
     file.file_name => file.size
   }
 }

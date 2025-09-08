@@ -28,7 +28,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/benemon/oai",
+		Address: "registry.terraform.io/benemon/openshift-assisted-installer",
 		Debug:   debug,
 	}
 

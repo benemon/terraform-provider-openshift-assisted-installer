@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_cluster"
+page_title: "Data Source: openshift_assisted_installer_cluster"
 subcategory: "Cluster Management"
 ---
 
-# oai_cluster Data Source
+# openshift_assisted_installer_cluster Data Source
 
 Retrieves information about an existing OpenShift cluster from the Assisted Service API.
 
@@ -12,15 +12,15 @@ Retrieves information about an existing OpenShift cluster from the Assisted Serv
 ### Read Existing Cluster
 
 ```hcl
-data "oai_cluster" "existing" {
+data "openshift_assisted_installer_cluster" "existing" {
   cluster_id = "550e8400-e29b-41d4-a716-446655440000"
 }
 
 output "cluster_info" {
   value = {
-    name   = data.oai_cluster.existing.name
-    status = data.oai_cluster.existing.status
-    api_vip = data.oai_cluster.existing.api_vips[0].ip
+    name   = data.openshift_assisted_installer_cluster.existing.name
+    status = data.openshift_assisted_installer_cluster.existing.status
+    api_vip = data.openshift_assisted_installer_cluster.existing.api_vips[0].ip
   }
 }
 ```
@@ -28,34 +28,34 @@ output "cluster_info" {
 ### Check Cluster Installation Status
 
 ```hcl
-data "oai_cluster" "installation" {
+data "openshift_assisted_installer_cluster" "installation" {
   cluster_id = var.cluster_id
 }
 
 locals {
-  is_installed = data.oai_cluster.installation.status == "installed"
-  is_ready     = data.oai_cluster.installation.status == "ready"
-  is_error     = data.oai_cluster.installation.status == "error"
+  is_installed = data.openshift_assisted_installer_cluster.installation.status == "installed"
+  is_ready     = data.openshift_assisted_installer_cluster.installation.status == "ready"
+  is_error     = data.openshift_assisted_installer_cluster.installation.status == "error"
 }
 
 output "installation_progress" {
-  value = data.oai_cluster.installation.progress
+  value = data.openshift_assisted_installer_cluster.installation.progress
 }
 ```
 
 ### Get Cluster Network Configuration
 
 ```hcl
-data "oai_cluster" "network" {
+data "openshift_assisted_installer_cluster" "network" {
   cluster_id = var.cluster_id
 }
 
 output "network_config" {
   value = {
-    cluster_cidr = data.oai_cluster.network.cluster_network_cidr
-    service_cidr = data.oai_cluster.network.service_network_cidr
-    api_vips     = data.oai_cluster.network.api_vips
-    ingress_vips = data.oai_cluster.network.ingress_vips
+    cluster_cidr = data.openshift_assisted_installer_cluster.network.cluster_network_cidr
+    service_cidr = data.openshift_assisted_installer_cluster.network.service_network_cidr
+    api_vips     = data.openshift_assisted_installer_cluster.network.api_vips
+    ingress_vips = data.openshift_assisted_installer_cluster.network.ingress_vips
   }
 }
 ```
@@ -89,4 +89,4 @@ output "network_config" {
 * `enabled_host_count` - Number of enabled hosts.
 * `monitored_operators` - List of monitored operators with their status.
 * `image_info` - Discovery image information.
-* `validations_info` - Validation results (use `oai_cluster_validations` for detailed filtering).
+* `validations_info` - Validation results (use `openshift_assisted_installer_cluster_validations` for detailed filtering).

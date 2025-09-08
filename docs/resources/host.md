@@ -1,9 +1,9 @@
 ---
-page_title: "Resource: oai_host"
+page_title: "Resource: openshift_assisted_installer_host"
 subcategory: "Host Management"
 ---
 
-# oai_host Resource
+# openshift_assisted_installer_host Resource
 
 Manages a discovered host within an infrastructure environment. Hosts are automatically discovered when they boot from the infrastructure environment's discovery ISO.
 
@@ -12,8 +12,8 @@ Manages a discovered host within an infrastructure environment. Hosts are automa
 ### Basic Host Management
 
 ```hcl
-resource "oai_host" "control_plane_1" {
-  infra_env_id = oai_infra_env.example.id
+resource "openshift_assisted_installer_host" "control_plane_1" {
+  infra_env_id = openshift_assisted_installer_infra_env.example.id
   host_id      = "550e8400-e29b-41d4-a716-446655440001"
   host_name    = "control-plane-1"
   host_role    = "master"
@@ -23,8 +23,8 @@ resource "oai_host" "control_plane_1" {
 ### Advanced Host Configuration
 
 ```hcl
-resource "oai_host" "worker_1" {
-  infra_env_id = oai_infra_env.example.id
+resource "openshift_assisted_installer_host" "worker_1" {
+  infra_env_id = openshift_assisted_installer_infra_env.example.id
   host_id      = "550e8400-e29b-41d4-a716-446655440002"
   
   # Host Identity
@@ -94,7 +94,7 @@ In addition to the arguments above, the following attributes are exported:
 Hosts can be imported using the format `infra_env_id/host_id`:
 
 ```shell
-terraform import oai_host.example 550e8400-e29b-41d4-a716-446655440000/550e8400-e29b-41d4-a716-446655440001
+terraform import openshift_assisted_installer_host.example 550e8400-e29b-41d4-a716-446655440000/550e8400-e29b-41d4-a716-446655440001
 ```
 
 ## Host Discovery Process
@@ -113,7 +113,7 @@ Host IDs are generated during the discovery process. To find available hosts:
 
 ```bash
 # List hosts in an infrastructure environment
-terraform show -json | jq -r '.values.root_module.resources[] | select(.type=="oai_infra_env") | .values.hosts[].id'
+terraform show -json | jq -r '.values.root_module.resources[] | select(.type=="openshift_assisted_installer_infra_env") | .values.hosts[].id'
 
 # Or use the Assisted Service API directly
 curl -H "Authorization: Bearer $TOKEN" \
@@ -128,7 +128,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 - No explicit host resources needed
 
 **Manual Management** (Use when you need specific control):
-- Create explicit `oai_host` resources for each discovered host
+- Create explicit `openshift_assisted_installer_host` resources for each discovered host
 - Specify exact roles, hostnames, and disk configurations
 - Required for complex disk layouts or specific host assignments
 
@@ -156,7 +156,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 The installation disk hosts the OpenShift operating system and container storage:
 
 ```hcl
-resource "oai_host" "example" {
+resource "openshift_assisted_installer_host" "example" {
   installation_disk_id = "/dev/nvme0n1"  # Use fastest available disk
   # System will automatically partition and format this disk
 }
@@ -167,7 +167,7 @@ resource "oai_host" "example" {
 To preserve existing data on specific disks:
 
 ```hcl
-resource "oai_host" "example" {
+resource "openshift_assisted_installer_host" "example" {
   disks_skip_formatting = [
     "/dev/sdb",  # Database storage
     "/dev/sdc"   # Application data

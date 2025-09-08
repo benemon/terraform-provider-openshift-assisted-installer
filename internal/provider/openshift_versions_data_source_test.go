@@ -199,13 +199,13 @@ func TestOpenShiftVersionsDataSource_Metadata(t *testing.T) {
 	dataSource := NewOpenShiftVersionsDataSource()
 
 	req := datasource.MetadataRequest{
-		ProviderTypeName: "oai",
+		ProviderTypeName: "openshift_assisted_installer",
 	}
 	resp := &datasource.MetadataResponse{}
 
 	dataSource.Metadata(context.Background(), req, resp)
 
-	expected := "oai_openshift_versions"
+	expected := "openshift_assisted_installer_versions"
 	if resp.TypeName != expected {
 		t.Errorf("Expected TypeName %q, got %q", expected, resp.TypeName)
 	}

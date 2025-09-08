@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_cluster_logs"
+page_title: "Data Source: openshift_assisted_installer_cluster_logs"
 subcategory: "Cluster Management"
 ---
 
-# oai_cluster_logs Data Source
+# openshift_assisted_installer_cluster_logs Data Source
 
 Retrieves installation logs from the Assisted Service API for debugging and monitoring.
 
@@ -12,41 +12,41 @@ Retrieves installation logs from the Assisted Service API for debugging and moni
 ### Get Cluster Installation Logs
 
 ```hcl
-data "oai_cluster_logs" "installation" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_logs" "installation" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   log_type   = "controller"
 }
 
 output "controller_logs_url" {
-  value = data.oai_cluster_logs.installation.download_url
+  value = data.openshift_assisted_installer_cluster_logs.installation.download_url
 }
 ```
 
 ### Get Host-Specific Logs
 
 ```hcl
-data "oai_cluster_logs" "host_logs" {
-  cluster_id = oai_cluster.example.id
-  host_id    = oai_host.master1.id
+data "openshift_assisted_installer_cluster_logs" "host_logs" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
+  host_id    = openshift_assisted_installer_host.master1.id
   log_type   = "host"
 }
 
 resource "local_file" "host_logs" {
-  content  = data.oai_cluster_logs.host_logs.content
-  filename = "host-${oai_host.master1.id}.log"
+  content  = data.openshift_assisted_installer_cluster_logs.host_logs.content
+  filename = "host-${openshift_assisted_installer_host.master1.id}.log"
 }
 ```
 
 ### Retrieve All Available Logs
 
 ```hcl
-data "oai_cluster_logs" "all" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_logs" "all" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   log_type   = "all"
 }
 
 output "available_logs" {
-  value = data.oai_cluster_logs.all.logs_info
+  value = data.openshift_assisted_installer_cluster_logs.all.logs_info
 }
 ```
 

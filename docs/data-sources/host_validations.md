@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_host_validations"
+page_title: "Data Source: openshift_assisted_installer_host_validations"
 subcategory: "Host Management"
 ---
 
-# oai_host_validations Data Source
+# openshift_assisted_installer_host_validations Data Source
 
 Retrieves host validation results from the Assisted Service API. This data source supports two modes: cluster-wide host validation checking or single-host validation checking.
 
@@ -12,13 +12,13 @@ Retrieves host validation results from the Assisted Service API. This data sourc
 ### Get All Host Validations for a Cluster
 
 ```hcl
-data "oai_host_validations" "cluster_hosts" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_host_validations" "cluster_hosts" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
 }
 
 output "host_readiness" {
   value = {
-    for v in data.oai_host_validations.cluster_hosts.validations :
+    for v in data.openshift_assisted_installer_host_validations.cluster_hosts.validations :
     v.host_id => {
       status   = v.status
       failures = length([for val in v.validations : val if val.status == "failure"])
@@ -30,14 +30,14 @@ output "host_readiness" {
 ### Check Single Host Validations
 
 ```hcl
-data "oai_host_validations" "single_host" {
-  infra_env_id = oai_infra_env.example.id
-  host_id      = oai_host.worker.id
+data "openshift_assisted_installer_host_validations" "single_host" {
+  infra_env_id = openshift_assisted_installer_infra_env.example.id
+  host_id      = openshift_assisted_installer_host.worker.id
 }
 
 output "host_validation_details" {
   value = [
-    for v in data.oai_host_validations.single_host.validations[0].validations :
+    for v in data.openshift_assisted_installer_host_validations.single_host.validations[0].validations :
     "${v.id}: ${v.status} - ${v.message}"
   ]
 }
@@ -46,15 +46,15 @@ output "host_validation_details" {
 ### Filter Hardware Validations
 
 ```hcl
-data "oai_host_validations" "hardware" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_host_validations" "hardware" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   categories = ["hardware"]
 }
 
 # Check if all hosts meet hardware requirements
 locals {
   hardware_ready = alltrue([
-    for host in data.oai_host_validations.hardware.validations :
+    for host in data.openshift_assisted_installer_host_validations.hardware.validations :
     alltrue([
       for v in host.validations :
       v.status == "success"
@@ -66,15 +66,15 @@ locals {
 ### Filter Blocking Host Validations
 
 ```hcl
-data "oai_host_validations" "blocking" {
-  cluster_id      = oai_cluster.example.id
+data "openshift_assisted_installer_host_validations" "blocking" {
+  cluster_id      = openshift_assisted_installer_cluster.example.id
   validation_type = "blocking"
   status          = "failure"
 }
 
 output "blocking_issues" {
   value = flatten([
-    for host in data.oai_host_validations.blocking.validations : [
+    for host in data.openshift_assisted_installer_host_validations.blocking.validations : [
       for v in host.validations :
       "${host.host_name}: ${v.id} - ${v.message}"
     ]

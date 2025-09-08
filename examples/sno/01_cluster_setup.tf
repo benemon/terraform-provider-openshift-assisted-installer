@@ -6,14 +6,14 @@
 
 terraform {
   required_providers {
-    oai = {
+    openshift_assisted_installer = {
       source  = "benemon/openshift-assisted-installer"
       version = "~> 0.1"
     }
   }
 }
 
-provider "oai" {
+provider "openshift_assisted_installer" {
   # Uses OFFLINE_TOKEN environment variable
 }
 
@@ -30,7 +30,7 @@ variable "ssh_public_key" {
 }
 
 # Get latest OpenShift version
-data "oai_openshift_versions" "latest" {
+data "openshift_assisted_installer_versions" "latest" {
   only_latest = true
 }
 
@@ -38,12 +38,12 @@ locals {
   cluster_name = "sno-cluster"
   base_domain  = "example.com"
   
-  openshift_version = [for v in data.oai_openshift_versions.latest.versions : v.version 
+  openshift_version = [for v in data.openshift_assisted_installer_versions.latest.versions : v.version 
     if v.support_level == "production"][0]
 }
 
 # Create cluster definition
-resource "oai_cluster" "sno" {
+resource "openshift_assisted_installer_cluster" "sno" {
   name              = local.cluster_name
   base_dns_domain   = local.base_domain
   openshift_version = local.openshift_version
@@ -64,9 +64,9 @@ resource "oai_cluster" "sno" {
 }
 
 # Create infrastructure environment for host discovery
-resource "oai_infra_env" "sno" {
+resource "openshift_assisted_installer_infra_env" "sno" {
   name              = "${local.cluster_name}-infra"
-  cluster_id        = oai_cluster.sno.id
+  cluster_id        = openshift_assisted_installer_cluster.sno.id
   cpu_architecture  = "x86_64"
   pull_secret       = var.pull_secret
   ssh_authorized_key = var.ssh_public_key
@@ -75,17 +75,17 @@ resource "oai_infra_env" "sno" {
 
 # Outputs for the next module
 output "cluster_id" {
-  value = oai_cluster.sno.id
+  value = openshift_assisted_installer_cluster.sno.id
 }
 
 output "download_url" {
-  value = oai_infra_env.sno.download_url
+  value = openshift_assisted_installer_infra_env.sno.download_url
 }
 
 output "next_steps" {
   value = <<-EOT
     Cluster setup complete! Now:
-    1. Download ISO: ${oai_infra_env.sno.download_url}
+    1. Download ISO: ${openshift_assisted_installer_infra_env.sno.download_url}
     2. Boot your machine from this ISO
     3. Wait for host to be discovered
     4. Run the installation module (02_cluster_installation.tf)

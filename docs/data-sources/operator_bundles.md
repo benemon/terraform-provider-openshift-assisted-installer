@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_operator_bundles"
+page_title: "Data Source: openshift_assisted_installer_operator_bundles"
 subcategory: "General Information"
 ---
 
-# oai_operator_bundles Data Source
+# openshift_assisted_installer_operator_bundles Data Source
 
 Retrieves information about available operator bundles from the OpenShift Assisted Service. Operator bundles are curated collections of operators that work together to provide specific functionality.
 
@@ -12,22 +12,22 @@ Retrieves information about available operator bundles from the OpenShift Assist
 ### List All Available Bundles
 
 ```hcl
-data "oai_operator_bundles" "all" {}
+data "openshift_assisted_installer_operator_bundles" "all" {}
 
 output "available_bundles" {
-  value = data.oai_operator_bundles.all.bundles
+  value = data.openshift_assisted_installer_operator_bundles.all.bundles
 }
 ```
 
 ### Get Specific Bundle Information
 
 ```hcl
-data "oai_operator_bundles" "virtualization" {
+data "openshift_assisted_installer_operator_bundles" "virtualization" {
   bundle_id = "virtualization"
 }
 
 output "virtualization_bundle" {
-  value = data.oai_operator_bundles.virtualization.bundles[0]
+  value = data.openshift_assisted_installer_operator_bundles.virtualization.bundles[0]
 }
 ```
 
@@ -65,7 +65,7 @@ The supported bundles typically include:
 ### Bundle-Based Cluster Configuration
 
 ```hcl
-data "oai_operator_bundles" "available" {}
+data "openshift_assisted_installer_operator_bundles" "available" {}
 
 variable "enable_virtualization" {
   description = "Enable virtualization bundle"
@@ -82,12 +82,12 @@ variable "enable_ai" {
 locals {
   # Find requested bundles
   virtualization_bundle = [
-    for bundle in data.oai_operator_bundles.available.bundles :
+    for bundle in data.openshift_assisted_installer_operator_bundles.available.bundles :
     bundle if bundle.id == "virtualization"
   ]
   
   ai_bundle = [
-    for bundle in data.oai_operator_bundles.available.bundles :
+    for bundle in data.openshift_assisted_installer_operator_bundles.available.bundles :
     bundle if bundle.id == "openshift-ai"
   ]
   
@@ -98,7 +98,7 @@ locals {
   )
 }
 
-resource "oai_cluster" "with_bundles" {
+resource "openshift_assisted_installer_cluster" "with_bundles" {
   name              = "cluster-with-bundles"
   openshift_version = "4.16"
   # ... other configuration
@@ -120,8 +120,8 @@ output "selected_operators" {
 ### Bundle Compatibility Validation
 
 ```hcl
-data "oai_operator_bundles" "bundles" {}
-data "oai_supported_operators" "supported" {
+data "openshift_assisted_installer_operator_bundles" "bundles" {}
+data "openshift_assisted_installer_supported_operators" "supported" {
   openshift_version = var.openshift_version
   cpu_architecture  = var.cpu_architecture
 }
@@ -129,13 +129,13 @@ data "oai_supported_operators" "supported" {
 locals {
   # Check which bundle operators are supported
   bundle_compatibility = {
-    for bundle in data.oai_operator_bundles.bundles.bundles :
+    for bundle in data.openshift_assisted_installer_operator_bundles.bundles.bundles :
     bundle.id => {
       title             = bundle.title
       total_operators   = length(bundle.operators)
       supported_operators = [
         for op in bundle.operators :
-        op if contains(data.oai_supported_operators.supported.operators, op)
+        op if contains(data.openshift_assisted_installer_supported_operators.supported.operators, op)
       ]
     }
   }
@@ -148,7 +148,7 @@ locals {
       compatibility_pct  = (length(info.supported_operators) / info.total_operators) * 100
       supported         = info.supported_operators
       unsupported       = setsubtract(
-        toset([for bundle in data.oai_operator_bundles.bundles.bundles : bundle.operators if bundle.id == bundle_id][0]),
+        toset([for bundle in data.openshift_assisted_installer_operator_bundles.bundles.bundles : bundle.operators if bundle.id == bundle_id][0]),
         toset(info.supported_operators)
       )
     }
@@ -164,7 +164,7 @@ output "bundle_compatibility" {
 ### Environment-Specific Bundle Selection
 
 ```hcl
-data "oai_operator_bundles" "available" {}
+data "openshift_assisted_installer_operator_bundles" "available" {}
 
 # Different bundle configurations for different environments
 locals {
@@ -181,7 +181,7 @@ locals {
   # Get operators for selected bundles
   selected_operators = flatten([
     for bundle_id in local.selected_bundles : [
-      for bundle in data.oai_operator_bundles.available.bundles :
+      for bundle in data.openshift_assisted_installer_operator_bundles.available.bundles :
       bundle.operators if bundle.id == bundle_id
     ]
   ])
@@ -198,7 +198,7 @@ variable "environment" {
   }
 }
 
-resource "oai_cluster" "environment_specific" {
+resource "openshift_assisted_installer_cluster" "environment_specific" {
   name = "${var.environment}-cluster"
   # ... other configuration
   
@@ -213,12 +213,12 @@ resource "oai_cluster" "environment_specific" {
 ### Bundle Documentation and Planning
 
 ```hcl
-data "oai_operator_bundles" "documentation" {}
+data "openshift_assisted_installer_operator_bundles" "documentation" {}
 
 locals {
   # Generate comprehensive bundle documentation
   bundle_details = {
-    for bundle in data.oai_operator_bundles.documentation.bundles :
+    for bundle in data.openshift_assisted_installer_operator_bundles.documentation.bundles :
     bundle.id => {
       title       = bundle.title
       description = "Bundle containing ${length(bundle.operators)} operators"
@@ -256,7 +256,7 @@ output "bundle_selection_guide" {
 ### Bundle Cost and Resource Planning
 
 ```hcl
-data "oai_operator_bundles" "planning" {}
+data "openshift_assisted_installer_operator_bundles" "planning" {}
 
 locals {
   # Estimate resource requirements for bundles
@@ -308,13 +308,13 @@ output "resource_requirements" {
 ### Bundle + Individual Operator Selection
 
 ```hcl
-data "oai_operator_bundles" "bundles" {}
-data "oai_supported_operators" "individual" {}
+data "openshift_assisted_installer_operator_bundles" "bundles" {}
+data "openshift_assisted_installer_supported_operators" "individual" {}
 
 locals {
   # Start with bundle operators
   bundle_operators = flatten([
-    for bundle in data.oai_operator_bundles.bundles.bundles :
+    for bundle in data.openshift_assisted_installer_operator_bundles.bundles.bundles :
     bundle.operators if bundle.id == "virtualization"
   ])
   
@@ -330,11 +330,11 @@ locals {
   # Validate all operators are supported
   validated_operators = [
     for op in local.all_operators :
-    op if contains(data.oai_supported_operators.individual.operators, op)
+    op if contains(data.openshift_assisted_installer_supported_operators.individual.operators, op)
   ]
 }
 
-resource "oai_cluster" "combined" {
+resource "openshift_assisted_installer_cluster" "combined" {
   # ... configuration
   olm_operators = [
     for op in local.validated_operators : {

@@ -107,13 +107,13 @@ func TestSupportLevelsDataSource_Metadata(t *testing.T) {
 	ds := NewSupportLevelsDataSource()
 
 	metadataReq := datasource.MetadataRequest{
-		ProviderTypeName: "oai",
+		ProviderTypeName: "openshift_assisted_installer",
 	}
 	metadataResp := &datasource.MetadataResponse{}
 
 	ds.Metadata(context.Background(), metadataReq, metadataResp)
 
-	assert.Equal(t, "oai_support_levels", metadataResp.TypeName)
+	assert.Equal(t, "openshift_assisted_installer_support_levels", metadataResp.TypeName)
 }
 
 func TestSupportLevelsDataSource_Configure(t *testing.T) {

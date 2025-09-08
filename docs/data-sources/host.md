@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_host"
+page_title: "Data Source: openshift_assisted_installer_host"
 subcategory: "Host Management"
 ---
 
-# oai_host Data Source
+# openshift_assisted_installer_host Data Source
 
 Retrieves information about a discovered host from the Assisted Service API.
 
@@ -12,16 +12,16 @@ Retrieves information about a discovered host from the Assisted Service API.
 ### Read Host Information
 
 ```hcl
-data "oai_host" "worker" {
-  infra_env_id = oai_infra_env.example.id
+data "openshift_assisted_installer_host" "worker" {
+  infra_env_id = openshift_assisted_installer_infra_env.example.id
   host_id      = "750e8400-e29b-41d4-a716-446655440000"
 }
 
 output "host_details" {
   value = {
-    hostname = data.oai_host.worker.requested_hostname
-    role     = data.oai_host.worker.role
-    status   = data.oai_host.worker.status
+    hostname = data.openshift_assisted_installer_host.worker.requested_hostname
+    role     = data.openshift_assisted_installer_host.worker.role
+    status   = data.openshift_assisted_installer_host.worker.status
   }
 }
 ```
@@ -29,16 +29,16 @@ output "host_details" {
 ### Check Host Hardware Inventory
 
 ```hcl
-data "oai_host" "master" {
+data "openshift_assisted_installer_host" "master" {
   infra_env_id = var.infra_env_id
   host_id      = var.host_id
 }
 
 output "hardware_info" {
   value = {
-    cpu_cores = data.oai_host.master.inventory.cpu.count
-    memory_gb = data.oai_host.master.inventory.memory.physical_bytes / 1073741824
-    disk_count = length(data.oai_host.master.inventory.disks)
+    cpu_cores = data.openshift_assisted_installer_host.master.inventory.cpu.count
+    memory_gb = data.openshift_assisted_installer_host.master.inventory.memory.physical_bytes / 1073741824
+    disk_count = length(data.openshift_assisted_installer_host.master.inventory.disks)
   }
 }
 ```

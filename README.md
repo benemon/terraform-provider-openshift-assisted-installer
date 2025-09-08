@@ -57,7 +57,7 @@ The provider supports authentication via Red Hat offline tokens:
 
 1. **Provider configuration**:
    ```hcl
-   provider "oai" {
+   provider "openshift-assisted-installer" {
      offline_token = "your-offline-token"
    }
    ```
@@ -75,20 +75,20 @@ Get your offline token from the [Red Hat Console](https://console.redhat.com/ope
 
 ```hcl
 # Provider configuration
-provider "oai" {
+provider "openshift-assisted-installer" {
   # Uses OFFLINE_TOKEN environment variable
 }
 
 # Get latest OpenShift version
-data "oai_openshift_versions" "latest" {
+data "openshift_assisted_installer_versions" "latest" {
   only_latest = true
 }
 
 # Create cluster definition
-resource "oai_cluster" "example" {
+resource "openshift_assisted_installer_cluster" "example" {
   name                 = "my-cluster"
   base_dns_domain      = "example.com"
-  openshift_version    = data.oai_openshift_versions.latest.versions[0].version
+  openshift_version    = data.openshift_assisted_installer_versions.latest.versions[0].version
   cpu_architecture     = "x86_64"
   control_plane_count  = 3
   schedulable_masters  = false
@@ -103,9 +103,9 @@ resource "oai_cluster" "example" {
 }
 
 # Create infrastructure environment for host discovery
-resource "oai_infra_env" "example" {
-  name              = "${oai_cluster.example.name}-infra"
-  cluster_id        = oai_cluster.example.id
+resource "openshift_assisted_installer_infra_env" "example" {
+  name              = "${openshift_assisted_installer_cluster.example.name}-infra"
+  cluster_id        = openshift_assisted_installer_cluster.example.id
   cpu_architecture  = "x86_64"
   pull_secret       = var.pull_secret
   ssh_authorized_key = var.ssh_public_key
@@ -113,8 +113,8 @@ resource "oai_infra_env" "example" {
 }
 
 # Trigger cluster installation once hosts are ready
-resource "oai_cluster_installation" "example" {
-  cluster_id          = oai_cluster.example.id
+resource "openshift_assisted_installer_cluster_installation" "example" {
+  cluster_id          = openshift_assisted_installer_cluster.example.id
   wait_for_hosts      = true
   expected_host_count = 3
   
@@ -124,14 +124,14 @@ resource "oai_cluster_installation" "example" {
 }
 
 # Get cluster credentials after installation
-data "oai_cluster_credentials" "admin" {
-  cluster_id = oai_cluster.example.id
-  depends_on = [oai_cluster_installation.example]
+data "openshift_assisted_installer_cluster_credentials" "admin" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
+  depends_on = [openshift_assisted_installer_cluster_installation.example]
 }
 
 # Monitor installation progress
-data "oai_cluster_events" "progress" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_events" "progress" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   severities = ["info", "warning", "error"]
   limit      = 50
 }
@@ -143,29 +143,29 @@ data "oai_cluster_events" "progress" {
 # Access cluster credentials
 output "cluster_access" {
   value = {
-    username    = data.oai_cluster_credentials.admin.username
-    password    = data.oai_cluster_credentials.admin.password
-    console_url = data.oai_cluster_credentials.admin.console_url
+    username    = data.openshift_assisted_installer_cluster_credentials.admin.username
+    password    = data.openshift_assisted_installer_cluster_credentials.admin.password
+    console_url = data.openshift_assisted_installer_cluster_credentials.admin.console_url
   }
   sensitive = true
 }
 
 # Download kubeconfig file
-data "oai_cluster_files" "kubeconfig" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_files" "kubeconfig" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   file_name  = "kubeconfig"
-  depends_on = [oai_cluster_installation.example]
+  depends_on = [openshift_assisted_installer_cluster_installation.example]
 }
 
 # Save kubeconfig locally
 resource "local_file" "kubeconfig" {
-  content  = data.oai_cluster_files.kubeconfig.content
+  content  = data.openshift_assisted_installer_cluster_files.kubeconfig.content
   filename = "${path.module}/kubeconfig"
 }
 
 # Get cluster logs for troubleshooting
-data "oai_cluster_logs" "installation" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_logs" "installation" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   logs_type  = "controller"
 }
 ```
@@ -173,38 +173,38 @@ data "oai_cluster_logs" "installation" {
 ### Custom Manifests
 
 ```hcl
-resource "oai_manifest" "example" {
-  cluster_id = oai_cluster.example.id
+resource "openshift_assisted_installer_manifest" "example" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   folder     = "manifests"
   file_name  = "custom-config.yaml"
   
   content = templatefile("${path.module}/manifests/custom-config.yaml", {
-    cluster_name = oai_cluster.example.name
+    cluster_name = openshift_assisted_installer_cluster.example.name
   })
 }
 ```
 
 ## Resources
 
-- **`oai_cluster`** - OpenShift cluster definition and configuration
-- **`oai_cluster_installation`** - Trigger and monitor cluster installation
-- **`oai_infra_env`** - Infrastructure environment for host discovery
-- **`oai_host`** - Individual host configuration and management
-- **`oai_manifest`** - Custom cluster manifests and configurations
+- **`openshift_assisted_installer_cluster`** - OpenShift cluster definition and configuration
+- **`openshift_assisted_installer_cluster_installation`** - Trigger and monitor cluster installation
+- **`openshift_assisted_installer_infra_env`** - Infrastructure environment for host discovery
+- **`openshift_assisted_installer_host`** - Individual host configuration and management
+- **`openshift_assisted_installer_manifest`** - Custom cluster manifests and configurations
 
 ## Data Sources
 
 ### Cluster Information
-- **`oai_openshift_versions`** - Available OpenShift versions and release information
-- **`oai_supported_operators`** - Supported OLM operators for cluster installation
-- **`oai_operator_bundles`** - Available operator bundles and dependencies
-- **`oai_support_levels`** - Feature support levels by platform and architecture
+- **`openshift_assisted_installer_versions`** - Available OpenShift versions and release information
+- **`openshift_assisted_installer_supported_operators`** - Supported OLM operators for cluster installation
+- **`openshift_assisted_installer_operator_bundles`** - Available operator bundles and dependencies
+- **`openshift_assisted_installer_support_levels`** - Feature support levels by platform and architecture
 
 ### Post-Installation Access
-- **`oai_cluster_credentials`** - Cluster admin credentials (username, password, console URL)
-- **`oai_cluster_events`** - Installation and cluster events for monitoring and troubleshooting
-- **`oai_cluster_logs`** - Cluster installation and runtime logs
-- **`oai_cluster_files`** - Cluster configuration files (kubeconfig, manifests, ignition configs)
+- **`openshift_assisted_installer_cluster_credentials`** - Cluster admin credentials (username, password, console URL)
+- **`openshift_assisted_installer_cluster_events`** - Installation and cluster events for monitoring and troubleshooting
+- **`openshift_assisted_installer_cluster_logs`** - Cluster installation and runtime logs
+- **`openshift_assisted_installer_cluster_files`** - Cluster configuration files (kubeconfig, manifests, ignition configs)
 
 ## Configuration Reference
 

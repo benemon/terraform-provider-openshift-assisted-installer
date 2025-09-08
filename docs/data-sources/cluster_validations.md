@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_cluster_validations"
+page_title: "Data Source: openshift_assisted_installer_cluster_validations"
 subcategory: "Cluster Management"
 ---
 
-# oai_cluster_validations Data Source
+# openshift_assisted_installer_cluster_validations Data Source
 
 Retrieves cluster validation results from the Assisted Service API. Use this data source to check pre-installation validation status and troubleshoot cluster readiness issues.
 
@@ -12,14 +12,14 @@ Retrieves cluster validation results from the Assisted Service API. Use this dat
 ### Get All Cluster Validations
 
 ```hcl
-data "oai_cluster_validations" "cluster_checks" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_validations" "cluster_checks" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
 }
 
 output "validation_summary" {
   value = {
-    total    = length(data.oai_cluster_validations.cluster_checks.validations)
-    failures = length([for v in data.oai_cluster_validations.cluster_checks.validations : v if v.status == "failure"])
+    total    = length(data.openshift_assisted_installer_cluster_validations.cluster_checks.validations)
+    failures = length([for v in data.openshift_assisted_installer_cluster_validations.cluster_checks.validations : v if v.status == "failure"])
   }
 }
 ```
@@ -27,15 +27,15 @@ output "validation_summary" {
 ### Filter Blocking Validations Only
 
 ```hcl
-data "oai_cluster_validations" "blocking" {
-  cluster_id        = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_validations" "blocking" {
+  cluster_id        = openshift_assisted_installer_cluster.example.id
   validation_type   = "blocking"
 }
 
 # Check if cluster is ready to install
 locals {
   ready_to_install = length([
-    for v in data.oai_cluster_validations.blocking.validations :
+    for v in data.openshift_assisted_installer_cluster_validations.blocking.validations :
     v if v.status == "failure"
   ]) == 0
 }
@@ -44,8 +44,8 @@ locals {
 ### Check Specific Validations
 
 ```hcl
-data "oai_cluster_validations" "network_checks" {
-  cluster_id       = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_validations" "network_checks" {
+  cluster_id       = openshift_assisted_installer_cluster.example.id
   validation_names = [
     "api-vips-defined",
     "api-vips-valid",
@@ -59,14 +59,14 @@ data "oai_cluster_validations" "network_checks" {
 ### Filter by Category
 
 ```hcl
-data "oai_cluster_validations" "operators" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_validations" "operators" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   categories = ["operators"]
 }
 
 output "operator_validations" {
   value = [
-    for v in data.oai_cluster_validations.operators.validations :
+    for v in data.openshift_assisted_installer_cluster_validations.operators.validations :
     "${v.id}: ${v.status} - ${v.message}"
   ]
 }

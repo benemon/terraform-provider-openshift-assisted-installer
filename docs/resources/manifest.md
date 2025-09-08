@@ -1,9 +1,9 @@
 ---
-page_title: "Resource: oai_manifest"
+page_title: "Resource: openshift_assisted_installer_manifest"
 subcategory: "Custom Configuration"
 ---
 
-# oai_manifest Resource
+# openshift_assisted_installer_manifest Resource
 
 Manages custom Kubernetes manifests for OpenShift clusters. Manifests allow you to customise cluster configuration and deploy additional resources during cluster installation.
 
@@ -12,8 +12,8 @@ Manages custom Kubernetes manifests for OpenShift clusters. Manifests allow you 
 ### Basic Manifest
 
 ```hcl
-resource "oai_manifest" "custom_config" {
-  cluster_id = oai_cluster.example.id
+resource "openshift_assisted_installer_manifest" "custom_config" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   file_name  = "custom-config.yaml"
   folder     = "manifests"
   
@@ -34,8 +34,8 @@ resource "oai_manifest" "custom_config" {
 ### Machine Configuration
 
 ```hcl
-resource "oai_manifest" "machine_config" {
-  cluster_id = oai_cluster.example.id
+resource "openshift_assisted_installer_manifest" "machine_config" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   file_name  = "custom-machine-config.yaml"
   folder     = "openshift"  # System-level configuration
   
@@ -69,8 +69,8 @@ resource "oai_manifest" "machine_config" {
 ### Multi-Document YAML
 
 ```hcl
-resource "oai_manifest" "multiple_resources" {
-  cluster_id = oai_cluster.example.id
+resource "openshift_assisted_installer_manifest" "multiple_resources" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   file_name  = "monitoring-config.yaml"
   folder     = "manifests"
   
@@ -158,7 +158,7 @@ In addition to the arguments above, the following attributes are exported:
 Manifests can be imported using the format `cluster_id/folder/file_name`:
 
 ```shell
-terraform import oai_manifest.example 550e8400-e29b-41d4-a716-446655440000/manifests/custom-config.yaml
+terraform import openshift_assisted_installer_manifest.example 550e8400-e29b-41d4-a716-446655440000/manifests/custom-config.yaml
 ```
 
 ## Content Management
@@ -168,7 +168,7 @@ terraform import oai_manifest.example 550e8400-e29b-41d4-a716-446655440000/manif
 For complex YAML structures, use Terraform's `yamlencode()` function:
 
 ```hcl
-resource "oai_manifest" "complex_config" {
+resource "openshift_assisted_installer_manifest" "complex_config" {
   content = yamlencode({
     apiVersion = "v1"
     kind       = "Secret"
@@ -190,7 +190,7 @@ resource "oai_manifest" "complex_config" {
 For multi-document YAML or when preserving exact formatting:
 
 ```hcl
-resource "oai_manifest" "helm_chart" {
+resource "openshift_assisted_installer_manifest" "helm_chart" {
   content = <<-EOT
     ---
     apiVersion: v1
@@ -215,7 +215,7 @@ resource "oai_manifest" "helm_chart" {
 To load manifest content from external files:
 
 ```hcl
-resource "oai_manifest" "from_file" {
+resource "openshift_assisted_installer_manifest" "from_file" {
   content = file("${path.module}/manifests/application.yaml")
 }
 ```
@@ -227,7 +227,7 @@ resource "oai_manifest" "from_file" {
 Apply cluster-wide configuration changes:
 
 ```hcl
-resource "oai_manifest" "cluster_config" {
+resource "openshift_assisted_installer_manifest" "cluster_config" {
   folder = "openshift"
   content = yamlencode({
     apiVersion = "config.openshift.io/v1"
@@ -253,7 +253,7 @@ resource "oai_manifest" "cluster_config" {
 Install additional operators:
 
 ```hcl
-resource "oai_manifest" "operator_subscription" {
+resource "openshift_assisted_installer_manifest" "operator_subscription" {
   content = yamlencode({
     apiVersion = "operators.coreos.com/v1alpha1"
     kind       = "Subscription"
@@ -277,7 +277,7 @@ resource "oai_manifest" "operator_subscription" {
 Configure storage classes and persistent volumes:
 
 ```hcl
-resource "oai_manifest" "storage_class" {
+resource "openshift_assisted_installer_manifest" "storage_class" {
   content = yamlencode({
     apiVersion = "storage.k8s.io/v1"
     kind       = "StorageClass"
@@ -310,12 +310,12 @@ Manifests are applied during cluster installation after the core Kubernetes API 
 To ensure proper ordering when dependencies exist between manifests, use prefixed file names:
 
 ```hcl
-resource "oai_manifest" "namespace" {
+resource "openshift_assisted_installer_manifest" "namespace" {
   file_name = "01-namespace.yaml"
   # Creates namespace first
 }
 
-resource "oai_manifest" "application" {
+resource "openshift_assisted_installer_manifest" "application" {
   file_name = "02-application.yaml"
   # References namespace created above
 }

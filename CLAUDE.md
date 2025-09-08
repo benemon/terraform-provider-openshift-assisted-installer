@@ -113,9 +113,9 @@ type OAIProviderModel struct {
 
 ### Phase 3: Core Resources Implementation
 
-#### 3.1 Cluster Resource (`oai_cluster`)
+#### 3.1 Cluster Resource (`openshift_assisted_installer_cluster`)
 
-**Resource Name:** `oai_cluster`
+**Resource Name:** `openshift_assisted_installer_cluster`
 
 **Schema Requirements (Mandatory per API docs):**
 - name (required, string)
@@ -148,7 +148,7 @@ type OAIProviderModel struct {
 
 **Claude Code Tasks:**
 1. Create `internal/provider/cluster_resource.go`
-2. Define resource as `oai_cluster` with complete schema from API docs
+2. Define resource as `openshift_assisted_installer_cluster` with complete schema from API docs
 3. Implement CRUD operations mapping to `/v2/clusters` endpoints
 4. Add state tracking logic for installation phases with validation polling
 5. Handle `/v2/clusters/{id}/actions/install` trigger
@@ -156,9 +156,9 @@ type OAIProviderModel struct {
 7. Add support for operator management and network configuration
 8. Implement import functionality using existing cluster IDs
 
-#### 3.2 InfraEnv Resource (`oai_infra_env`)
+#### 3.2 InfraEnv Resource (`openshift_assisted_installer_infra_env`)
 
-**Resource Name:** `oai_infra_env`
+**Resource Name:** `openshift_assisted_installer_infra_env`
 
 **Schema Requirements (Mandatory per API docs):**
 - name (required, string)
@@ -182,7 +182,7 @@ type OAIProviderModel struct {
 
 **Claude Code Tasks:**
 1. Create `internal/provider/infra_env_resource.go`
-2. Define resource as `oai_infra_env` with complete schema from API docs
+2. Define resource as `openshift_assisted_installer_infra_env` with complete schema from API docs
 3. Implement CRUD operations mapping to `/v2/infra-envs` endpoints
 4. Implement ISO generation logic with full/minimal options
 5. Handle cluster binding via cluster_id
@@ -190,9 +190,9 @@ type OAIProviderModel struct {
 7. Support kernel arguments and ignition overrides
 8. Implement proxy and static networking configuration
 
-#### 3.3 Manifest Resource (`oai_manifest`)
+#### 3.3 Manifest Resource (`openshift_assisted_installer_manifest`)
 
-**Resource Name:** `oai_manifest`
+**Resource Name:** `openshift_assisted_installer_manifest`
 
 **Schema Requirements (per API docs):**
 - cluster_id (required, string) - Target cluster for manifest
@@ -208,16 +208,16 @@ type OAIProviderModel struct {
 
 **Claude Code Tasks:**
 1. Create `internal/provider/manifest_resource.go`
-2. Define resource as `oai_manifest` with complete schema from API docs
+2. Define resource as `openshift_assisted_installer_manifest` with complete schema from API docs
 3. Implement CRUD operations mapping to `/v2/clusters/{id}/manifests` endpoints
 4. Add automatic base64 encoding/decoding with validation
 5. Handle content updates and multi-document YAML support
 6. Implement import functionality using cluster_id + file_name
 7. Add validation for supported file extensions and content formats
 
-#### 3.4 Host Resource (`oai_host`)
+#### 3.4 Host Resource (`openshift_assisted_installer_host`)
 
-**Resource Name:** `oai_host`
+**Resource Name:** `openshift_assisted_installer_host`
 
 **Schema Requirements (per API docs):**
 - infra_env_id (required, string) - Infrastructure environment containing the host
@@ -243,7 +243,7 @@ type OAIProviderModel struct {
 
 **Claude Code Tasks:**
 1. Create `internal/provider/host_resource.go`
-2. Define resource as `oai_host` with complete schema from API docs
+2. Define resource as `openshift_assisted_installer_host` with complete schema from API docs
 3. Implement CRUD operations mapping to `/v2/infra-envs/{id}/hosts/{host_id}` endpoints
 4. Add role assignment and disk configuration support
 5. Implement status polling for discovery and validation states
@@ -252,9 +252,9 @@ type OAIProviderModel struct {
 
 ### Phase 4: Data Sources
 
-#### 4.1 OpenShift Versions Data Source (`oai_openshift_versions`)
+#### 4.1 OpenShift Versions Data Source (`openshift_assisted_installer_versions`)
 
-**Data Source Name:** `oai_openshift_versions`
+**Data Source Name:** `openshift_assisted_installer_versions`
 
 **Schema (per API docs):**
 - versions (computed, list) - Available OpenShift versions
@@ -268,14 +268,14 @@ type OAIProviderModel struct {
 
 **Claude Code Tasks:**
 1. Create `internal/provider/openshift_versions_data_source.go`
-2. Define data source as `oai_openshift_versions`
+2. Define data source as `openshift_assisted_installer_versions`
 3. Map to `/v2/openshift-versions` endpoint
 4. Implement filtering logic for version patterns and architecture
 5. Add support for multi-architecture version filtering
 
-#### 4.2 Supported Operators Data Source (`oai_supported_operators`)
+#### 4.2 Supported Operators Data Source (`openshift_assisted_installer_supported_operators`)
 
-**Data Source Name:** `oai_supported_operators`
+**Data Source Name:** `openshift_assisted_installer_supported_operators`
 
 **Schema (per API docs):**
 - operators (computed, list) - Available operators with metadata
@@ -291,14 +291,14 @@ type OAIProviderModel struct {
 
 **Claude Code Tasks:**
 1. Create `internal/provider/supported_operators_data_source.go`
-2. Define data source as `oai_supported_operators`
+2. Define data source as `openshift_assisted_installer_supported_operators`
 3. Map to `/v2/supported-operators` endpoint
 4. Include operator properties schema with support levels
 5. Add filtering by OCP version, architecture, and platform
 
-#### 4.3 Operator Bundles Data Source (`oai_operator_bundles`)
+#### 4.3 Operator Bundles Data Source (`openshift_assisted_installer_operator_bundles`)
 
-**Data Source Name:** `oai_operator_bundles`
+**Data Source Name:** `openshift_assisted_installer_operator_bundles`
 
 **Schema (per API docs):**
 - bundles (computed, list) - Available operator bundles
@@ -311,13 +311,13 @@ type OAIProviderModel struct {
 
 **Claude Code Tasks:**
 1. Create `internal/provider/operator_bundles_data_source.go`
-2. Define data source as `oai_operator_bundles`
+2. Define data source as `openshift_assisted_installer_operator_bundles`
 3. Map to `/v2/operators/bundles` endpoint
 4. Support both list all bundles and get specific bundle operations
 
-#### 4.4 Support Levels Data Source (`oai_support_levels`)
+#### 4.4 Support Levels Data Source (`openshift_assisted_installer_support_levels`)
 
-**Data Source Name:** `oai_support_levels`
+**Data Source Name:** `openshift_assisted_installer_support_levels`
 
 **Schema (per API docs):**
 - features (computed, map) - Feature support levels by name
@@ -332,7 +332,7 @@ type OAIProviderModel struct {
 
 **Claude Code Tasks:**
 1. Create `internal/provider/support_levels_data_source.go`
-2. Define data source as `oai_support_levels`
+2. Define data source as `openshift_assisted_installer_support_levels`
 3. Map to `/v2/support-levels/features` endpoint
 4. Support filtering by version, architecture, and platform
 5. Return structured feature support map
@@ -459,18 +459,18 @@ func TestAccAssistedCluster_complete(t *testing.T) {
 - ❌ Advanced networking options (`load_balancer`, `machine_networks`)
 
 ### Request 4: Complete Resource Schemas ⏳ BLOCKED
-"Read the swagger/swagger.yaml file and API workflow documentation to generate complete Terraform resource schemas for oai_cluster, oai_infra_env, oai_manifest, and oai_host based on the API definitions. Include all mandatory and optional fields, proper validation, and computed attributes."
+"Read the swagger/swagger.yaml file and API workflow documentation to generate complete Terraform resource schemas for openshift_assisted_installer_cluster, openshift_assisted_installer_infra_env, openshift_assisted_installer_manifest, and openshift_assisted_installer_host based on the API definitions. Include all mandatory and optional fields, proper validation, and computed attributes."
 
 **Status**: Blocked by missing client package.
 
 **Enhanced Requirements from API Workflow:**
-- Complete oai_cluster schema with operators, networking, and installation control
-- Complete oai_infra_env schema with ISO generation and kernel arguments
-- Complete oai_manifest schema with base64 encoding and multi-document support
-- New oai_host schema for host discovery and configuration management
+- Complete openshift_assisted_installer_cluster schema with operators, networking, and installation control
+- Complete openshift_assisted_installer_infra_env schema with ISO generation and kernel arguments
+- Complete openshift_assisted_installer_manifest schema with base64 encoding and multi-document support
+- New openshift_assisted_installer_host schema for host discovery and configuration management
 
 ### Request 5: Complete Data Sources ⏳ BLOCKED
-"Using the swagger.yaml file and API workflow documentation, implement data sources for oai_openshift_versions, oai_supported_operators, oai_operator_bundles, and oai_support_levels. Map these to their respective endpoints with proper filtering and validation."
+"Using the swagger.yaml file and API workflow documentation, implement data sources for openshift_assisted_installer_versions, openshift_assisted_installer_supported_operators, openshift_assisted_installer_operator_bundles, and openshift_assisted_installer_support_levels. Map these to their respective endpoints with proper filtering and validation."
 
 **Status**: Blocked by missing client package.
 
@@ -607,12 +607,12 @@ Resources include `validations_info` fields with detailed validation results.
   - ✅ Client methods for all resources (clusters, infra-envs, hosts, manifests, validations)
   - ✅ OpenShift versions and operator API support
 - **Phase 4**: Complete Data Sources Implementation:
-  - ✅ **`oai_openshift_versions`** - Full implementation with filtering and architecture support
-  - ✅ **`oai_supported_operators`** - Complete operator discovery functionality
-  - ✅ **`oai_operator_bundles`** - Swagger-compliant schema with proper field mappings
-  - ✅ **`oai_support_levels`** - Feature and architecture support level checking
-  - ✅ **`oai_cluster_validations`** - **NEW**: Cluster-level validation checking with comprehensive filtering
-  - ✅ **`oai_host_validations`** - **NEW**: Host-level validation checking (cluster-wide and single-host)
+  - ✅ **`openshift_assisted_installer_versions`** - Full implementation with filtering and architecture support
+  - ✅ **`openshift_assisted_installer_supported_operators`** - Complete operator discovery functionality
+  - ✅ **`openshift_assisted_installer_operator_bundles`** - Swagger-compliant schema with proper field mappings
+  - ✅ **`openshift_assisted_installer_support_levels`** - Feature and architecture support level checking
+  - ✅ **`openshift_assisted_installer_cluster_validations`** - **NEW**: Cluster-level validation checking with comprehensive filtering
+  - ✅ **`openshift_assisted_installer_host_validations`** - **NEW**: Host-level validation checking (cluster-wide and single-host)
   - ✅ Provider registration for all 6 data sources
   - ✅ Comprehensive unit test coverage with mock HTTP servers
   - ✅ URL encoding bug fix for query parameters
@@ -637,17 +637,17 @@ Resources include `validations_info` fields with detailed validation results.
 Based on comprehensive analysis of PDF documentation and Swagger specification:
 
 **🚨 CRITICAL MISSING RESOURCES (Required for MVP):**
-1. **`oai_infra_env` Resource**: 
+1. **`openshift_assisted_installer_infra_env` Resource**: 
    - Purpose: Discovery ISO generation and host network configuration
    - Status: Client methods exist, Terraform resource missing
    - Impact: Cannot generate ISO for host discovery
    
-2. **`oai_host` Resource**:
+2. **`openshift_assisted_installer_host` Resource**:
    - Purpose: Host management, role assignment, disk configuration
    - Status: Client methods exist, Terraform resource missing  
    - Impact: Cannot manage discovered hosts or assign roles
 
-3. **Enhanced `oai_cluster` Resource**:
+3. **Enhanced `openshift_assisted_installer_cluster` Resource**:
    - Missing: Installation triggering (`/actions/install` endpoint)
    - Missing: `load_balancer`, `machine_networks`, platform-specific configurations
    - Missing: State management for installation progress tracking
@@ -666,22 +666,22 @@ Based on the comprehensive API workflow documentation (`sections_5.1_to_5.13.md`
 
 #### 🔄 **Required Terraform Resources** (To Implement)
 
-1. **`oai_cluster`** - Maps to `/v2/clusters` endpoints
+1. **`openshift_assisted_installer_cluster`** - Maps to `/v2/clusters` endpoints
    - **Mandatory fields**: `name`, `openshift_version`, `pull_secret`, `cpu_architecture`
    - **Optional fields**: `base_dns_domain`, `control_plane_count`, `api_vips`, `ingress_vips`
    - **Advanced features**: `olm_operators`, `schedulable_masters`, network management types
    - **State management**: `insufficient` → `ready` → `installing` → `installed`
 
-2. **`oai_infra_env`** - Maps to `/v2/infra-envs` endpoints
+2. **`openshift_assisted_installer_infra_env`** - Maps to `/v2/infra-envs` endpoints
    - **Mandatory fields**: `name`, `pull_secret`, `cpu_architecture`
    - **Optional fields**: `cluster_id`, `ssh_authorized_key`, `image_type`, `kernel_arguments`
    - **Features**: Discovery ISO generation, proxy configuration, static networking
 
-3. **`oai_manifest`** - Maps to `/v2/clusters/{id}/manifests` endpoints
+3. **`openshift_assisted_installer_manifest`** - Maps to `/v2/clusters/{id}/manifests` endpoints
    - **Fields**: `cluster_id`, `file_name`, `folder`, `content` (base64-encoded)
    - **Support**: Single and multi-document YAML manifests
 
-4. **`oai_host`** - Maps to `/v2/infra-envs/{id}/hosts/{host_id}` endpoints
+4. **`openshift_assisted_installer_host`** - Maps to `/v2/infra-envs/{id}/hosts/{host_id}` endpoints
    - **Role assignment**: `master`, `worker`, `auto-assign`
    - **Configuration**: `host_name`, `installation_disk_id`, `disks_skip_formatting`
    - **State tracking**: Discovery → validation → ready → installing
@@ -689,27 +689,27 @@ Based on the comprehensive API workflow documentation (`sections_5.1_to_5.13.md`
 #### **Data Sources Status**
 
 ✅ **All Data Sources Implemented (6/6 Complete):**
-1. **`oai_openshift_versions`** - Maps to `/v2/openshift-versions` 
+1. **`openshift_assisted_installer_versions`** - Maps to `/v2/openshift-versions` 
    - Schema: `version` filter, `only_latest` flag, comprehensive version metadata
    - Features: Display name, support level, default status, CPU architectures
    - Testing: Full unit test coverage with mock servers
-2. **`oai_supported_operators`** - Maps to `/v2/supported-operators`
+2. **`openshift_assisted_installer_supported_operators`** - Maps to `/v2/supported-operators`
    - Schema: Returns list of available operator names
    - Features: Simple operator discovery for cluster configuration
    - Testing: Comprehensive error handling and configuration tests
-3. **`oai_operator_bundles`** - Maps to `/v2/operators/bundles`
+3. **`openshift_assisted_installer_operator_bundles`** - Maps to `/v2/operators/bundles`
    - Schema: Bundle metadata and composition information
    - Features: Virtualization and AI bundle support
    - Testing: Full error handling and configuration validation
-4. **`oai_support_levels`** - Maps to `/v2/support-levels/features`
+4. **`openshift_assisted_installer_support_levels`** - Maps to `/v2/support-levels/features`
    - Schema: Feature support matrix by version/architecture/platform
    - Features: Dynamic feature availability checking
    - Testing: Comprehensive coverage with multiple endpoints
-5. **`oai_cluster_validations`** - **NEW** - Maps to `/v2/clusters/{id}` (validations_info)
+5. **`openshift_assisted_installer_cluster_validations`** - **NEW** - Maps to `/v2/clusters/{id}` (validations_info)
    - Schema: Advanced filtering by type, status, names, categories
    - Features: Pre-installation cluster validation checking, conditional workflows
    - Testing: Comprehensive scenarios with mock validation responses
-6. **`oai_host_validations`** - **NEW** - Maps to `/v2/clusters/{id}/hosts` and `/v2/infra-envs/{id}/hosts/{hostId}`
+6. **`openshift_assisted_installer_host_validations`** - **NEW** - Maps to `/v2/clusters/{id}/hosts` and `/v2/infra-envs/{id}/hosts/{hostId}`
    - Schema: Dual-mode (cluster-wide and single-host), comprehensive filtering
    - Features: Host hardware/network validation, operator requirements checking
    - Testing: Multiple scenarios including configuration validation
@@ -842,7 +842,7 @@ clean:
 - **Complete validation capabilities**: Comprehensive pre-installation checking and troubleshooting
 - **Complete API coverage**: Client methods exist for all required resources
 - **Critical gap**: Missing Terraform resource wrappers for InfraEnv and Host management
-- **Next milestone**: Implement `oai_infra_env` and `oai_host` resources for complete workflow
+- **Next milestone**: Implement `openshift_assisted_installer_infra_env` and `openshift_assisted_installer_host` resources for complete workflow
 
 **Recent Achievement**: Major Swagger compliance improvements completed, fixing critical missing required fields and making data sources fully functional.
 
@@ -880,11 +880,11 @@ clean:
 ### 🆕 **Previously Implemented - Validation Data Sources (v2.0)**
 
 **Complete Validation System Implementation:**
-- ✅ **`oai_cluster_validations`**: Cluster-level validation checking with advanced filtering
+- ✅ **`openshift_assisted_installer_cluster_validations`**: Cluster-level validation checking with advanced filtering
   - **Filtering**: By validation type (blocking/non-blocking), status, specific validations, categories
   - **Categories**: Network, cluster, operators, hardware, platform, storage validation types
   - **Use cases**: Pre-flight checks, conditional workflows, troubleshooting automation
-- ✅ **`oai_host_validations`**: Host-level validation checking (cluster-wide and single-host modes)
+- ✅ **`openshift_assisted_installer_host_validations`**: Host-level validation checking (cluster-wide and single-host modes)
   - **Dual mode**: Check all hosts in cluster OR specific host in infra-env
   - **Comprehensive coverage**: Hardware, network, operator requirements, platform compatibility
   - **Rich output**: Host-specific failure analysis and categorization
@@ -898,14 +898,14 @@ clean:
 # Example: Conditional installation based on validation status
 locals {
   cluster_ready = length([
-    for v in data.oai_cluster_validations.readiness.validations :
+    for v in data.openshift_assisted_installer_cluster_validations.readiness.validations :
     v if v.status == "failure"
   ]) == 0
 }
 
-resource "oai_cluster_installation" "conditional" {
+resource "openshift_assisted_installer_cluster_installation" "conditional" {
   count = local.cluster_ready ? 1 : 0
-  cluster_id = oai_cluster.example.id
+  cluster_id = openshift_assisted_installer_cluster.example.id
 }
 ```
 
@@ -917,12 +917,12 @@ resource "oai_cluster_installation" "conditional" {
 1. **Complete remaining Swagger compliance**:
    - Add missing fields to `infra_env` data source (`static_network_config`, `kernel_arguments`, etc.)
    - Convert JSON string fields to proper objects for better Terraform UX
-2. **`oai_infra_env` Resource**: Enable ISO generation and host discovery
-3. **`oai_host` Resource**: Enable host management and role assignment
-4. **Enhanced `oai_cluster` Resource**: Add installation triggering and state management
+2. **`openshift_assisted_installer_infra_env` Resource**: Enable ISO generation and host discovery
+3. **`openshift_assisted_installer_host` Resource**: Enable host management and role assignment
+4. **Enhanced `openshift_assisted_installer_cluster` Resource**: Add installation triggering and state management
 
 **Phase 2 (Complete automation):**
-5. **`oai_manifest` Resource**: Custom cluster configuration
+5. **`openshift_assisted_installer_manifest` Resource**: Custom cluster configuration
 6. **Advanced cluster features**: Platform-specific configurations  
 7. **Installation monitoring**: Progress tracking with validation integration
 

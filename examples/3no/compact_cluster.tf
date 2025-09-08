@@ -1,6 +1,6 @@
 terraform {
   required_providers {
-    oai = {
+    openshift_assisted_installer = {
       source  = "benemon/openshift-assisted-installer"
       version = "~> 0.1"
     }
@@ -9,7 +9,7 @@ terraform {
 
 # Configure the OpenShift Assisted Installer Provider
 # Set OFFLINE_TOKEN environment variable for authentication
-provider "oai" {
+provider "openshift_assisted_installer" {
   # endpoint = "https://api.openshift.com/api/assisted-install"  # Optional: Override default
   # timeout = "600s"  # Optional: Increase timeout for installation
 }
@@ -21,7 +21,7 @@ provider "oai" {
 # ==============================================================================
 
 # Get the latest OpenShift version
-data "oai_openshift_versions" "latest" {
+data "openshift_assisted_installer_openshift_versions" "latest" {
   only_latest = true
 }
 
@@ -31,19 +31,19 @@ variable "ssh_public_key" {
 }
 
 # Get available operators for optional installation
-data "oai_supported_operators" "available" {}
+data "openshift_assisted_installer_supported_operators" "available" {}
 
 locals {
   cluster_name = "compact-cluster"
   base_domain  = "example.com"
   
   # Use the latest production version
-  openshift_version = [for v in data.oai_openshift_versions.latest.versions : v.version 
+  openshift_version = [for v in data.openshift_assisted_installer_openshift_versions.latest.versions : v.version 
     if v.support_level == "production"][0]
 }
 
 # Create a compact 3-node OpenShift cluster
-resource "oai_cluster" "compact_cluster" {
+resource "openshift_assisted_installer_cluster" "compact_cluster" {
   # Basic cluster configuration
   name              = local.cluster_name
   base_dns_domain   = local.base_domain
@@ -105,9 +105,9 @@ resource "oai_cluster" "compact_cluster" {
 }
 
 # Create infrastructure environment for host discovery
-resource "oai_infra_env" "compact_infra" {
+resource "openshift_assisted_installer_infra_env" "compact_infra" {
   name              = "${local.cluster_name}-infra"
-  cluster_id        = oai_cluster.compact_cluster.id
+  cluster_id        = openshift_assisted_installer_cluster.compact_cluster.id
   cpu_architecture  = "x86_64"
   pull_secret = file("/Users/bholmes/Downloads/pull-secret-test.txt")
   
@@ -132,8 +132,8 @@ resource "oai_infra_env" "compact_infra" {
 }
 
 # Example custom manifest for additional configuration
-resource "oai_manifest" "custom_config" {
-  cluster_id = oai_cluster.compact_cluster.id
+resource "openshift_assisted_installer_manifest" "custom_config" {
+  cluster_id = openshift_assisted_installer_cluster.compact_cluster.id
   file_name  = "custom-storage-class.yaml"
   folder     = "manifests"  # or "openshift" for cluster-level manifests
   
@@ -157,24 +157,24 @@ resource "oai_manifest" "custom_config" {
 output "cluster_info" {
   description = "Compact cluster information"
   value = {
-    cluster_id       = oai_cluster.compact_cluster.id
-    cluster_name     = oai_cluster.compact_cluster.name
-    base_domain      = oai_cluster.compact_cluster.base_dns_domain
-    version          = oai_cluster.compact_cluster.openshift_version
-    architecture     = oai_cluster.compact_cluster.cpu_architecture
-    control_nodes    = oai_cluster.compact_cluster.control_plane_count
-    api_vip          = oai_cluster.compact_cluster.api_vips[0].ip
-    ingress_vip      = oai_cluster.compact_cluster.ingress_vips[0].ip
-    schedulable      = oai_cluster.compact_cluster.schedulable_masters
+    cluster_id       = openshift_assisted_installer_cluster.compact_cluster.id
+    cluster_name     = openshift_assisted_installer_cluster.compact_cluster.name
+    base_domain      = openshift_assisted_installer_cluster.compact_cluster.base_dns_domain
+    version          = openshift_assisted_installer_cluster.compact_cluster.openshift_version
+    architecture     = openshift_assisted_installer_cluster.compact_cluster.cpu_architecture
+    control_nodes    = openshift_assisted_installer_cluster.compact_cluster.control_plane_count
+    api_vip          = openshift_assisted_installer_cluster.compact_cluster.api_vips[0].ip
+    ingress_vip      = openshift_assisted_installer_cluster.compact_cluster.ingress_vips[0].ip
+    schedulable      = openshift_assisted_installer_cluster.compact_cluster.schedulable_masters
   }
 }
 
 output "network_config" {
   description = "Network configuration details"
   value = {
-    cluster_cidr     = oai_cluster.compact_cluster.cluster_network_cidr
-    service_cidr     = oai_cluster.compact_cluster.service_network_cidr
-    machine_networks = oai_cluster.compact_cluster.machine_networks
+    cluster_cidr     = openshift_assisted_installer_cluster.compact_cluster.cluster_network_cidr
+    service_cidr     = openshift_assisted_installer_cluster.compact_cluster.service_network_cidr
+    machine_networks = openshift_assisted_installer_cluster.compact_cluster.machine_networks
     api_endpoint     = "https://api.${local.cluster_name}.${local.base_domain}:6443"
     console_url      = "https://console-openshift-console.apps.${local.cluster_name}.${local.base_domain}"
   }
@@ -183,17 +183,17 @@ output "network_config" {
 output "infra_env_info" {
   description = "Infrastructure environment for host discovery"
   value = {
-    infra_env_id  = oai_infra_env.compact_infra.id
-    download_url  = oai_infra_env.compact_infra.download_url
-    image_type    = oai_infra_env.compact_infra.image_type
-    expires_at    = oai_infra_env.compact_infra.expires_at
+    infra_env_id  = openshift_assisted_installer_infra_env.compact_infra.id
+    download_url  = openshift_assisted_installer_infra_env.compact_infra.download_url
+    image_type    = openshift_assisted_installer_infra_env.compact_infra.image_type
+    expires_at    = openshift_assisted_installer_infra_env.compact_infra.expires_at
   }
 }
 
 output "installation_steps" {
   description = "Steps to complete the installation"
   value = {
-    step_1 = "Download discovery ISO: ${oai_infra_env.compact_infra.download_url}"
+    step_1 = "Download discovery ISO: ${openshift_assisted_installer_infra_env.compact_infra.download_url}"
     step_2 = "Boot 3 physical/virtual machines from the ISO"
     step_3 = "Wait for all 3 hosts to be discovered and validated"
     step_4 = "Ensure hosts are assigned master role (automatic with schedulable_masters=true)"
@@ -204,25 +204,25 @@ output "installation_steps" {
 
 output "operators_installed" {
   description = "Operators that will be installed"
-  value = [for op in oai_cluster.compact_cluster.olm_operators : op.name]
+  value = [for op in openshift_assisted_installer_cluster.compact_cluster.olm_operators : op.name]
 }
 
 # output "installation_status" {
 #   description = "Cluster installation status and timing"
 #   value = {
-#     status               = oai_cluster_installation.compact.status
-#     status_info          = oai_cluster_installation.compact.status_info
-#     install_started_at   = oai_cluster_installation.compact.install_started_at
-#     install_completed_at = oai_cluster_installation.compact.install_completed_at
+#     status               = openshift_assisted_installer_cluster_installation.compact.status
+#     status_info          = openshift_assisted_installer_cluster_installation.compact.status_info
+#     install_started_at   = openshift_assisted_installer_cluster_installation.compact.install_started_at
+#     install_completed_at = openshift_assisted_installer_cluster_installation.compact.install_completed_at
 #   }
 # }
 
 # output "cluster_credentials" {
 #   description = "Cluster admin access credentials"
 #   value = {
-#     username    = data.oai_cluster_credentials.admin.username
-#     password    = data.oai_cluster_credentials.admin.password
-#     console_url = data.oai_cluster_credentials.admin.console_url
+#     username    = data.openshift_assisted_installer_cluster_credentials.admin.username
+#     password    = data.openshift_assisted_installer_cluster_credentials.admin.password
+#     console_url = data.openshift_assisted_installer_cluster_credentials.admin.console_url
 #   }
 #   sensitive = true
 # }
@@ -238,12 +238,12 @@ output "operators_installed" {
 # output "installation_health" {
 #   description = "Installation health summary from events"
 #   value = {
-#     total_events   = length(data.oai_cluster_events.installation.events)
-#     critical_count = length([for event in data.oai_cluster_events.installation.events : event if event.severity == "critical"])
-#     error_count    = length([for event in data.oai_cluster_events.installation.events : event if event.severity == "error"])
-#     warning_count  = length([for event in data.oai_cluster_events.installation.events : event if event.severity == "warning"])
+#     total_events   = length(data.openshift_assisted_installer_cluster_events.installation.events)
+#     critical_count = length([for event in data.openshift_assisted_installer_cluster_events.installation.events : event if event.severity == "critical"])
+#     error_count    = length([for event in data.openshift_assisted_installer_cluster_events.installation.events : event if event.severity == "error"])
+#     warning_count  = length([for event in data.openshift_assisted_installer_cluster_events.installation.events : event if event.severity == "warning"])
     
-#     recent_errors = [for event in data.oai_cluster_events.installation.events : {
+#     recent_errors = [for event in data.openshift_assisted_installer_cluster_events.installation.events : {
 #       time    = event.event_time
 #       message = event.message
 #     } if contains(["error", "critical"], event.severity)]
@@ -283,8 +283,8 @@ output "operators_installed" {
 # Cluster Installation (Automatic after hosts are discovered)
 # ==============================================================================
 
-# resource "oai_cluster_installation" "compact" {
-#   cluster_id = oai_cluster.compact_cluster.id
+# resource "openshift_assisted_installer_cluster_installation" "compact" {
+#   cluster_id = openshift_assisted_installer_cluster.compact_cluster.id
   
 #   # Wait for all 3 hosts to be discovered
 #   wait_for_hosts      = true
@@ -300,27 +300,27 @@ output "operators_installed" {
 # # ==============================================================================
 
 # # Get cluster credentials after installation
-# data "oai_cluster_credentials" "admin" {
-#   cluster_id = oai_cluster.compact_cluster.id
-#   depends_on = [oai_cluster_installation.compact]
+# data "openshift_assisted_installer_cluster_credentials" "admin" {
+#   cluster_id = openshift_assisted_installer_cluster.compact_cluster.id
+#   depends_on = [openshift_assisted_installer_cluster_installation.compact]
 # }
 
 # # Download essential cluster files
-# data "oai_cluster_files" "kubeconfig" {
-#   cluster_id = oai_cluster.compact_cluster.id
+# data "openshift_assisted_installer_cluster_files" "kubeconfig" {
+#   cluster_id = openshift_assisted_installer_cluster.compact_cluster.id
 #   file_name  = "kubeconfig"
-#   depends_on = [oai_cluster_installation.compact]
+#   depends_on = [openshift_assisted_installer_cluster_installation.compact]
 # }
 
-# data "oai_cluster_files" "install_config" {
-#   cluster_id = oai_cluster.compact_cluster.id
+# data "openshift_assisted_installer_cluster_files" "install_config" {
+#   cluster_id = openshift_assisted_installer_cluster.compact_cluster.id
 #   file_name  = "install-config.yaml"
-#   depends_on = [oai_cluster_installation.compact]
+#   depends_on = [openshift_assisted_installer_cluster_installation.compact]
 # }
 
 # # Monitor installation events for troubleshooting
-# data "oai_cluster_events" "installation" {
-#   cluster_id = oai_cluster.compact_cluster.id
+# data "openshift_assisted_installer_cluster_events" "installation" {
+#   cluster_id = openshift_assisted_installer_cluster.compact_cluster.id
 #   severities = ["info", "warning", "error", "critical"]
 #   limit      = 200
 #   order      = "desc"
@@ -328,16 +328,16 @@ output "operators_installed" {
 
 # # Save kubeconfig locally
 # resource "local_file" "kubeconfig" {
-#   content  = data.oai_cluster_files.kubeconfig.content
+#   content  = data.openshift_assisted_installer_cluster_files.kubeconfig.content
 #   filename = "${path.module}/kubeconfig-${local.cluster_name}"
   
-#   depends_on = [oai_cluster_installation.compact]
+#   depends_on = [openshift_assisted_installer_cluster_installation.compact]
 # }
 
 # # Save install config for reference
 # resource "local_file" "install_config" {
-#   content  = data.oai_cluster_files.install_config.content
+#   content  = data.openshift_assisted_installer_cluster_files.install_config.content
 #   filename = "${path.module}/install-config.yaml"
   
-#   depends_on = [oai_cluster_installation.compact]
+#   depends_on = [openshift_assisted_installer_cluster_installation.compact]
 # }

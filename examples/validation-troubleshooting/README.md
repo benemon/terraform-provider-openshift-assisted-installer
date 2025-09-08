@@ -1,6 +1,6 @@
 # Validation Troubleshooting Example
 
-This example demonstrates comprehensive validation troubleshooting using the `oai_cluster_validations` and `oai_host_validations` data sources. It provides detailed analysis and troubleshooting guidance for OpenShift cluster validation failures.
+This example demonstrates comprehensive validation troubleshooting using the `openshift_assisted_installer_cluster_validations` and `openshift_assisted_installer_host_validations` data sources. It provides detailed analysis and troubleshooting guidance for OpenShift cluster validation failures.
 
 ## Overview
 
@@ -157,18 +157,18 @@ This validation analysis can be integrated into your cluster deployment workflow
 # Use validation results to control installation
 locals {
   validation_ready = (
-    length(data.oai_cluster_validations.basic_readiness.validations) == 0 &&
-    length([for v in data.oai_host_validations.hardware_check.validations : v if v.status == "failure"]) == 0
+    length(data.openshift_assisted_installer_cluster_validations.basic_readiness.validations) == 0 &&
+    length([for v in data.openshift_assisted_installer_host_validations.hardware_check.validations : v if v.status == "failure"]) == 0
   )
 }
 
-resource "oai_cluster_installation" "conditional" {
+resource "openshift_assisted_installer_cluster_installation" "conditional" {
   count      = local.validation_ready ? 1 : 0
   cluster_id = var.cluster_id
   
   depends_on = [
-    data.oai_cluster_validations.basic_readiness,
-    data.oai_host_validations.hardware_check
+    data.openshift_assisted_installer_cluster_validations.basic_readiness,
+    data.openshift_assisted_installer_host_validations.hardware_check
   ]
 }
 ```

@@ -1,9 +1,9 @@
 ---
-page_title: "Resource: oai_infra_env"
+page_title: "Resource: openshift_assisted_installer_infra_env"
 subcategory: "Infrastructure Environment"
 ---
 
-# oai_infra_env Resource
+# openshift_assisted_installer_infra_env Resource
 
 Manages an infrastructure environment for the OpenShift Assisted Installer. Infrastructure environments generate discovery ISOs that hosts boot from to register themselves with the cluster.
 
@@ -12,11 +12,11 @@ Manages an infrastructure environment for the OpenShift Assisted Installer. Infr
 ### Basic Infrastructure Environment
 
 ```hcl
-resource "oai_infra_env" "example" {
+resource "openshift_assisted_installer_infra_env" "example" {
   name             = "cluster-infra"
   pull_secret     = var.pull_secret
   cpu_architecture = "x86_64"
-  cluster_id      = oai_cluster.example.id
+  cluster_id      = openshift_assisted_installer_cluster.example.id
   ssh_authorized_key = var.ssh_public_key
 }
 ```
@@ -24,11 +24,11 @@ resource "oai_infra_env" "example" {
 ### Advanced Configuration
 
 ```hcl
-resource "oai_infra_env" "advanced" {
+resource "openshift_assisted_installer_infra_env" "advanced" {
   name             = "production-infra"
   pull_secret     = var.pull_secret
   cpu_architecture = "x86_64"
-  cluster_id      = oai_cluster.example.id
+  cluster_id      = openshift_assisted_installer_cluster.example.id
   
   # SSH Configuration
   ssh_authorized_key = var.ssh_public_key
@@ -160,7 +160,7 @@ In addition to the arguments above, the following attributes are exported:
 Infrastructure environments can be imported using their ID:
 
 ```shell
-terraform import oai_infra_env.example 550e8400-e29b-41d4-a716-446655440000
+terraform import openshift_assisted_installer_infra_env.example 550e8400-e29b-41d4-a716-446655440000
 ```
 
 ## Discovery ISO Usage

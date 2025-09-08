@@ -43,13 +43,13 @@ func TestHostDataSource_Metadata(t *testing.T) {
 	ds := NewHostDataSource()
 
 	metadataReq := datasource.MetadataRequest{
-		ProviderTypeName: "oai",
+		ProviderTypeName: "openshift_assisted_installer",
 	}
 	metadataResp := &datasource.MetadataResponse{}
 
 	ds.Metadata(context.Background(), metadataReq, metadataResp)
 
-	assert.Equal(t, "oai_host", metadataResp.TypeName)
+	assert.Equal(t, "openshift_assisted_installer_host", metadataResp.TypeName)
 }
 
 func TestHostDataSource_Configure(t *testing.T) {

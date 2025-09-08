@@ -37,7 +37,7 @@ terraform {
   }
 }
 
-provider "oai" {
+provider "openshift-assisted-installer" {
   endpoint      = "https://api.openshift.com/api/assisted-install"
   offline_token = var.offline_token
   timeout       = "30s"
@@ -59,7 +59,7 @@ provider "oai" {
 ### Basic Single Node Cluster
 
 ```hcl
-resource "oai_cluster" "example" {
+resource "openshift_assisted_installer_cluster" "example" {
   name                 = "example-cluster"
   openshift_version    = "4.16.0"
   pull_secret         = var.pull_secret
@@ -67,11 +67,11 @@ resource "oai_cluster" "example" {
   control_plane_count = 1
 }
 
-resource "oai_infra_env" "example" {
+resource "openshift_assisted_installer_infra_env" "example" {
   name                = "example-infra"
   pull_secret        = var.pull_secret
   cpu_architecture   = "x86_64"
-  cluster_id         = oai_cluster.example.id
+  cluster_id         = openshift_assisted_installer_cluster.example.id
   ssh_authorized_key = var.ssh_public_key
 }
 ```
@@ -79,7 +79,7 @@ resource "oai_infra_env" "example" {
 ### Three Node Cluster with Custom Networking
 
 ```hcl
-resource "oai_cluster" "example" {
+resource "openshift_assisted_installer_cluster" "example" {
   name                     = "example-cluster"
   openshift_version        = "4.16.0"
   pull_secret             = var.pull_secret
@@ -98,48 +98,48 @@ resource "oai_cluster" "example" {
 ### Cluster Management
 
 **Resources:**
-- [`oai_cluster`](resources/cluster.md) - Manages OpenShift cluster definitions and installations
+- [`openshift_assisted_installer_cluster`](resources/cluster.md) - Manages OpenShift cluster definitions and installations
 
 **Data Sources:**
-- [`oai_cluster`](data-sources/cluster.md) - Read cluster information and status
-- [`oai_cluster_credentials`](data-sources/cluster_credentials.md) - Access cluster admin credentials
-- [`oai_cluster_events`](data-sources/cluster_events.md) - Monitor installation progress and events
-- [`oai_cluster_files`](data-sources/cluster_files.md) - Download kubeconfig and cluster files
-- [`oai_cluster_logs`](data-sources/cluster_logs.md) - Retrieve installation and runtime logs
-- [`oai_cluster_validations`](data-sources/cluster_validations.md) - Check cluster readiness and validation status
+- [`openshift_assisted_installer_cluster`](data-sources/cluster.md) - Read cluster information and status
+- [`openshift_assisted_installer_cluster_credentials`](data-sources/cluster_credentials.md) - Access cluster admin credentials
+- [`openshift_assisted_installer_cluster_events`](data-sources/cluster_events.md) - Monitor installation progress and events
+- [`openshift_assisted_installer_cluster_files`](data-sources/cluster_files.md) - Download kubeconfig and cluster files
+- [`openshift_assisted_installer_cluster_logs`](data-sources/cluster_logs.md) - Retrieve installation and runtime logs
+- [`openshift_assisted_installer_cluster_validations`](data-sources/cluster_validations.md) - Check cluster readiness and validation status
 
 ### Infrastructure Environment
 
 **Resources:**
-- [`oai_infra_env`](resources/infra_env.md) - Manages infrastructure environments and discovery ISOs
+- [`openshift_assisted_installer_infra_env`](resources/infra_env.md) - Manages infrastructure environments and discovery ISOs
 
 **Data Sources:**
-- [`oai_infra_env`](data-sources/infra_env.md) - Read infrastructure environment details
+- [`openshift_assisted_installer_infra_env`](data-sources/infra_env.md) - Read infrastructure environment details
 
 ### Host Management
 
 **Resources:**
-- [`oai_host`](resources/host.md) - Manages discovered hosts and role assignments
+- [`openshift_assisted_installer_host`](resources/host.md) - Manages discovered hosts and role assignments
 
 **Data Sources:**
-- [`oai_host`](data-sources/host.md) - Read host information and inventory
-- [`oai_host_validations`](data-sources/host_validations.md) - Check host hardware and network validation status
+- [`openshift_assisted_installer_host`](data-sources/host.md) - Read host information and inventory
+- [`openshift_assisted_installer_host_validations`](data-sources/host_validations.md) - Check host hardware and network validation status
 
 ### Custom Configuration
 
 **Resources:**
-- [`oai_manifest`](resources/manifest.md) - Manages custom cluster manifests
+- [`openshift_assisted_installer_manifest`](resources/manifest.md) - Manages custom cluster manifests
 
 **Data Sources:**
-- [`oai_manifest`](data-sources/manifest.md) - Read cluster manifest contents
+- [`openshift_assisted_installer_manifest`](data-sources/manifest.md) - Read cluster manifest contents
 
 ### General Information
 
 **Data Sources:**
-- [`oai_openshift_versions`](data-sources/openshift_versions.md) - Available OpenShift versions and release information
-- [`oai_supported_operators`](data-sources/supported_operators.md) - Supported OLM operators for cluster installation
-- [`oai_operator_bundles`](data-sources/operator_bundles.md) - Available operator bundles and dependencies
-- [`oai_support_levels`](data-sources/support_levels.md) - Feature support matrix by platform and architecture
+- [`openshift_assisted_installer_versions`](data-sources/openshift_versions.md) - Available OpenShift versions and release information
+- [`openshift_assisted_installer_supported_operators`](data-sources/supported_operators.md) - Supported OLM operators for cluster installation
+- [`openshift_assisted_installer_operator_bundles`](data-sources/operator_bundles.md) - Available operator bundles and dependencies
+- [`openshift_assisted_installer_support_levels`](data-sources/support_levels.md) - Feature support matrix by platform and architecture
 
 ## Installation Workflow
 

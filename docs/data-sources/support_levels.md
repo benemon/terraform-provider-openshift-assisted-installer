@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_support_levels"
+page_title: "Data Source: openshift_assisted_installer_support_levels"
 subcategory: "General Information"
 ---
 
-# oai_support_levels Data Source
+# openshift_assisted_installer_support_levels Data Source
 
 Retrieves feature support level information from the OpenShift Assisted Service API. Use this data source to determine which features are supported for specific OpenShift versions, CPU architectures, and platform types.
 
@@ -12,46 +12,46 @@ Retrieves feature support level information from the OpenShift Assisted Service 
 ### Get Support Levels for Specific Version
 
 ```hcl
-data "oai_support_levels" "current" {
+data "openshift_assisted_installer_support_levels" "current" {
   openshift_version = "4.16"
 }
 
 output "feature_support" {
-  value = data.oai_support_levels.current.features
+  value = data.openshift_assisted_installer_support_levels.current.features
 }
 ```
 
 ### Filter by Architecture and Platform
 
 ```hcl
-data "oai_support_levels" "baremetal_x86" {
+data "openshift_assisted_installer_support_levels" "baremetal_x86" {
   openshift_version = "4.16"
   cpu_architecture  = "x86_64"
   platform_type     = "baremetal"
 }
 
 output "baremetal_features" {
-  value = data.oai_support_levels.baremetal_x86.features
+  value = data.openshift_assisted_installer_support_levels.baremetal_x86.features
 }
 ```
 
 ### Multi-Architecture Support Analysis
 
 ```hcl
-data "oai_support_levels" "arm64" {
+data "openshift_assisted_installer_support_levels" "arm64" {
   openshift_version = "4.16"
   cpu_architecture  = "arm64"
 }
 
-data "oai_support_levels" "x86_64" {
+data "openshift_assisted_installer_support_levels" "x86_64" {
   openshift_version = "4.16"
   cpu_architecture  = "x86_64"
 }
 
 locals {
   # Compare feature support between architectures
-  arm64_features   = keys(data.oai_support_levels.arm64.features)
-  x86_64_features  = keys(data.oai_support_levels.x86_64.features)
+  arm64_features   = keys(data.openshift_assisted_installer_support_levels.arm64.features)
+  x86_64_features  = keys(data.openshift_assisted_installer_support_levels.x86_64.features)
   
   common_features = setintersection(
     toset(local.arm64_features),
@@ -123,7 +123,7 @@ The support levels data source typically includes information about:
 ### Feature-Based Deployment Decisions
 
 ```hcl
-data "oai_support_levels" "target_config" {
+data "openshift_assisted_installer_support_levels" "target_config" {
   openshift_version = var.openshift_version
   cpu_architecture  = var.cpu_architecture
   platform_type     = var.platform_type
@@ -135,7 +135,7 @@ locals {
   
   feature_support_status = {
     for feature in local.required_features :
-    feature => lookup(data.oai_support_levels.target_config.features, feature, "unavailable")
+    feature => lookup(data.openshift_assisted_installer_support_levels.target_config.features, feature, "unavailable")
   }
   
   # Determine if deployment is viable
@@ -148,7 +148,7 @@ locals {
 }
 
 # Only create cluster if all required features are available
-resource "oai_cluster" "conditional" {
+resource "openshift_assisted_installer_cluster" "conditional" {
   count = local.can_deploy ? 1 : 0
   
   name              = "feature-validated-cluster"
@@ -169,14 +169,14 @@ output "deployment_analysis" {
 ### Single Node OpenShift Validation
 
 ```hcl
-data "oai_support_levels" "sno_check" {
+data "openshift_assisted_installer_support_levels" "sno_check" {
   openshift_version = var.openshift_version
   cpu_architecture  = var.cpu_architecture
 }
 
 locals {
   sno_support = lookup(
-    data.oai_support_levels.sno_check.features,
+    data.openshift_assisted_installer_support_levels.sno_check.features,
     "SNO",
     "unavailable"
   )
@@ -184,7 +184,7 @@ locals {
   sno_supported = contains(["supported", "dev-preview", "tech-preview"], local.sno_support)
 }
 
-resource "oai_cluster" "single_node" {
+resource "openshift_assisted_installer_cluster" "single_node" {
   count = local.sno_supported ? 1 : 0
   
   name                = "single-node-cluster"
@@ -207,26 +207,26 @@ output "sno_compatibility" {
 
 ```hcl
 # Check feature support across different platforms
-data "oai_support_levels" "baremetal" {
+data "openshift_assisted_installer_support_levels" "baremetal" {
   openshift_version = "4.16"
   platform_type     = "baremetal"
 }
 
-data "oai_support_levels" "vsphere" {
+data "openshift_assisted_installer_support_levels" "vsphere" {
   openshift_version = "4.16" 
   platform_type     = "vsphere"
 }
 
-data "oai_support_levels" "nutanix" {
+data "openshift_assisted_installer_support_levels" "nutanix" {
   openshift_version = "4.16"
   platform_type     = "nutanix"
 }
 
 locals {
   platforms = {
-    baremetal = data.oai_support_levels.baremetal.features
-    vsphere   = data.oai_support_levels.vsphere.features
-    nutanix   = data.oai_support_levels.nutanix.features
+    baremetal = data.openshift_assisted_installer_support_levels.baremetal.features
+    vsphere   = data.openshift_assisted_installer_support_levels.vsphere.features
+    nutanix   = data.openshift_assisted_installer_support_levels.nutanix.features
   }
   
   # Features we need for our workload
@@ -285,19 +285,19 @@ variable "target_version" {
   default     = "4.16"
 }
 
-data "oai_support_levels" "current" {
+data "openshift_assisted_installer_support_levels" "current" {
   openshift_version = var.current_version
   cpu_architecture  = var.cpu_architecture
 }
 
-data "oai_support_levels" "target" {
+data "openshift_assisted_installer_support_levels" "target" {
   openshift_version = var.target_version
   cpu_architecture  = var.cpu_architecture
 }
 
 locals {
-  current_features = keys(data.oai_support_levels.current.features)
-  target_features  = keys(data.oai_support_levels.target.features)
+  current_features = keys(data.openshift_assisted_installer_support_levels.current.features)
+  target_features  = keys(data.openshift_assisted_installer_support_levels.target.features)
   
   # Features that might be lost in upgrade
   deprecated_features = setsubtract(
@@ -336,7 +336,7 @@ output "upgrade_analysis" {
 ### Production Readiness Assessment
 
 ```hcl
-data "oai_support_levels" "production_check" {
+data "openshift_assisted_installer_support_levels" "production_check" {
   openshift_version = var.openshift_version
   cpu_architecture  = var.cpu_architecture
   platform_type     = var.platform_type
@@ -354,8 +354,8 @@ locals {
   production_assessment = {
     for feature in local.production_features :
     feature => {
-      support_level = lookup(data.oai_support_levels.production_check.features, feature, "unavailable")
-      production_ready = lookup(data.oai_support_levels.production_check.features, feature, "unavailable") == "supported"
+      support_level = lookup(data.openshift_assisted_installer_support_levels.production_check.features, feature, "unavailable")
+      production_ready = lookup(data.openshift_assisted_installer_support_levels.production_check.features, feature, "unavailable") == "supported"
     }
   }
   

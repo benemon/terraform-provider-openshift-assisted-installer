@@ -40,13 +40,13 @@ func TestInfraEnvDataSource_Metadata(t *testing.T) {
 	ds := NewInfraEnvDataSource()
 
 	metadataReq := datasource.MetadataRequest{
-		ProviderTypeName: "oai",
+		ProviderTypeName: "openshift_assisted_installer",
 	}
 	metadataResp := &datasource.MetadataResponse{}
 
 	ds.Metadata(context.Background(), metadataReq, metadataResp)
 
-	assert.Equal(t, "oai_infra_env", metadataResp.TypeName)
+	assert.Equal(t, "openshift_assisted_installer_infra_env", metadataResp.TypeName)
 }
 
 func TestInfraEnvDataSource_Configure(t *testing.T) {

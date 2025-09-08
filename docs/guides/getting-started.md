@@ -36,7 +36,7 @@ terraform {
   }
 }
 
-provider "oai" {
+provider "openshift-assisted-installer" {
   offline_token = var.offline_token
 }
 
@@ -59,20 +59,20 @@ For your first deployment, we recommend starting with a single node cluster:
 
 ```hcl
 # Get available OpenShift versions
-data "oai_openshift_versions" "available" {
+data "openshift_assisted_installer_versions" "available" {
   only_latest = true
 }
 
 locals {
   # Select latest production version
   openshift_version = [
-    for v in data.oai_openshift_versions.available.versions :
+    for v in data.openshift_assisted_installer_versions.available.versions :
     v.version if v.support_level == "production"
   ][0]
 }
 
 # Create cluster definition
-resource "oai_cluster" "single_node" {
+resource "openshift_assisted_installer_cluster" "single_node" {
   name                 = "my-first-cluster"
   openshift_version    = local.openshift_version
   pull_secret         = var.pull_secret
@@ -82,17 +82,17 @@ resource "oai_cluster" "single_node" {
 }
 
 # Create infrastructure environment for host discovery
-resource "oai_infra_env" "discovery" {
+resource "openshift_assisted_installer_infra_env" "discovery" {
   name             = "discovery-iso"
   pull_secret     = var.pull_secret
   cpu_architecture = "x86_64"
-  cluster_id      = oai_cluster.single_node.id
+  cluster_id      = openshift_assisted_installer_cluster.single_node.id
   ssh_authorized_key = file("~/.ssh/id_rsa.pub")
 }
 
 # Trigger cluster installation once hosts are ready
-resource "oai_cluster_installation" "single_node" {
-  cluster_id          = oai_cluster.single_node.id
+resource "openshift_assisted_installer_cluster_installation" "single_node" {
+  cluster_id          = openshift_assisted_installer_cluster.single_node.id
   wait_for_hosts      = true
   expected_host_count = 1
   
@@ -103,11 +103,11 @@ resource "oai_cluster_installation" "single_node" {
 
 # Output important information
 output "cluster_id" {
-  value = oai_cluster.single_node.id
+  value = openshift_assisted_installer_cluster.single_node.id
 }
 
 output "iso_download_url" {
-  value = oai_infra_env.discovery.download_url
+  value = openshift_assisted_installer_infra_env.discovery.download_url
 }
 ```
 

@@ -39,13 +39,13 @@ func TestManifestDataSource_Metadata(t *testing.T) {
 	ds := NewManifestDataSource()
 
 	metadataReq := datasource.MetadataRequest{
-		ProviderTypeName: "oai",
+		ProviderTypeName: "openshift_assisted_installer",
 	}
 	metadataResp := &datasource.MetadataResponse{}
 
 	ds.Metadata(context.Background(), metadataReq, metadataResp)
 
-	assert.Equal(t, "oai_manifest", metadataResp.TypeName)
+	assert.Equal(t, "openshift_assisted_installer_manifest", metadataResp.TypeName)
 }
 
 func TestManifestDataSource_Configure(t *testing.T) {

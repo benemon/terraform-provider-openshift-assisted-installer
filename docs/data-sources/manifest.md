@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_manifest"
+page_title: "Data Source: openshift_assisted_installer_manifest"
 subcategory: "Custom Configuration"
 ---
 
-# oai_manifest Data Source
+# openshift_assisted_installer_manifest Data Source
 
 Retrieves manifest files associated with a cluster from the Assisted Service API.
 
@@ -12,27 +12,27 @@ Retrieves manifest files associated with a cluster from the Assisted Service API
 ### Read Specific Manifest
 
 ```hcl
-data "oai_manifest" "custom_config" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_manifest" "custom_config" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   file_name  = "99-custom-config.yaml"
 }
 
 output "manifest_content" {
-  value = data.oai_manifest.custom_config.content
+  value = data.openshift_assisted_installer_manifest.custom_config.content
 }
 ```
 
 ### Read Manifest from OpenShift Folder
 
 ```hcl
-data "oai_manifest" "machineconfig" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_manifest" "machineconfig" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   file_name  = "99-worker-ssh.yaml"
   folder     = "openshift"
 }
 
 output "machineconfig_content" {
-  value = data.oai_manifest.machineconfig.content
+  value = data.openshift_assisted_installer_manifest.machineconfig.content
 }
 ```
 

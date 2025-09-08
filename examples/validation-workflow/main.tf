@@ -1,13 +1,13 @@
 terraform {
   required_providers {
-    oai = {
+    openshift_assisted_installer = {
       source  = "benemon/openshift-assisted-installer"
       version = "~> 0.1"
     }
   }
 }
 
-provider "oai" {
+provider "openshift_assisted_installer" {
   # Uses OFFLINE_TOKEN environment variable
 }
 
@@ -16,7 +16,7 @@ provider "oai" {
 # ==============================================================================
 
 # Create cluster definition
-resource "oai_cluster" "production" {
+resource "openshift_assisted_installer_cluster" "production" {
   name                = "prod-cluster"
   base_dns_domain     = "example.com" 
   openshift_version   = "4.15.20"
@@ -38,9 +38,9 @@ resource "oai_cluster" "production" {
 }
 
 # Create infra environment
-resource "oai_infra_env" "production" {
-  name              = "${oai_cluster.production.name}-infra"
-  cluster_id        = oai_cluster.production.id
+resource "openshift_assisted_installer_infra_env" "production" {
+  name              = "${openshift_assisted_installer_cluster.production.name}-infra"
+  cluster_id        = openshift_assisted_installer_cluster.production.id
   cpu_architecture  = "x86_64"
   pull_secret       = var.pull_secret
   ssh_authorized_key = var.ssh_public_key
@@ -48,12 +48,12 @@ resource "oai_infra_env" "production" {
 }
 
 # ==============================================================================
-# Validation Checks Using oai_cluster_validations and oai_host_validations
+# Validation Checks Using openshift_assisted_installer_cluster_validations and openshift_assisted_installer_host_validations
 # ==============================================================================
 
 # Check cluster-level validations for installation readiness
-data "oai_cluster_validations" "readiness" {
-  cluster_id = oai_cluster.production.id
+data "openshift_assisted_installer_cluster_validations" "readiness" {
+  cluster_id = openshift_assisted_installer_cluster.production.id
   
   # Only check blocking validations that would prevent installation
   validation_types = ["blocking"]
@@ -61,13 +61,13 @@ data "oai_cluster_validations" "readiness" {
 }
 
 # Check all cluster validations for comprehensive status
-data "oai_cluster_validations" "all_cluster" {
-  cluster_id = oai_cluster.production.id
+data "openshift_assisted_installer_cluster_validations" "all_cluster" {
+  cluster_id = openshift_assisted_installer_cluster.production.id
 }
 
 # Check host-level validations for all hosts in the cluster
-data "oai_host_validations" "all_hosts" {
-  cluster_id = oai_cluster.production.id
+data "openshift_assisted_installer_host_validations" "all_hosts" {
+  cluster_id = openshift_assisted_installer_cluster.production.id
   
   # Focus on blocking validations that prevent installation
   validation_types = ["blocking"]
@@ -75,8 +75,8 @@ data "oai_host_validations" "all_hosts" {
 }
 
 # Check specific validations for storage operator requirements
-data "oai_host_validations" "storage_readiness" {
-  cluster_id = oai_cluster.production.id
+data "openshift_assisted_installer_host_validations" "storage_readiness" {
+  cluster_id = openshift_assisted_installer_cluster.production.id
   
   # Filter for storage operator requirements only
   validation_names = [
@@ -88,13 +88,13 @@ data "oai_host_validations" "storage_readiness" {
 }
 
 # Check network-related validations across cluster and hosts
-data "oai_cluster_validations" "network_cluster" {
-  cluster_id = oai_cluster.production.id
+data "openshift_assisted_installer_cluster_validations" "network_cluster" {
+  cluster_id = openshift_assisted_installer_cluster.production.id
   categories = ["network"]
 }
 
-data "oai_host_validations" "network_hosts" {
-  cluster_id = oai_cluster.production.id
+data "openshift_assisted_installer_host_validations" "network_hosts" {
+  cluster_id = openshift_assisted_installer_cluster.production.id
   categories = ["network"]
   status_filter = ["failure", "pending"]
 }
@@ -106,26 +106,26 @@ data "oai_host_validations" "network_hosts" {
 locals {
   # Parse validation results - cluster blocking failures
   cluster_blocking_failures = [
-    for validation in data.oai_cluster_validations.readiness.validations :
+    for validation in data.openshift_assisted_installer_cluster_validations.readiness.validations :
     validation if validation.status == "failure"  # Already filtered for blocking + failure/pending
   ]
   
   # Parse validation results - host blocking failures  
   host_blocking_failures = [
-    for validation in data.oai_host_validations.all_hosts.validations :
+    for validation in data.openshift_assisted_installer_host_validations.all_hosts.validations :
     validation if validation.status == "failure"  # Already filtered for blocking + failure/pending
   ]
   
   # Parse validation results - storage operator failures
   storage_validation_failures = [
-    for validation in data.oai_host_validations.storage_readiness.validations :
+    for validation in data.openshift_assisted_installer_host_validations.storage_readiness.validations :
     validation if validation.status == "failure"
   ]
   
   # Network validation failures (cluster + hosts combined)
   network_failures = concat(
-    [for v in data.oai_cluster_validations.network_cluster.validations : v if v.status == "failure"],
-    [for v in data.oai_host_validations.network_hosts.validations : v if v.status == "failure"]
+    [for v in data.openshift_assisted_installer_cluster_validations.network_cluster.validations : v if v.status == "failure"],
+    [for v in data.openshift_assisted_installer_host_validations.network_hosts.validations : v if v.status == "failure"]
   )
   
   # Installation readiness flags
@@ -150,7 +150,7 @@ locals {
   
   # Host failure breakdown by host ID
   host_failures_by_host = {
-    for validation in data.oai_host_validations.all_hosts.validations :
+    for validation in data.openshift_assisted_installer_host_validations.all_hosts.validations :
     validation.host_id => validation...
     if validation.status == "failure"
   }
@@ -161,11 +161,11 @@ locals {
 # ==============================================================================
 
 # Only trigger installation if all validations pass
-resource "oai_cluster_installation" "production" {
+resource "openshift_assisted_installer_cluster_installation" "production" {
   # Conditional creation based on validation results
   count = local.installation_ready ? 1 : 0
   
-  cluster_id          = oai_cluster.production.id
+  cluster_id          = openshift_assisted_installer_cluster.production.id
   wait_for_hosts      = true
   expected_host_count = 3
   
@@ -175,9 +175,9 @@ resource "oai_cluster_installation" "production" {
   
   # Ensure validations are checked first
   depends_on = [
-    data.oai_cluster_validations.readiness,
-    data.oai_host_validations.all_hosts,
-    data.oai_host_validations.storage_readiness
+    data.openshift_assisted_installer_cluster_validations.readiness,
+    data.openshift_assisted_installer_host_validations.all_hosts,
+    data.openshift_assisted_installer_host_validations.storage_readiness
   ]
 }
 
@@ -251,20 +251,20 @@ output "pre_installation_health" {
     installation_ready = local.installation_ready
     
     # Validation counts (all validations, not just blocking)
-    total_cluster_validations = length(data.oai_cluster_validations.all_cluster.validations)
-    total_host_validations    = length(data.oai_host_validations.all_hosts.validations)
+    total_cluster_validations = length(data.openshift_assisted_installer_cluster_validations.all_cluster.validations)
+    total_host_validations    = length(data.openshift_assisted_installer_host_validations.all_hosts.validations)
     total_validations = (
-      length(data.oai_cluster_validations.all_cluster.validations) +
-      length(data.oai_host_validations.all_hosts.validations)
+      length(data.openshift_assisted_installer_cluster_validations.all_cluster.validations) +
+      length(data.openshift_assisted_installer_host_validations.all_hosts.validations)
     )
     
     # Success counts
     passing_cluster_validations = length([
-      for v in data.oai_cluster_validations.all_cluster.validations : v 
+      for v in data.openshift_assisted_installer_cluster_validations.all_cluster.validations : v 
       if v.status == "success"
     ])
     passing_host_validations = length([
-      for v in data.oai_host_validations.all_hosts.validations : v 
+      for v in data.openshift_assisted_installer_host_validations.all_hosts.validations : v 
       if v.status == "success"  
     ])
     
@@ -289,7 +289,7 @@ output "pre_installation_health" {
     
     # Host breakdown
     total_hosts = length(local.host_failures_by_host) > 0 ? 
-      length(distinct([for v in data.oai_host_validations.all_hosts.validations : v.host_id])) :
+      length(distinct([for v in data.openshift_assisted_installer_host_validations.all_hosts.validations : v.host_id])) :
       0
     hosts_with_failures = length(keys(local.host_failures_by_host))
   }
@@ -303,23 +303,23 @@ output "pre_installation_health" {
 locals {
   # Check if ODF requirements are met before enabling
   odf_validated = length([
-    for v in data.oai_host_validations.storage_readiness.validations :
+    for v in data.openshift_assisted_installer_host_validations.storage_readiness.validations :
     v if v.validation_id == "odf-requirements-satisfied" && v.status == "success"
   ]) > 0
   
   # Check if LSO requirements are met
   lso_validated = length([
-    for v in data.oai_host_validations.storage_readiness.validations :
+    for v in data.openshift_assisted_installer_host_validations.storage_readiness.validations :
     v if v.validation_id == "lso-requirements-satisfied" && v.status == "success"
   ]) > 0
 }
 
 # Conditional manifest application based on validation
-resource "oai_manifest" "storage_config" {
+resource "openshift_assisted_installer_manifest" "storage_config" {
   # Only apply storage config if storage validations pass
   count = local.storage_ready ? 1 : 0
   
-  cluster_id = oai_cluster.production.id
+  cluster_id = openshift_assisted_installer_cluster.production.id
   file_name  = "storage-configuration.yaml"
   folder     = "manifests"
   
@@ -334,8 +334,8 @@ resource "oai_manifest" "storage_config" {
 # ==============================================================================
 
 # Monitor validation status changes over time
-data "oai_cluster_events" "validation_events" {
-  cluster_id = oai_cluster.production.id
+data "openshift_assisted_installer_cluster_events" "validation_events" {
+  cluster_id = openshift_assisted_installer_cluster.production.id
   
   # Filter for validation-related events
   message = "validation"
@@ -345,7 +345,7 @@ data "oai_cluster_events" "validation_events" {
 output "validation_timeline" {
   description = "Timeline of validation status changes"
   value = [
-    for event in data.oai_cluster_events.validation_events.events :
+    for event in data.openshift_assisted_installer_cluster_events.validation_events.events :
     {
       timestamp = event.event_time
       message   = event.message

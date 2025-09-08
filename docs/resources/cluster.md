@@ -1,9 +1,9 @@
 ---
-page_title: "Resource: oai_cluster"
+page_title: "Resource: openshift_assisted_installer_cluster"
 subcategory: "Cluster Management"
 ---
 
-# oai_cluster Resource
+# openshift_assisted_installer_cluster Resource
 
 Manages an OpenShift cluster using the Assisted Service API. This resource handles the complete cluster lifecycle from initial definition through to installation completion.
 
@@ -12,7 +12,7 @@ Manages an OpenShift cluster using the Assisted Service API. This resource handl
 ### Basic Cluster
 
 ```hcl
-resource "oai_cluster" "example" {
+resource "openshift_assisted_installer_cluster" "example" {
   name                 = "production-cluster"
   openshift_version    = "4.16.0"
   pull_secret         = var.pull_secret
@@ -21,8 +21,8 @@ resource "oai_cluster" "example" {
 }
 
 # Trigger installation separately
-resource "oai_cluster_installation" "example" {
-  cluster_id          = oai_cluster.example.id
+resource "openshift_assisted_installer_cluster_installation" "example" {
+  cluster_id          = openshift_assisted_installer_cluster.example.id
   wait_for_hosts      = true
   expected_host_count = 3
   
@@ -35,7 +35,7 @@ resource "oai_cluster_installation" "example" {
 ### Advanced Configuration
 
 ```hcl
-resource "oai_cluster" "advanced" {
+resource "openshift_assisted_installer_cluster" "advanced" {
   name                     = "advanced-cluster"
   openshift_version        = "4.16.0"
   pull_secret             = var.pull_secret
@@ -73,7 +73,7 @@ resource "oai_cluster" "advanced" {
 ### Required Arguments
 
 - `name` (String) - Name of the cluster. Must be unique within your organisation.
-- `openshift_version` (String) - OpenShift version to install. Use data source `oai_openshift_versions` to discover available versions.
+- `openshift_version` (String) - OpenShift version to install. Use data source `openshift_assisted_installer_versions` to discover available versions.
 - `pull_secret` (String, Sensitive) - Red Hat pull secret in JSON format. Obtain from console.redhat.com.
 - `cpu_architecture` (String) - Target CPU architecture. Valid values: `x86_64`, `arm64`, `ppc64le`, `s390x`, `multi`.
 
@@ -136,7 +136,7 @@ In addition to the arguments above, the following attributes are exported:
 Clusters can be imported using their ID:
 
 ```shell
-terraform import oai_cluster.example 550e8400-e29b-41d4-a716-446655440000
+terraform import openshift_assisted_installer_cluster.example 550e8400-e29b-41d4-a716-446655440000
 ```
 
 ## State Management

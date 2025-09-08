@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_cluster_credentials"
+page_title: "Data Source: openshift_assisted_installer_cluster_credentials"
 subcategory: "Cluster Management"
 ---
 
-# oai_cluster_credentials Data Source
+# openshift_assisted_installer_cluster_credentials Data Source
 
 Retrieves cluster credentials from the Assisted Service API after installation completes.
 
@@ -12,20 +12,20 @@ Retrieves cluster credentials from the Assisted Service API after installation c
 ### Get Cluster Credentials
 
 ```hcl
-data "oai_cluster_credentials" "admin" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_credentials" "admin" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
 }
 
 output "cluster_access" {
   value = {
-    console_url = data.oai_cluster_credentials.admin.console_url
-    username    = data.oai_cluster_credentials.admin.username
+    console_url = data.openshift_assisted_installer_cluster_credentials.admin.console_url
+    username    = data.openshift_assisted_installer_cluster_credentials.admin.username
   }
   sensitive = true
 }
 
 output "kubeconfig_secret" {
-  value     = data.oai_cluster_credentials.admin.password
+  value     = data.openshift_assisted_installer_cluster_credentials.admin.password
   sensitive = true
 }
 ```
@@ -33,17 +33,17 @@ output "kubeconfig_secret" {
 ### Store Credentials in External System
 
 ```hcl
-data "oai_cluster_credentials" "creds" {
-  cluster_id = oai_cluster.production.id
+data "openshift_assisted_installer_cluster_credentials" "creds" {
+  cluster_id = openshift_assisted_installer_cluster.production.id
 }
 
 resource "vault_generic_secret" "cluster_creds" {
   path = "secret/openshift/production"
   
   data_json = jsonencode({
-    console_url = data.oai_cluster_credentials.creds.console_url
-    username    = data.oai_cluster_credentials.creds.username
-    password    = data.oai_cluster_credentials.creds.password
+    console_url = data.openshift_assisted_installer_cluster_credentials.creds.console_url
+    username    = data.openshift_assisted_installer_cluster_credentials.creds.username
+    password    = data.openshift_assisted_installer_cluster_credentials.creds.password
   })
 }
 ```

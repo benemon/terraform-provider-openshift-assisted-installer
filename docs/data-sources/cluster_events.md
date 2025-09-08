@@ -1,9 +1,9 @@
 ---
-page_title: "Data Source: oai_cluster_events"
+page_title: "Data Source: openshift_assisted_installer_cluster_events"
 subcategory: "Cluster Management"
 ---
 
-# oai_cluster_events Data Source
+# openshift_assisted_installer_cluster_events Data Source
 
 Retrieves cluster and host events from the Assisted Service API for monitoring and troubleshooting.
 
@@ -12,13 +12,13 @@ Retrieves cluster and host events from the Assisted Service API for monitoring a
 ### Get All Cluster Events
 
 ```hcl
-data "oai_cluster_events" "all" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_events" "all" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
 }
 
 output "recent_events" {
   value = [
-    for event in slice(data.oai_cluster_events.all.events, 0, 10) :
+    for event in slice(data.openshift_assisted_installer_cluster_events.all.events, 0, 10) :
     "${event.event_time}: ${event.severity} - ${event.message}"
   ]
 }
@@ -27,14 +27,14 @@ output "recent_events" {
 ### Filter Events by Severity
 
 ```hcl
-data "oai_cluster_events" "errors" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_events" "errors" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   severities = ["error", "critical"]
 }
 
 output "error_events" {
   value = [
-    for event in data.oai_cluster_events.errors.events :
+    for event in data.openshift_assisted_installer_cluster_events.errors.events :
     "${event.name}: ${event.message}"
   ]
 }
@@ -43,16 +43,16 @@ output "error_events" {
 ### Get Host-Specific Events
 
 ```hcl
-data "oai_cluster_events" "host_events" {
-  cluster_id = oai_cluster.example.id
-  host_id    = oai_host.master1.id
+data "openshift_assisted_installer_cluster_events" "host_events" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
+  host_id    = openshift_assisted_installer_host.master1.id
 }
 
 output "host_event_summary" {
   value = {
-    total = length(data.oai_cluster_events.host_events.events)
+    total = length(data.openshift_assisted_installer_cluster_events.host_events.events)
     errors = length([
-      for e in data.oai_cluster_events.host_events.events :
+      for e in data.openshift_assisted_installer_cluster_events.host_events.events :
       e if e.severity == "error"
     ])
   }
@@ -62,8 +62,8 @@ output "host_event_summary" {
 ### Filter by Event Category
 
 ```hcl
-data "oai_cluster_events" "user_events" {
-  cluster_id = oai_cluster.example.id
+data "openshift_assisted_installer_cluster_events" "user_events" {
+  cluster_id = openshift_assisted_installer_cluster.example.id
   categories = ["user"]
   limit      = 50
 }

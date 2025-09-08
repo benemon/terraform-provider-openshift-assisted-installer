@@ -6,14 +6,14 @@
 
 terraform {
   required_providers {
-    oai = {
+    openshift_assisted_installer = {
       source  = "benemon/openshift-assisted-installer"
       version = "~> 0.1"
     }
   }
 }
 
-provider "oai" {
+provider "openshift_assisted_installer" {
   # Uses OFFLINE_TOKEN environment variable
 }
 
@@ -24,7 +24,7 @@ variable "cluster_id" {
 }
 
 # Trigger cluster installation
-resource "oai_cluster_installation" "sno" {
+resource "openshift_assisted_installer_cluster_installation" "sno" {
   cluster_id = var.cluster_id
   
   # For SNO, we expect 1 host
@@ -39,28 +39,28 @@ resource "oai_cluster_installation" "sno" {
 # Outputs
 output "installation_status" {
   value = {
-    status              = oai_cluster_installation.sno.status
-    status_info        = oai_cluster_installation.sno.status_info
-    started_at         = oai_cluster_installation.sno.install_started_at
-    completed_at       = oai_cluster_installation.sno.install_completed_at
+    status              = openshift_assisted_installer_cluster_installation.sno.status
+    status_info        = openshift_assisted_installer_cluster_installation.sno.status_info
+    started_at         = openshift_assisted_installer_cluster_installation.sno.install_started_at
+    completed_at       = openshift_assisted_installer_cluster_installation.sno.install_completed_at
   }
 }
 
 # Get cluster credentials after installation completes
-data "oai_cluster_credentials" "admin" {
+data "openshift_assisted_installer_cluster_credentials" "admin" {
   cluster_id = var.cluster_id
-  depends_on = [oai_cluster_installation.sno]
+  depends_on = [openshift_assisted_installer_cluster_installation.sno]
 }
 
 # Download kubeconfig for local access
-data "oai_cluster_files" "kubeconfig" {
+data "openshift_assisted_installer_cluster_files" "kubeconfig" {
   cluster_id = var.cluster_id  
   file_name  = "kubeconfig"
-  depends_on = [oai_cluster_installation.sno]
+  depends_on = [openshift_assisted_installer_cluster_installation.sno]
 }
 
 # Monitor installation events
-data "oai_cluster_events" "installation_progress" {
+data "openshift_assisted_installer_cluster_events" "installation_progress" {
   cluster_id = var.cluster_id
   severities = ["info", "warning", "error", "critical"]
   limit      = 100
@@ -69,22 +69,22 @@ data "oai_cluster_events" "installation_progress" {
 
 # Save kubeconfig to local file
 resource "local_file" "kubeconfig" {
-  content  = data.oai_cluster_files.kubeconfig.content
+  content  = data.openshift_assisted_installer_cluster_files.kubeconfig.content
   filename = "${path.module}/kubeconfig-sno"
   
-  depends_on = [oai_cluster_installation.sno]
+  depends_on = [openshift_assisted_installer_cluster_installation.sno]
 }
 
 output "cluster_access" {
   description = "Cluster access information and credentials"
   value = {
     # URLs
-    console_url = data.oai_cluster_credentials.admin.console_url
+    console_url = data.openshift_assisted_installer_cluster_credentials.admin.console_url
     api_url     = "https://api.sno-cluster.example.com:6443"
     
     # Credentials (sensitive)
-    username = data.oai_cluster_credentials.admin.username
-    password = data.oai_cluster_credentials.admin.password
+    username = data.openshift_assisted_installer_cluster_credentials.admin.username
+    password = data.openshift_assisted_installer_cluster_credentials.admin.password
     
     # Local files
     kubeconfig_path = local_file.kubeconfig.filename
@@ -98,15 +98,15 @@ output "cluster_access" {
 output "installation_summary" {
   description = "Installation progress and health summary"
   value = {
-    status              = oai_cluster_installation.sno.status
-    status_info         = oai_cluster_installation.sno.status_info  
-    install_started_at  = oai_cluster_installation.sno.install_started_at
-    install_completed_at = oai_cluster_installation.sno.install_completed_at
+    status              = openshift_assisted_installer_cluster_installation.sno.status
+    status_info         = openshift_assisted_installer_cluster_installation.sno.status_info  
+    install_started_at  = openshift_assisted_installer_cluster_installation.sno.install_started_at
+    install_completed_at = openshift_assisted_installer_cluster_installation.sno.install_completed_at
     
     # Event summary
-    total_events = length(data.oai_cluster_events.installation_progress.events)
-    error_events = length([for event in data.oai_cluster_events.installation_progress.events : event if event.severity == "error"])
-    warning_events = length([for event in data.oai_cluster_events.installation_progress.events : event if event.severity == "warning"])
+    total_events = length(data.openshift_assisted_installer_cluster_events.installation_progress.events)
+    error_events = length([for event in data.openshift_assisted_installer_cluster_events.installation_progress.events : event if event.severity == "error"])
+    warning_events = length([for event in data.openshift_assisted_installer_cluster_events.installation_progress.events : event if event.severity == "warning"])
   }
 }
 
