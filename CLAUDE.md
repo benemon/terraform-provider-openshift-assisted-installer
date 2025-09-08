@@ -807,7 +807,7 @@ clean:
 
 **Benefits:**
 - No more confusion between module name (`terraform-provider-openshift-assisted-installer`) and registry name (`terraform-provider-oai`)
-- Consistent with Terraform registry address: `registry.terraform.io/benemon/oai`
+- Consistent with Terraform registry address: `benemon/openshift-assisted-installer`
 - Prevents accidental binary commits through proper .gitignore patterns
 
 ## Success Criteria

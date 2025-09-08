@@ -27,7 +27,7 @@ output "available_versions" {
 
 **Attributes:**
 - `versions` - List of available versions with metadata
-  - `version` - Version string (e.g., "4.15.20")
+  - `version` - Version string (e.g., "4.16.0")
   - `display_name` - Human-readable name
   - `support_level` - Support level (production, dev-preview, etc.)
   - `cpu_architectures` - Supported CPU architectures
@@ -69,7 +69,7 @@ Checks feature support levels by platform and architecture.
 
 ```hcl
 data "oai_support_levels" "baremetal" {
-  openshift_version = "4.15.20"
+  openshift_version = "4.16.0"
   cpu_architecture  = "x86_64"
   platform_type     = "baremetal"
 }

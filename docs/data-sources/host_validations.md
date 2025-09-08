@@ -1,6 +1,6 @@
 ---
 page_title: "Data Source: oai_host_validations"
-subcategory: "Validation"
+subcategory: "Host Management"
 ---
 
 # oai_host_validations Data Source

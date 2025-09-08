@@ -1,6 +1,6 @@
 ---
 page_title: "Data Source: oai_manifest"
-subcategory: "Cluster Configuration"
+subcategory: "Custom Configuration"
 ---
 
 # oai_manifest Data Source

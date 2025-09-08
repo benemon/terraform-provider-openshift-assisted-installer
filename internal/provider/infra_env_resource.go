@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -150,6 +151,9 @@ func (r *InfraEnvResource) Schema(ctx context.Context, req resource.SchemaReques
 				MarkdownDescription: "PEM-encoded X.509 certificate bundle. Hosts discovered by this infra-env will trust the certificates in this bundle.",
 				Optional:            true,
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"proxy": schema.SingleNestedAttribute{
 				MarkdownDescription: "Proxy configuration for hosts discovered through this infrastructure environment.",
@@ -419,7 +423,8 @@ func (r *InfraEnvResource) terraformToCreateAPIModel(ctx context.Context, data *
 	}
 
 	if !data.AdditionalTrustBundle.IsNull() {
-		params.AdditionalTrustBundle = data.AdditionalTrustBundle.ValueString()
+		normalizedCert := normalizePEMCertificate(data.AdditionalTrustBundle.ValueString())
+		params.AdditionalTrustBundle = normalizedCert
 	}
 
 	// Convert proxy settings
@@ -505,8 +510,8 @@ func (r *InfraEnvResource) terraformToUpdateAPIModel(ctx context.Context, data *
 	}
 
 	if !data.AdditionalTrustBundle.IsNull() {
-		trustBundle := data.AdditionalTrustBundle.ValueString()
-		params.AdditionalTrustBundle = &trustBundle
+		normalizedCert := normalizePEMCertificate(data.AdditionalTrustBundle.ValueString())
+		params.AdditionalTrustBundle = &normalizedCert
 	}
 
 	// Convert proxy settings
@@ -557,6 +562,40 @@ func (r *InfraEnvResource) terraformToUpdateAPIModel(ctx context.Context, data *
 	return params
 }
 
+// normalizePEMCertificate normalizes PEM certificate content to prevent Terraform consistency errors
+func normalizePEMCertificate(pemContent string) string {
+	if pemContent == "" {
+		return ""
+	}
+	
+	// Trim leading and trailing whitespace first
+	normalized := strings.TrimSpace(pemContent)
+	if normalized == "" {
+		return ""
+	}
+	
+	// Normalize line endings
+	normalized = strings.ReplaceAll(normalized, "\r\n", "\n")
+	normalized = strings.ReplaceAll(normalized, "\r", "\n")
+	
+	// Remove extra blank lines while preserving structure
+	lines := strings.Split(normalized, "\n")
+	var cleanLines []string
+	for _, line := range lines {
+		// Keep non-empty lines and trim trailing spaces
+		trimmedLine := strings.TrimRight(line, " \t")
+		cleanLines = append(cleanLines, trimmedLine)
+	}
+	
+	// Rejoin and ensure single trailing newline
+	normalized = strings.Join(cleanLines, "\n")
+	if normalized != "" && !strings.HasSuffix(normalized, "\n") {
+		normalized += "\n"
+	}
+	
+	return normalized
+}
+
 func (r *InfraEnvResource) apiToTerraformModel(ctx context.Context, infraEnv *models.InfraEnv, data *InfraEnvResourceModel) {
 	data.ID = types.StringValue(infraEnv.ID)
 	data.Name = types.StringValue(infraEnv.Name)
@@ -601,7 +640,8 @@ func (r *InfraEnvResource) apiToTerraformModel(ctx context.Context, infraEnv *mo
 	}
 
 	if infraEnv.AdditionalTrustBundle != "" {
-		data.AdditionalTrustBundle = types.StringValue(infraEnv.AdditionalTrustBundle)
+		normalizedCert := normalizePEMCertificate(infraEnv.AdditionalTrustBundle)
+		data.AdditionalTrustBundle = types.StringValue(normalizedCert)
 	} else {
 		data.AdditionalTrustBundle = types.StringNull()
 	}

@@ -1,6 +1,6 @@
 ---
 page_title: "Data Source: oai_operator_bundles"
-subcategory: "Operator Information"
+subcategory: "General Information"
 ---
 
 # oai_operator_bundles Data Source
@@ -100,7 +100,7 @@ locals {
 
 resource "oai_cluster" "with_bundles" {
   name              = "cluster-with-bundles"
-  openshift_version = "4.14"
+  openshift_version = "4.16"
   # ... other configuration
   
   # Include all operators from selected bundles

@@ -1,6 +1,6 @@
 ---
 page_title: "Data Source: oai_cluster_logs"
-subcategory: "Monitoring"
+subcategory: "Cluster Management"
 ---
 
 # oai_cluster_logs Data Source

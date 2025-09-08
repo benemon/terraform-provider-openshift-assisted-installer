@@ -1,6 +1,6 @@
 ---
 page_title: "Resource: oai_manifest"
-subcategory: "Configuration"
+subcategory: "Custom Configuration"
 ---
 
 # oai_manifest Resource

@@ -1,6 +1,6 @@
 ---
 page_title: "Resource: oai_infra_env"
-subcategory: "Core Resources"
+subcategory: "Infrastructure Environment"
 ---
 
 # oai_infra_env Resource

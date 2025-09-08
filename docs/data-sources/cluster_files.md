@@ -1,6 +1,6 @@
 ---
 page_title: "Data Source: oai_cluster_files"
-subcategory: "Cluster Configuration"
+subcategory: "Cluster Management"
 ---
 
 # oai_cluster_files Data Source

@@ -1,6 +1,6 @@
 ---
 page_title: "Data Source: oai_support_levels"
-subcategory: "Version Information"
+subcategory: "General Information"
 ---
 
 # oai_support_levels Data Source
@@ -13,7 +13,7 @@ Retrieves feature support level information from the OpenShift Assisted Service 
 
 ```hcl
 data "oai_support_levels" "current" {
-  openshift_version = "4.14"
+  openshift_version = "4.16"
 }
 
 output "feature_support" {
@@ -25,7 +25,7 @@ output "feature_support" {
 
 ```hcl
 data "oai_support_levels" "baremetal_x86" {
-  openshift_version = "4.14"
+  openshift_version = "4.16"
   cpu_architecture  = "x86_64"
   platform_type     = "baremetal"
 }
@@ -39,12 +39,12 @@ output "baremetal_features" {
 
 ```hcl
 data "oai_support_levels" "arm64" {
-  openshift_version = "4.14"
+  openshift_version = "4.16"
   cpu_architecture  = "arm64"
 }
 
 data "oai_support_levels" "x86_64" {
-  openshift_version = "4.14"
+  openshift_version = "4.16"
   cpu_architecture  = "x86_64"
 }
 
@@ -208,17 +208,17 @@ output "sno_compatibility" {
 ```hcl
 # Check feature support across different platforms
 data "oai_support_levels" "baremetal" {
-  openshift_version = "4.14"
+  openshift_version = "4.16"
   platform_type     = "baremetal"
 }
 
 data "oai_support_levels" "vsphere" {
-  openshift_version = "4.14" 
+  openshift_version = "4.16" 
   platform_type     = "vsphere"
 }
 
 data "oai_support_levels" "nutanix" {
-  openshift_version = "4.14"
+  openshift_version = "4.16"
   platform_type     = "nutanix"
 }
 
@@ -276,13 +276,13 @@ output "platform_analysis" {
 variable "current_version" {
   description = "Current OpenShift version"
   type        = string
-  default     = "4.13"
+  default     = "4.15"
 }
 
 variable "target_version" {
   description = "Target OpenShift version"
   type        = string
-  default     = "4.14"
+  default     = "4.16"
 }
 
 data "oai_support_levels" "current" {

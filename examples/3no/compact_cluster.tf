@@ -1,7 +1,8 @@
 terraform {
   required_providers {
     oai = {
-      source = "benemon/oai"
+      source  = "benemon/openshift-assisted-installer"
+      version = "~> 0.1"
     }
   }
 }

@@ -1,6 +1,6 @@
 ---
 page_title: "Data Source: oai_cluster_events"
-subcategory: "Monitoring"
+subcategory: "Cluster Management"
 ---
 
 # oai_cluster_events Data Source

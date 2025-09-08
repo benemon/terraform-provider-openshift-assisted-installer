@@ -1,6 +1,6 @@
 ---
 page_title: "Data Source: oai_supported_operators"
-subcategory: "Operator Information"
+subcategory: "General Information"
 ---
 
 # oai_supported_operators Data Source
@@ -23,7 +23,7 @@ output "available_operators" {
 
 ```hcl
 data "oai_supported_operators" "for_version" {
-  openshift_version = "4.14"
+  openshift_version = "4.16"
 }
 
 output "operators_4_14" {
@@ -47,7 +47,7 @@ output "arm64_operators" {
 
 ```hcl
 data "oai_supported_operators" "specific" {
-  openshift_version = "4.14"
+  openshift_version = "4.16"
   cpu_architecture  = "x86_64"
   platform_type     = "baremetal"
 }
@@ -112,7 +112,7 @@ The supported operators typically include (availability may vary by version and 
 
 ```hcl
 data "oai_supported_operators" "available" {
-  openshift_version = "4.14"
+  openshift_version = "4.16"
   cpu_architecture  = "x86_64"
 }
 
@@ -137,7 +137,7 @@ resource "oai_cluster" "with_operators" {
   count = length(local.missing_operators) == 0 ? 1 : 0
   
   name              = "cluster-with-operators"
-  openshift_version = "4.14"
+  openshift_version = "4.16"
   # ... other configuration
   
   olm_operators = [
@@ -157,12 +157,12 @@ output "missing_operators" {
 
 ```hcl
 data "oai_supported_operators" "production" {
-  openshift_version = "4.14"
+  openshift_version = "4.16"
   platform_type     = "baremetal"
 }
 
 data "oai_supported_operators" "development" {
-  openshift_version = "4.15"
+  openshift_version = "4.16"
   platform_type     = "baremetal"
 }
 

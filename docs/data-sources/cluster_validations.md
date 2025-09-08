@@ -1,6 +1,6 @@
 ---
 page_title: "Data Source: oai_cluster_validations"
-subcategory: "Validation"
+subcategory: "Cluster Management"
 ---
 
 # oai_cluster_validations Data Source

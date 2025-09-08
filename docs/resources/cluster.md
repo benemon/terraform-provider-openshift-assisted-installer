@@ -1,6 +1,6 @@
 ---
 page_title: "Resource: oai_cluster"
-subcategory: "Core Resources"
+subcategory: "Cluster Management"
 ---
 
 # oai_cluster Resource
@@ -14,11 +14,21 @@ Manages an OpenShift cluster using the Assisted Service API. This resource handl
 ```hcl
 resource "oai_cluster" "example" {
   name                 = "production-cluster"
-  openshift_version    = "4.14"
+  openshift_version    = "4.16.0"
   pull_secret         = var.pull_secret
   cpu_architecture    = "x86_64"
   control_plane_count = 3
-  trigger_installation = true
+}
+
+# Trigger installation separately
+resource "oai_cluster_installation" "example" {
+  cluster_id          = oai_cluster.example.id
+  wait_for_hosts      = true
+  expected_host_count = 3
+  
+  timeouts {
+    create = "120m"
+  }
 }
 ```
 
@@ -27,7 +37,7 @@ resource "oai_cluster" "example" {
 ```hcl
 resource "oai_cluster" "advanced" {
   name                     = "advanced-cluster"
-  openshift_version        = "4.14"
+  openshift_version        = "4.16.0"
   pull_secret             = var.pull_secret
   cpu_architecture        = "x86_64"
   control_plane_count     = 3
@@ -49,9 +59,6 @@ resource "oai_cluster" "advanced" {
   ssh_public_key         = var.ssh_public_key
   additional_ntp_source  = "pool.ntp.org"
   hyperthreading        = "all"
-  
-  # Installation Control
-  trigger_installation = true
   
   # Timeouts
   timeouts {
@@ -100,10 +107,6 @@ resource "oai_cluster" "advanced" {
 - `additional_ntp_source` (String) - Additional NTP server for time synchronisation.
 - `hyperthreading` (String) - Hyperthreading configuration. Valid values: `all`, `masters`, `workers`, `none`.
 - `high_availability_mode` (String) - **Deprecated**: Use `control_plane_count` instead.
-
-#### Installation Control
-
-- `trigger_installation` (Boolean) - Whether to automatically trigger installation when cluster becomes ready. Default: true.
 
 #### Timeouts
 

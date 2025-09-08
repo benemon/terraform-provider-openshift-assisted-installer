@@ -9,6 +9,15 @@ The OpenShift Assisted Installer provider enables Infrastructure as Code managem
 ### Basic Configuration
 
 ```hcl
+terraform {
+  required_providers {
+    oai = {
+      source  = "benemon/openshift-assisted-installer"
+      version = "~> 0.1"
+    }
+  }
+}
+
 provider "oai" {
   offline_token = var.offline_token
   endpoint      = "https://api.openshift.com/api/assisted-install"
@@ -52,7 +61,7 @@ Manages OpenShift cluster definitions and configurations.
 resource "oai_cluster" "example" {
   name                 = "my-cluster"
   base_dns_domain      = "example.com"
-  openshift_version    = "4.15.20"
+  openshift_version    = "4.16.0"
   cpu_architecture     = "x86_64"
   control_plane_count  = 3
   
@@ -196,7 +205,7 @@ Checks feature support levels by platform and architecture.
 
 ```hcl
 data "oai_support_levels" "features" {
-  openshift_version = "4.15.20"
+  openshift_version = "4.16.0"
   cpu_architecture  = "x86_64"
   platform_type     = "baremetal"
 }
@@ -405,7 +414,7 @@ output "manifest_content" {
 # 1. Define cluster
 resource "oai_cluster" "production" {
   name                = "prod-cluster"
-  openshift_version   = "4.15.20"
+  openshift_version   = "4.16.0"
   cpu_architecture    = "x86_64" 
   control_plane_count = 3
   

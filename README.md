@@ -27,8 +27,8 @@ This Terraform provider enables Infrastructure as Code management of OpenShift c
 terraform {
   required_providers {
     oai = {
-      source  = "benemon/oai"
-      version = "~> 1.0"
+      source  = "benemon/openshift-assisted-installer"
+      version = "~> 0.1"
     }
   }
 }
@@ -45,7 +45,7 @@ terraform {
    ```hcl
    provider_installation {
      dev_overrides {
-       "benemon/oai" = "<GOPATH>/bin"
+       "benemon/openshift-assisted-installer" = "<GOPATH>/bin"
      }
      direct {}
    }

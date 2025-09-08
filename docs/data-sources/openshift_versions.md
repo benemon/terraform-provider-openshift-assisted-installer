@@ -1,6 +1,6 @@
 ---
 page_title: "Data Source: oai_openshift_versions"
-subcategory: "Version Information"
+subcategory: "General Information"
 ---
 
 # oai_openshift_versions Data Source
@@ -23,7 +23,7 @@ output "all_versions" {
 
 ```hcl
 data "oai_openshift_versions" "stable_4_14" {
-  version_filter = "4.14"
+  version_filter = "4.16"
 }
 
 output "openshift_4_14_versions" {
@@ -59,7 +59,7 @@ output "arm64_versions" {
 
 ### Optional Arguments
 
-- `version_filter` (String) - Filter versions by pattern. Supports partial matching (e.g., "4.14" matches "4.14.1", "4.14.2", etc.).
+- `version_filter` (String) - Filter versions by pattern. Supports partial matching (e.g., "4.16" matches "4.16.1", "4.16.2", etc.).
 - `only_latest` (Boolean) - Return only the latest version for each major.minor release. Default: false.
 - `cpu_architecture` (String) - Filter versions by CPU architecture. Valid values: `x86_64`, `arm64`, `ppc64le`, `s390x`.
 
@@ -68,7 +68,7 @@ output "arm64_versions" {
 The following attributes are exported:
 
 - `versions` (List of Object) - List of available OpenShift versions. Each version object contains:
-  - `version` (String) - Full version string (e.g., "4.14.1")
+  - `version` (String) - Full version string (e.g., "4.16.1")
   - `display_name` (String) - Human-readable version name
   - `support_level` (String) - Support level for this version. Values: `production`, `maintenance`, `beta`, `dev-preview`
   - `default` (Boolean) - Whether this is the default version for new clusters
@@ -168,7 +168,7 @@ locals {
 
 # Development environment - allow beta versions
 data "oai_openshift_versions" "dev" {
-  version_filter = "4.15"  # Latest development branch
+  version_filter = "4.17"  # Latest development branch
 }
 
 locals {
@@ -228,12 +228,12 @@ resource "oai_cluster" "validated" {
 
 ```hcl
 data "oai_openshift_versions" "latest" {
-  version_filter = "4.14"  # Stay within major.minor family
+  version_filter = "4.16"  # Stay within major.minor family
   only_latest    = true
 }
 
 resource "oai_cluster" "auto_update" {
-  # Automatically uses latest 4.14.x version
+  # Automatically uses latest 4.16.x version
   openshift_version = data.oai_openshift_versions.latest.versions[0].version
   # ... other configuration
 }

@@ -79,11 +79,6 @@ resource "oai_cluster" "single_node" {
   cpu_architecture    = "x86_64"
   control_plane_count = 1
   base_dns_domain     = "example.com"
-  trigger_installation = true
-  
-  timeouts {
-    create = "120m"
-  }
 }
 
 # Create infrastructure environment for host discovery
@@ -93,6 +88,17 @@ resource "oai_infra_env" "discovery" {
   cpu_architecture = "x86_64"
   cluster_id      = oai_cluster.single_node.id
   ssh_authorized_key = file("~/.ssh/id_rsa.pub")
+}
+
+# Trigger cluster installation once hosts are ready
+resource "oai_cluster_installation" "single_node" {
+  cluster_id          = oai_cluster.single_node.id
+  wait_for_hosts      = true
+  expected_host_count = 1
+  
+  timeouts {
+    create = "120m"
+  }
 }
 
 # Output important information
@@ -145,7 +151,7 @@ output "iso_download_url" {
 The host will automatically:
 1. Boot from the discovery ISO
 2. Inventory hardware and register with the cluster
-3. Wait for installation trigger (automatic with `trigger_installation = true`)
+3. Wait for installation to be triggered automatically once host is ready
 4. Install OpenShift (30-90 minutes)
 
 Monitor progress:

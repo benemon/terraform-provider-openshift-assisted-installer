@@ -1,7 +1,7 @@
 default: fmt lint install generate
 
 build:
-	go build -v -o terraform-provider-oai .
+	go build -v -o terraform-provider-openshift-assisted-installer .
 
 install: build
 	go install -v ./...
@@ -26,6 +26,7 @@ clean:
 	rm -f *.log
 	rm -f *.backup
 	rm -f *.tmp
+	rm -f terraform-provider-openshift-assisted-installer*
 	rm -f terraform-provider-oai*
 	rm -f test_*.sh
 	rm -f analyze_*.sh

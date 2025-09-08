@@ -31,7 +31,8 @@ The provider supports authentication via offline tokens obtained from the Red Ha
 terraform {
   required_providers {
     oai = {
-      source = "benemon/openshift-assisted-installer"
+      source  = "benemon/openshift-assisted-installer"
+      version = "~> 0.1"
     }
   }
 }
@@ -60,11 +61,10 @@ provider "oai" {
 ```hcl
 resource "oai_cluster" "example" {
   name                 = "example-cluster"
-  openshift_version    = "4.14"
+  openshift_version    = "4.16.0"
   pull_secret         = var.pull_secret
   cpu_architecture    = "x86_64"
   control_plane_count = 1
-  trigger_installation = true
 }
 
 resource "oai_infra_env" "example" {
@@ -81,32 +81,65 @@ resource "oai_infra_env" "example" {
 ```hcl
 resource "oai_cluster" "example" {
   name                     = "example-cluster"
-  openshift_version        = "4.14"
+  openshift_version        = "4.16.0"
   pull_secret             = var.pull_secret
   cpu_architecture        = "x86_64"
   control_plane_count     = 3
   base_dns_domain         = "example.com"
   cluster_network_cidr    = "10.128.0.0/14"
   service_network_cidr    = "172.30.0.0/16"
-  api_vips               = ["192.168.1.100"]
-  ingress_vips           = ["192.168.1.101"]
-  trigger_installation   = true
+  api_vips                = [{ ip = "192.168.1.100" }]
+  ingress_vips            = [{ ip = "192.168.1.101" }]
 }
 ```
 
-## Resources
+## Resources and Data Sources
 
+### Cluster Management
+
+**Resources:**
 - [`oai_cluster`](resources/cluster.md) - Manages OpenShift cluster definitions and installations
+
+**Data Sources:**
+- [`oai_cluster`](data-sources/cluster.md) - Read cluster information and status
+- [`oai_cluster_credentials`](data-sources/cluster_credentials.md) - Access cluster admin credentials
+- [`oai_cluster_events`](data-sources/cluster_events.md) - Monitor installation progress and events
+- [`oai_cluster_files`](data-sources/cluster_files.md) - Download kubeconfig and cluster files
+- [`oai_cluster_logs`](data-sources/cluster_logs.md) - Retrieve installation and runtime logs
+- [`oai_cluster_validations`](data-sources/cluster_validations.md) - Check cluster readiness and validation status
+
+### Infrastructure Environment
+
+**Resources:**
 - [`oai_infra_env`](resources/infra_env.md) - Manages infrastructure environments and discovery ISOs
+
+**Data Sources:**
+- [`oai_infra_env`](data-sources/infra_env.md) - Read infrastructure environment details
+
+### Host Management
+
+**Resources:**
 - [`oai_host`](resources/host.md) - Manages discovered hosts and role assignments
+
+**Data Sources:**
+- [`oai_host`](data-sources/host.md) - Read host information and inventory
+- [`oai_host_validations`](data-sources/host_validations.md) - Check host hardware and network validation status
+
+### Custom Configuration
+
+**Resources:**
 - [`oai_manifest`](resources/manifest.md) - Manages custom cluster manifests
 
-## Data Sources
+**Data Sources:**
+- [`oai_manifest`](data-sources/manifest.md) - Read cluster manifest contents
 
-- [`oai_openshift_versions`](data-sources/openshift_versions.md) - Available OpenShift versions
-- [`oai_supported_operators`](data-sources/supported_operators.md) - Supported OLM operators
-- [`oai_operator_bundles`](data-sources/operator_bundles.md) - Available operator bundles
-- [`oai_support_levels`](data-sources/support_levels.md) - Feature support matrix
+### General Information
+
+**Data Sources:**
+- [`oai_openshift_versions`](data-sources/openshift_versions.md) - Available OpenShift versions and release information
+- [`oai_supported_operators`](data-sources/supported_operators.md) - Supported OLM operators for cluster installation
+- [`oai_operator_bundles`](data-sources/operator_bundles.md) - Available operator bundles and dependencies
+- [`oai_support_levels`](data-sources/support_levels.md) - Feature support matrix by platform and architecture
 
 ## Installation Workflow
 
